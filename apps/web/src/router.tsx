@@ -1,4 +1,4 @@
-import { createRootRoute, createRoute, createRouter, lazyRouteComponent } from '@tanstack/react-router';
+import { createHashHistory, createRootRoute, createRoute, createRouter, lazyRouteComponent } from '@tanstack/react-router';
 import { AppShell } from './shell/AppShell';
 import { HomePage } from './routes/home';
 import { ConnectionsPage } from './routes/connections';
@@ -13,5 +13,7 @@ const viewer = createRoute({ getParentRoute: () => root, path: '/dashboards/$das
 const builder = createRoute({ getParentRoute: () => root, path: '/dashboards/$dashboardId/edit', component: lazyRouteComponent(() => import('./routes/builder'), 'BuilderPage') });
 const model = createRoute({ getParentRoute: () => root, path: '/models/$modelId', component: ModelPage });
 
-export const router = createRouter({ routeTree: root.addChildren([home, connections, viewer, builder, model]) });
+// VITE_HASH_HISTORY=1 gera um build estático (rotas com #) para hospedar sem servidor, ex.: prévias.
+const history = import.meta.env.VITE_HASH_HISTORY ? createHashHistory() : undefined;
+export const router = createRouter({ routeTree: root.addChildren([home, connections, viewer, builder, model]), ...(history ? { history } : {}) });
 declare module '@tanstack/react-router' { interface Register { router: typeof router } }

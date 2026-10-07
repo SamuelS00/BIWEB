@@ -5,6 +5,8 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: { port: 5173 },
+  // Caminhos relativos no build estático (VITE_HASH_HISTORY=1).
+  base: process.env.VITE_HASH_HISTORY ? './' : '/',
   build: {
     // Orçamento de bundle (docs/architecture/24): shell inicial pequeno; builder em chunk próprio.
     chunkSizeWarningLimit: 600,
