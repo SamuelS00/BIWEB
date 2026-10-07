@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { Avatar, Button, Icon, SegmentedControl, Select, Skeleton, TextField } from '@biweb/ui';
 import { coverUrl, reports, type Category, type ReportType, type Status } from '../fixtures/lume-varejo';
-import { useUi } from '../state/ui-store';
+import { asset, useUi } from '../state/ui-store';
 import { FavButton, ReportCard, StatusBadges } from './reports-shared';
 
 type Cat = 'Todos' | 'Favoritos' | Category;
@@ -64,7 +64,7 @@ export function ReportsPage() {
         </div>
       ) : list.length === 0 ? (
         <div className="rp-empty bw-page">
-          <img src={`${import.meta.env.BASE_URL}brand/mark.webp`} alt="" width={40} height={38} />
+          <img src={asset('brand/mark.webp')} alt="" width={40} height={38} />
           <h2>Nenhum relatório com esses filtros</h2>
           <p>Limpe os filtros ou peça ao Copilot para encontrar o que você procura.</p>
           <Button onPress={() => { setQ(''); setCat('Todos'); setStatus('all'); setType('all'); }}>Limpar filtros</Button>

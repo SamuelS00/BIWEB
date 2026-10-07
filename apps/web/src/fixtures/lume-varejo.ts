@@ -1,3 +1,4 @@
+import { asset } from '../state/ui-store';
 /**
  * Dados de exemplo do universo Lume Varejo (design-handoff/04-MOCK_DATA.md). Os números fecham entre si.
  * Só para o shell enquanto a Management API e o Query Service não existem.
@@ -89,7 +90,7 @@ export const reports: Report[] = [
     widgets: [{ kind: 'kpis', set: 'ano', span: 12 }, { kind: 'note', title: 'Meta por região', text: 'O arquivo metas_2026.csv foi importado (1,2 mil linhas), mas os valores de meta não fazem parte dos dados de exemplo deste protótipo.', span: 12 }] },
 ];
 export const statusTone: Record<Status, Tone> = { Publicado: 'success', Rascunho: 'warning', Depreciado: 'neutral' };
-export const coverUrl = (c: string, small = false) => `${import.meta.env.BASE_URL}covers/${c}${small ? '-sm' : ''}.webp`;
+export const coverUrl = (c: string, small = false) => asset(`covers/${c}${small ? '-sm' : ''}.webp`);
 
 export const activity = [
   { who: 'Paula Teixeira', what: 'certificou a métrica', target: 'Margem %', when: 'há 25 min', icon: 'check' as const },

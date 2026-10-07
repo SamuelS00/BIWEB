@@ -43,4 +43,9 @@ export function applyRootPrefs(s: Pick<UiState, 'appTheme' | 'density'>) {
   if (s.density === 'compact') el.style.setProperty('--control-md', 'var(--control-sm)'); else el.style.removeProperty('--control-md');
 }
 /** Base dos assets públicos (funciona com build estático em subcaminho). */
-export const asset = (p: string) => `${import.meta.env.BASE_URL}${p.replace(/^\.?\//, '')}`;
+/** No build de página única (artifact), os assets vêm embutidos em window.__BIWEB_ASSETS__ como data: URIs. */
+export const asset = (p: string) => {
+  const key = p.replace(/^\.?\//, '');
+  const inline = (globalThis as { __BIWEB_ASSETS__?: Record<string, string> }).__BIWEB_ASSETS__;
+  return inline?.[key] ?? `${import.meta.env.BASE_URL}${key}`;
+};

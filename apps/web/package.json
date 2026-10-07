@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests",
-    "build:static": "VITE_HASH_HISTORY=1 vite build --outDir dist-static"
+    "build:static": "VITE_HASH_HISTORY=1 vite build --outDir dist-static",
+    "build:artifact": "VITE_HASH_HISTORY=1 VITE_SINGLE_FILE=1 vite build --outDir dist-artifact && node ../../tools/artifact/inline.mjs dist-artifact dist-artifact/page.html"
   },
   "dependencies": {
     "@biweb/tokens": "workspace:*",

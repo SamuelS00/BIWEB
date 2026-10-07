@@ -2,6 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
+// VITE_SINGLE_FILE=1: um único bundle JS (sem code splitting) para a página única do artifact (tools/artifact/inline.mjs).
+const single = !!process.env.VITE_SINGLE_FILE;
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: { port: 5173 },
@@ -12,7 +15,8 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        manualChunks(id) {
+        ...(single ? { inlineDynamicImports: true } : {}),
+        manualChunks: single ? undefined : (id) => {
           if (!id.includes('node_modules')) return undefined;
           if (/[\\/](react-aria|@react-aria|@react-stately|@react-types|@internationalized)/.test(id)) return 'aria';
           if (/[\\/](react|react-dom|scheduler)[\\/]/.test(id)) return 'react';

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { Avatar, Badge, Button, Icon, Skeleton } from '@biweb/ui';
 import { Sparkline } from '../charts/charts';
-import { activity, connections, kpis, reports, user } from '../fixtures/lume-varejo';
+import { activity, connections, coverUrl, kpis, reports, user } from '../fixtures/lume-varejo';
 import { asset, useUi } from '../state/ui-store';
 import { ReportCard } from './reports-shared';
 
@@ -64,7 +64,7 @@ export function HomePage() {
               <div className="home-favs bw-stagger">
                 {favs.map((r, i) => (
                   <Link key={r.id} to="/reports/$reportId" params={{ reportId: r.id }} className="home-fav bw-lift" style={{ ['--i' as string]: i }}>
-                    <img src={`${import.meta.env.BASE_URL}covers/${r.cover}-sm.webp`} alt="" width={72} height={40} />
+                    <img src={coverUrl(r.cover, true)} alt="" width={72} height={40} />
                     <span><b>{r.name}</b><small>{r.type} · {r.updated}</small></span>
                     <Icon name="arrowRight" size={12} />
                   </Link>
