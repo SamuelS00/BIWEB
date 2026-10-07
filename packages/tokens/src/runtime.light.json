@@ -1,0 +1,156 @@
+{
+  "dash": {
+    "background": {
+      "$type": "color",
+      "$value": "#f5f6f7",
+      "$description": "Runtime · fundo da página do dashboard. Sobrescrito pelo tema do dashboard ou do host do embed."
+    },
+    "widget-surface": {
+      "$type": "color",
+      "$value": "#ffffff",
+      "$description": "Runtime · superfície do widget."
+    },
+    "widget-border": {
+      "$type": "color",
+      "$value": "#e1e4e8",
+      "$description": "Runtime · borda de 1 px do widget (sem sombra)."
+    },
+    "title": {
+      "$type": "color",
+      "$value": "#1a1d22",
+      "$description": "Runtime · título do widget (métrica) e valor de KPI em `dash-widget-surface`."
+    },
+    "subtitle": {
+      "$type": "color",
+      "$value": "#5c636d",
+      "$description": "Runtime · subtítulo \"por dimensão\", rótulo de KPI, rodapé de fonte em `dash-widget-surface`."
+    },
+    "positive": {
+      "$type": "color",
+      "$value": "#0f6f68",
+      "$description": "Runtime · variação positiva de KPI (com ▲ e sinal +)."
+    },
+    "negative": {
+      "$type": "color",
+      "$value": "#b42318",
+      "$description": "Runtime · variação negativa de KPI (com ▼ e sinal −)."
+    }
+  },
+  "viz": {
+    "cat-1": {
+      "$type": "color",
+      "$value": "#1f63a8",
+      "$description": "Runtime · série categórica 1 (azul). Paleta derivada de Okabe & Ito; escuro tem conjunto próprio. Use nesta ordem; acima de 8 séries, agrupe em \"Outros\" com `viz-cat-8`."
+    },
+    "cat-2": {
+      "$type": "color",
+      "$value": "#d97d0b",
+      "$description": "Runtime · série categórica 2 (laranja). Paleta derivada de Okabe & Ito; escuro tem conjunto próprio. Use nesta ordem; acima de 8 séries, agrupe em \"Outros\" com `viz-cat-8`."
+    },
+    "cat-3": {
+      "$type": "color",
+      "$value": "#0a8a6a",
+      "$description": "Runtime · série categórica 3 (verde). Paleta derivada de Okabe & Ito; escuro tem conjunto próprio. Use nesta ordem; acima de 8 séries, agrupe em \"Outros\" com `viz-cat-8`."
+    },
+    "cat-4": {
+      "$type": "color",
+      "$value": "#b8578c",
+      "$description": "Runtime · série categórica 4 (rosa). Paleta derivada de Okabe & Ito; escuro tem conjunto próprio. Use nesta ordem; acima de 8 séries, agrupe em \"Outros\" com `viz-cat-8`."
+    },
+    "cat-5": {
+      "$type": "color",
+      "$value": "#3a8cc0",
+      "$description": "Runtime · série categórica 5 (céu). Paleta derivada de Okabe & Ito; escuro tem conjunto próprio. Use nesta ordem; acima de 8 séries, agrupe em \"Outros\" com `viz-cat-8`."
+    },
+    "cat-6": {
+      "$type": "color",
+      "$value": "#c24a12",
+      "$description": "Runtime · série categórica 6 (vermelhão). Paleta derivada de Okabe & Ito; escuro tem conjunto próprio. Use nesta ordem; acima de 8 séries, agrupe em \"Outros\" com `viz-cat-8`."
+    },
+    "cat-7": {
+      "$type": "color",
+      "$value": "#7a6d12",
+      "$description": "Runtime · série categórica 7 (oliva). Paleta derivada de Okabe & Ito; escuro tem conjunto próprio. Use nesta ordem; acima de 8 séries, agrupe em \"Outros\" com `viz-cat-8`."
+    },
+    "cat-8": {
+      "$type": "color",
+      "$value": "#5f6670",
+      "$description": "Runtime · série categórica 8 (grafite). Paleta derivada de Okabe & Ito; escuro tem conjunto próprio. Use nesta ordem; acima de 8 séries, agrupe em \"Outros\" com `viz-cat-8`."
+    },
+    "seq-1": {
+      "$type": "color",
+      "$value": "#dfe9f5",
+      "$description": "Runtime · escala sequencial, passo 1 de 5 (heatmap, coroplético)."
+    },
+    "seq-2": {
+      "$type": "color",
+      "$value": "#b0cbe8",
+      "$description": "Runtime · escala sequencial, passo 2 de 5 (heatmap, coroplético)."
+    },
+    "seq-3": {
+      "$type": "color",
+      "$value": "#76a5d6",
+      "$description": "Runtime · escala sequencial, passo 3 de 5 (heatmap, coroplético)."
+    },
+    "seq-4": {
+      "$type": "color",
+      "$value": "#3a78ba",
+      "$description": "Runtime · escala sequencial, passo 4 de 5 (heatmap, coroplético)."
+    },
+    "seq-5": {
+      "$type": "color",
+      "$value": "#12508f",
+      "$description": "Runtime · escala sequencial, passo 5 de 5 (heatmap, coroplético)."
+    },
+    "div-neg": {
+      "$type": "color",
+      "$value": "#b35806",
+      "$description": "Runtime · escala divergente laranja–azul, extremo negativo (queda). Usada em \"Variação por categoria\"."
+    },
+    "div-neg-soft": {
+      "$type": "color",
+      "$value": "#f1b26b",
+      "$description": "Runtime · escala divergente laranja–azul, negativo moderado. Usada em \"Variação por categoria\"."
+    },
+    "div-mid": {
+      "$type": "color",
+      "$value": "#e8e9eb",
+      "$description": "Runtime · escala divergente laranja–azul, neutro / zero. Usada em \"Variação por categoria\"."
+    },
+    "div-pos-soft": {
+      "$type": "color",
+      "$value": "#8fb8de",
+      "$description": "Runtime · escala divergente laranja–azul, positivo moderado. Usada em \"Variação por categoria\"."
+    },
+    "div-pos": {
+      "$type": "color",
+      "$value": "#1f5c99",
+      "$description": "Runtime · escala divergente laranja–azul, extremo positivo. Usada em \"Variação por categoria\"."
+    },
+    "axis": {
+      "$type": "color",
+      "$value": "#5c636d",
+      "$description": "Runtime · rótulos e linha de eixo."
+    },
+    "grid": {
+      "$type": "color",
+      "$value": "#eceef0",
+      "$description": "Runtime · linhas de grade do gráfico."
+    },
+    "tooltip-bg": {
+      "$type": "color",
+      "$value": "#1a1d22",
+      "$description": "Runtime · fundo do tooltip de dados (invertido em relação ao widget)."
+    },
+    "tooltip-text": {
+      "$type": "color",
+      "$value": "#ffffff",
+      "$description": "Runtime · texto do tooltip de dados sobre `viz-tooltip-bg`."
+    },
+    "highlight-dim": {
+      "$type": "color",
+      "$value": "rgba(245,246,247,0.65)",
+      "$description": "Runtime · véu sobre marcas não destacadas no cross-filter."
+    }
+  }
+}

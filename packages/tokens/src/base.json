@@ -1,0 +1,279 @@
+{
+  "space": {
+    "0-5": {
+      "$type": "dimension",
+      "$value": "2px",
+      "$description": "Folga do anel de foco; gap entre ícone e contador."
+    },
+    "1": {
+      "$type": "dimension",
+      "$value": "4px",
+      "$description": "Gap interno de chip e de ícone+rótulo."
+    },
+    "2": {
+      "$type": "dimension",
+      "$value": "8px",
+      "$description": "Padding horizontal de controles; passo da grade do canvas; gap entre pares em 2 colunas."
+    },
+    "3": {
+      "$type": "dimension",
+      "$value": "12px",
+      "$description": "Padding lateral de painéis e do Inspector; recuo por nível de árvore = `space-4`."
+    },
+    "4": {
+      "$type": "dimension",
+      "$value": "16px",
+      "$description": "Recuo por nível de árvore; gutter da grade do dashboard em lg; espaço entre seções além do filete."
+    },
+    "6": {
+      "$type": "dimension",
+      "$value": "24px",
+      "$description": "Gutter da grade do dashboard em xl; margem do board no canvas do Builder."
+    },
+    "8": {
+      "$type": "dimension",
+      "$value": "32px",
+      "$description": "Margem do dashboard no canvas. Maior espaço do sistema."
+    }
+  },
+  "radius": {
+    "xs": {
+      "$type": "dimension",
+      "$value": "2px",
+      "$description": "Handles de seleção, checkbox, badges de tipo de campo."
+    },
+    "sm": {
+      "$type": "dimension",
+      "$value": "4px",
+      "$description": "Botões, inputs, chips, menus, widgets."
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "6px",
+      "$description": "Popover, dialog, toast. Máximo do sistema."
+    }
+  },
+  "control": {
+    "sm": {
+      "$type": "dimension",
+      "$value": "24px",
+      "$description": "Altura no modo compacto; alvo mínimo WCAG 2.2."
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "28px",
+      "$description": "Altura padrão de linha, input, botão, item de árvore e PropertyRow."
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "32px",
+      "$description": "Maior controle comum: botões da barra superior e de Cancelar/Aplicar."
+    }
+  },
+  "icon": {
+    "sm": {
+      "$type": "dimension",
+      "$value": "12px",
+      "$description": "Chevron, ícone de tipo dentro de chip."
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "16px",
+      "$description": "Ícone padrão (área de toque 24×24 mínima)."
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "20px",
+      "$description": "Rail de áreas e PaneSwitcher."
+    }
+  },
+  "rail": {
+    "width": {
+      "$type": "dimension",
+      "$value": "48px",
+      "$description": "Rail de áreas à esquerda."
+    }
+  },
+  "pane": {
+    "switcher-width": {
+      "$type": "dimension",
+      "$value": "44px",
+      "$description": "Switcher vertical de painéis à direita."
+    }
+  },
+  "panel": {
+    "width": {
+      "$type": "dimension",
+      "$value": "264px",
+      "$description": "Largura padrão de painel lateral (redimensionável de 240 a 360)."
+    }
+  },
+  "page": {
+    "tabs-height": {
+      "$type": "dimension",
+      "$value": "36px",
+      "$description": "Faixa de abas de página no rodapé do canvas."
+    }
+  },
+  "status": {
+    "bar-height": {
+      "$type": "dimension",
+      "$value": "24px",
+      "$description": "Status bar: zoom, fit, contagem da seleção, QueryStatus."
+    }
+  },
+  "handle": {
+    "size": {
+      "$type": "dimension",
+      "$value": "8px",
+      "$description": "Handles de redimensionamento (área de toque 24×24 invisível)."
+    }
+  },
+  "font": {
+    "sans": {
+      "$type": "fontFamily",
+      "$value": "\"IBM Plex Sans\", \"Segoe UI\", system-ui, sans-serif"
+    },
+    "mono": {
+      "$type": "fontFamily",
+      "$value": "\"IBM Plex Mono\", ui-monospace, \"SF Mono\", Menlo, monospace"
+    }
+  },
+  "type": {
+    "caption": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.sans}",
+        "fontSize": "11px",
+        "lineHeight": "16px",
+        "fontWeight": 500,
+        "letterSpacing": "0"
+      },
+      "$description": "Contadores, metadados, rótulo de dimensões da seleção, status bar."
+    },
+    "section-label": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.sans}",
+        "fontSize": "11px",
+        "lineHeight": "16px",
+        "fontWeight": 600,
+        "letterSpacing": "0.02em"
+      },
+      "$description": "Cabeçalho de PropertySection e de grupo de árvore. Sem caixa alta."
+    },
+    "body": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.sans}",
+        "fontSize": "12px",
+        "lineHeight": "16px",
+        "fontWeight": 400,
+        "letterSpacing": "0"
+      },
+      "$description": "Texto padrão de controles, linhas de árvore, PropertyRow, menus."
+    },
+    "body-strong": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.sans}",
+        "fontSize": "12px",
+        "lineHeight": "16px",
+        "fontWeight": 600,
+        "letterSpacing": "0"
+      },
+      "$description": "Item selecionado, nome do objeto, botão."
+    },
+    "panel-title": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.sans}",
+        "fontSize": "13px",
+        "lineHeight": "20px",
+        "fontWeight": 600,
+        "letterSpacing": "0"
+      },
+      "$description": "Cabeçalho de painel e do Inspector (nomeia o objeto)."
+    },
+    "page-title": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.sans}",
+        "fontSize": "16px",
+        "lineHeight": "24px",
+        "fontWeight": 600,
+        "letterSpacing": "0"
+      },
+      "$description": "Maior tamanho do chrome. Título de página na Home e no Modelo."
+    },
+    "mono": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.mono}",
+        "fontSize": "12px",
+        "lineHeight": "16px",
+        "fontWeight": 400,
+        "letterSpacing": "0"
+      },
+      "$description": "Nomes técnicos, expressões BEL, IDs, valores numéricos de inputs (tabular)."
+    },
+    "widget-title": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.sans}",
+        "fontSize": "13px",
+        "lineHeight": "18px",
+        "fontWeight": 600,
+        "letterSpacing": "0"
+      },
+      "$description": "Linha 1 do título do widget: a métrica. Cor `dash-title`."
+    },
+    "widget-subtitle": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.sans}",
+        "fontSize": "12px",
+        "lineHeight": "16px",
+        "fontWeight": 400,
+        "letterSpacing": "0"
+      },
+      "$description": "Linha 2: \"por dimensão\" e período. Cor `dash-subtitle`."
+    },
+    "kpi-value": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.sans}",
+        "fontSize": "28px",
+        "lineHeight": "32px",
+        "fontWeight": 600,
+        "letterSpacing": "-0.01em"
+      },
+      "$description": "Valor do KpiCard, numerais tabulares. Único tamanho acima de 16 px, e só dentro de widget."
+    },
+    "kpi-delta": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.sans}",
+        "fontSize": "12px",
+        "lineHeight": "16px",
+        "fontWeight": 600,
+        "letterSpacing": "0"
+      },
+      "$description": "Variação do KPI: seta + sinal + valor + base de comparação. Nunca só cor."
+    }
+  },
+  "duration": {
+    "fast": {
+      "$type": "duration",
+      "$value": "80ms"
+    },
+    "base": {
+      "$type": "duration",
+      "$value": "120ms"
+    },
+    "slow": {
+      "$type": "duration",
+      "$value": "160ms"
+    }
+  }
+}

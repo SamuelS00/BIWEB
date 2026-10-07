@@ -1,0 +1,9 @@
+[package]
+name = "biweb-policy"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+publish = false
+description = "Cedar + avaliação de DataPolicy."
+
+[dependencies]

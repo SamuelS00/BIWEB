@@ -1,0 +1,29 @@
+{
+  "name": "biweb",
+  "private": true,
+  "packageManager": "pnpm@10.12.4",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "turbo run dev --filter=@biweb/web...",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint && pnpm check:boundaries",
+    "test": "turbo run test",
+    "check:boundaries": "depcruise apps packages --config .dependency-cruiser.cjs",
+    "tokens": "turbo run build --filter=@biweb/tokens",
+    "e2e": "pnpm --filter @biweb/e2e e2e"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "typescript": "~5.8.3",
+    "dependency-cruiser": "^16.10.0",
+    "@types/node": "^22.15.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

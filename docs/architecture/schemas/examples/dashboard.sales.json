@@ -1,0 +1,107 @@
+{
+  "kind": "dashboard",
+  "schemaVersion": 1,
+  "id": "dsh_01J9ZSALESOVERVIEW00000000",
+  "tenantId": "tnt_01J9ZACME00000000000000000",
+  "meta": {
+    "name": "Visão geral de vendas",
+    "ownerId": "usr_01J9ZANA000000000000000000",
+    "createdAt": "2026-10-02T12:00:00Z",
+    "updatedAt": "2026-10-05T10:00:00Z",
+    "revisionId": "rev_7f3a9c"
+  },
+  "body": {
+    "models": [{ "id": "sem_01J9ZSALES0000000000000000" }],
+    "pages": {
+      "pag_main": { "title": "Resumo", "order": "a0", "rootNodeId": "nod_root" }
+    },
+    "nodes": {
+      "nod_root": {
+        "type": "container", "parentId": null, "order": "a0",
+        "layout": { "kind": "grid", "columns": 24, "rowHeight": 32, "gap": 12, "compact": "vertical" },
+        "placement": {}
+      },
+      "nod_kpis": {
+        "type": "container", "parentId": "nod_root", "order": "a0", "name": "KPIs",
+        "layout": { "kind": "stack", "direction": "row", "gap": 12, "wrap": true },
+        "placement": { "lg": { "kind": "grid", "x": 0, "y": 0, "w": 24, "h": 3 } }
+      },
+      "nod_kpi_revenue": {
+        "type": "widget", "widgetId": "wdg_kpi_revenue", "parentId": "nod_kpis", "order": "a0",
+        "placement": { "lg": { "kind": "stack", "grow": 1, "minW": 200 } }
+      },
+      "nod_bar": {
+        "type": "widget", "widgetId": "wdg_rev_by_country", "parentId": "nod_root", "order": "a1",
+        "placement": {
+          "lg": { "kind": "grid", "x": 0, "y": 3, "w": 12, "h": 10 },
+          "sm": { "kind": "grid", "x": 0, "y": 3, "w": 24, "h": 8 }
+        }
+      },
+      "nod_map": {
+        "type": "widget", "widgetId": "wdg_map", "parentId": "nod_root", "order": "a2",
+        "placement": { "lg": { "kind": "grid", "x": 12, "y": 3, "w": 12, "h": 10 } }
+      }
+    },
+    "widgets": {
+      "wdg_kpi_revenue": {
+        "title": "Receita",
+        "data": {
+          "model": "sem_01J9ZSALES0000000000000000",
+          "encodings": {
+            "value": [{ "ref": { "model": "sem_01J9ZSALES0000000000000000", "field": "met_revenue" } }],
+            "comparison": [{ "ref": { "model": "sem_01J9ZSALES0000000000000000", "field": "met_revenue_yoy" } }]
+          }
+        },
+        "viz": { "plugin": "core.kpi", "version": "1.0.0", "config": { "sparkline": true } }
+      },
+      "wdg_rev_by_country": {
+        "title": "Receita por país",
+        "data": {
+          "model": "sem_01J9ZSALES0000000000000000",
+          "encodings": {
+            "x": [{ "ref": { "model": "sem_01J9ZSALES0000000000000000", "field": "dim_country" } }],
+            "y": [{ "ref": { "model": "sem_01J9ZSALES0000000000000000", "field": "met_revenue" } }]
+          },
+          "topN": { "n": 10, "by": "met_revenue", "others": true }
+        },
+        "viz": { "plugin": "core.bar", "version": "2.1.0", "config": { "orientation": "horizontal", "showLabels": true } }
+      },
+      "wdg_map": {
+        "title": "Receita no mapa",
+        "data": {
+          "model": "sem_01J9ZSALES0000000000000000",
+          "encodings": {
+            "geo": [{ "ref": { "model": "sem_01J9ZSALES0000000000000000", "field": "dim_country" } }],
+            "color": [{ "ref": { "model": "sem_01J9ZSALES0000000000000000", "field": "met_revenue" } }]
+          }
+        },
+        "viz": { "plugin": "core.map", "version": "1.0.0", "config": { "layer": "choropleth", "boundarySet": "world-admin0", "basemap": "light" } }
+      }
+    },
+    "filters": {
+      "flt_period": {
+        "id": "flt_period", "label": "Período",
+        "scope": { "kind": "dashboard" },
+        "control": {
+          "type": "relative-date",
+          "field": { "model": "sem_01J9ZSALES0000000000000000", "field": "dim_order_date" },
+          "defaultValue": { "period": "month", "offset": 0, "count": 12 }
+        }
+      }
+    },
+    "parameters": {},
+    "variables": {},
+    "interactions": {
+      "int_country_xf": {
+        "sourceWidgetId": "wdg_rev_by_country", "trigger": "select",
+        "action": { "kind": "cross-filter", "targets": "all", "mode": "filter" }
+      },
+      "int_map_xf": {
+        "sourceWidgetId": "wdg_map", "trigger": "select",
+        "action": { "kind": "cross-filter", "targets": ["wdg_rev_by_country", "wdg_kpi_revenue"], "mode": "filter" }
+      }
+    },
+    "theme": { "themeId": "thm_corporate", "overrides": { "color.accent": "#2563eb" } },
+    "settings": { "defaultBreakpointSource": "lg", "crossFilterDefault": "filter", "refresh": { "mode": "manual" }, "exportable": true }
+  }
+}

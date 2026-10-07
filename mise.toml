@@ -1,0 +1,5 @@
+[tools]
+node = "22"
+pnpm = "10"
+rust = "1.88"
+just = "latest"

@@ -1,0 +1,15 @@
+@import "@biweb/ui/styles.css";
+@source "./";
+
+html, body, #root { height: 100%; }
+body { background: var(--surface-app); }
+
+/* Tabela simples de listas do shell (Home, conexões). */
+.bw-table { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.bw-table th { text-align: left; height: var(--control-md); padding: 0 var(--space-2); font: 600 11px/16px var(--font-sans); color: var(--text-secondary); border-bottom: 1px solid var(--border-default); white-space: nowrap; }
+.bw-table td { height: var(--control-md); padding: 0 var(--space-2); border-bottom: 1px solid var(--border-subtle); white-space: nowrap; }
+.bw-table tr:hover td { background: var(--surface-hover); }
+.bw-link { color: inherit; text-decoration: none; }
+.bw-link:hover { text-decoration: underline; }
+.bw-link:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.bw-canvas { background-color: var(--surface-canvas); background-image: radial-gradient(var(--canvas-dot) 1px, transparent 1px); background-size: 8px 8px; }

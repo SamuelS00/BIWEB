@@ -1,0 +1,19 @@
+{
+  "name": "acme.gantt",
+  "version": "1.2.0",
+  "type": "visualization",
+  "publisher": { "id": "acme", "verified": true },
+  "engines": { "platform": ">=1.0.0 <2.0.0", "hostApi": "^1.4.0" },
+  "entrypoint": { "kind": "esm", "url": "https://plugins.example/acme.gantt/1.2.0/index.js", "sandbox": "iframe" },
+  "capabilities": ["visualization:gantt"],
+  "permissions": ["data:read-widget", "ui:tooltip"],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "barHeight": { "type": "number", "default": 18 },
+      "showToday": { "type": "boolean", "default": true }
+    }
+  },
+  "integrity": { "digest": "sha256:3f1c...", "signature": "cosign:MEUCIQ..." },
+  "license": "Apache-2.0"
+}

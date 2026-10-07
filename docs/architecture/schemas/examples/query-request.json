@@ -1,0 +1,24 @@
+{
+  "qdl": 1,
+  "model": "sem_01J9ZSALES0000000000000000",
+  "modelRevision": "rev_41bd02",
+  "dimensions": [
+    { "alias": "country", "ref": { "model": "sem_01J9ZSALES0000000000000000", "field": "dim_country" } },
+    { "alias": "month", "ref": { "model": "sem_01J9ZSALES0000000000000000", "field": "dim_order_date" }, "timeGrain": "month", "densify": true }
+  ],
+  "metrics": [
+    { "alias": "revenue", "ref": { "model": "sem_01J9ZSALES0000000000000000", "field": "met_revenue" } },
+    { "alias": "revenue_ytd", "ref": { "model": "sem_01J9ZSALES0000000000000000", "field": "met_revenue" }, "modifier": { "kind": "ytd" } }
+  ],
+  "filters": {
+    "op": "and",
+    "args": [
+      { "op": "relative_time", "field": { "model": "sem_01J9ZSALES0000000000000000", "field": "dim_order_date" }, "period": "month", "offset": 0, "count": 12 },
+      { "op": "in", "field": { "model": "sem_01J9ZSALES0000000000000000", "field": "dim_country" }, "values": ["BR", "AR", "CL"] }
+    ]
+  },
+  "order": [{ "ref": "month", "direction": "asc" }],
+  "limit": 5000,
+  "options": { "format": "arrow", "timeoutMs": 30000, "priority": "high" },
+  "context": { "dashboardId": "dsh_01J9ZSALESOVERVIEW00000000", "widgetId": "wdg_rev_by_country", "loadId": "ld_9a8b7c", "purpose": "interactive" }
+}

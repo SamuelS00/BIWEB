@@ -1,0 +1,101 @@
+{
+  "kind": "semantic-model",
+  "schemaVersion": 1,
+  "id": "sem_01J9ZSALES0000000000000000",
+  "tenantId": "tnt_01J9ZACME00000000000000000",
+  "meta": {
+    "name": "Vendas",
+    "description": "Modelo semântico certificado de vendas",
+    "ownerId": "usr_01J9ZANA000000000000000000",
+    "createdAt": "2026-10-01T12:00:00Z",
+    "updatedAt": "2026-10-05T09:30:00Z",
+    "certification": "certified"
+  },
+  "body": {
+    "entities": {
+      "ent_order": { "name": "Order", "datasetId": "dts_orders", "primaryKey": ["order_id"] },
+      "ent_customer": { "name": "Customer", "datasetId": "dts_customers", "primaryKey": ["customer_id"] }
+    },
+    "dimensions": {
+      "dim_order_date": {
+        "name": "order_date", "label": "Data do pedido", "entityId": "ent_order",
+        "expression": "[created_at]", "type": "time",
+        "time": { "grains": ["day", "week", "month", "quarter", "year"], "timezone": "America/Sao_Paulo" }
+      },
+      "dim_country": {
+        "name": "country", "label": "País", "entityId": "ent_customer",
+        "expression": "UPPER([country_code])", "type": "geo",
+        "geo": { "role": "country", "boundarySet": "world-admin0" }
+      },
+      "dim_region": {
+        "name": "region", "label": "Região comercial", "entityId": "ent_customer",
+        "expression": "[sales_region]", "type": "categorical"
+      }
+    },
+    "measures": {
+      "msr_gross_amount": {
+        "name": "gross_amount", "label": "Valor bruto", "entityId": "ent_order",
+        "expression": "[amount] - [discount]", "aggregation": "sum",
+        "additivity": { "kind": "additive" }, "filter": "[status] = 'paid'",
+        "currency": { "code": "BRL" }
+      },
+      "msr_orders": {
+        "name": "orders", "label": "Pedidos", "entityId": "ent_order",
+        "expression": "[order_id]", "aggregation": "count_distinct",
+        "additivity": { "kind": "non-additive" }
+      }
+    },
+    "metrics": {
+      "met_revenue": {
+        "name": "revenue", "label": "Receita",
+        "type": { "kind": "simple", "measure": "msr_gross_amount" },
+        "timeDimension": "dim_order_date",
+        "format": { "kind": "currency", "currency": "BRL", "decimals": 2 },
+        "description": "Soma de pedidos pagos, líquida de descontos, em BRL, no fuso America/Sao_Paulo.",
+        "certification": "certified"
+      },
+      "met_aov": {
+        "name": "aov", "label": "Ticket médio",
+        "type": { "kind": "ratio", "numerator": "met_revenue", "denominator": "msr_orders" },
+        "format": { "kind": "currency", "currency": "BRL", "decimals": 2 },
+        "description": "Receita / pedidos distintos."
+      },
+      "met_revenue_yoy": {
+        "name": "revenue_yoy", "label": "Receita YoY %",
+        "type": { "kind": "period-over-period", "base": "met_revenue", "offset": "P1Y", "mode": "percent" },
+        "format": { "kind": "percent", "decimals": 1 },
+        "description": "Variação percentual da receita versus mesmo período do ano anterior."
+      }
+    },
+    "relationships": {
+      "rel_order_customer": {
+        "from": { "entityId": "ent_order", "keys": ["customer_id"] },
+        "to": { "entityId": "ent_customer", "keys": ["customer_id"] },
+        "cardinality": "many-to-one", "joinType": "left", "active": true
+      }
+    },
+    "hierarchies": {
+      "hie_geo": { "name": "Geografia", "levels": ["dim_country", "dim_region"] }
+    },
+    "parameters": {},
+    "policies": {
+      "pol_region_rls": {
+        "kind": "row", "entityId": "ent_customer",
+        "predicate": "[sales_region] IN @user.attributes.regions",
+        "appliesTo": { "roles": ["viewer", "analyst"], "except": { "roles": ["admin"] } }
+      }
+    },
+    "preAggregations": {
+      "pag_revenue_daily": {
+        "measures": ["msr_gross_amount"],
+        "dimensions": ["dim_country", "dim_region"],
+        "timeDimension": { "dimension": "dim_order_date", "grain": "day" },
+        "partitionGrain": "month",
+        "refresh": { "every": "PT1H", "incremental": true, "updateWindow": "P7D" },
+        "storage": "clickhouse",
+        "origin": "declared"
+      }
+    },
+    "defaults": { "timezone": "America/Sao_Paulo", "currency": "BRL", "weekStart": "monday" }
+  }
+}

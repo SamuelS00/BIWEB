@@ -1,0 +1,20 @@
+{
+  "name": "@biweb/tokens",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Design tokens do BIWEB Studio (DTCG) → CSS variables, TS e temas ECharts via Style Dictionary.",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./css/*": "./dist/css/*",
+    "./echarts/*": "./dist/echarts/*",
+    "./src/*": "./src/*"
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": { "style-dictionary": "^5.0.0", "vitest": "^3.2.4", "@types/node": "^22.15.0" }
+}

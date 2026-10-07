@@ -1,0 +1,54 @@
+/* Adaptações das classes bw-* aos estados de React Aria Components (data-*). */
+:where([data-focus-visible]) { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.bw-btn[data-disabled] { background: var(--surface-app); border-color: var(--border-subtle); color: var(--text-disabled); cursor: not-allowed; }
+.bw-btn--primary[data-hovered]:not([data-disabled]) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.bw-btn:not(.bw-btn--primary)[data-hovered]:not([data-disabled]) { background: var(--surface-hover); }
+.bw-btn[data-pressed]:not(.bw-btn--primary) { background: var(--surface-pressed); }
+.bw-iconbtn[data-disabled] { color: var(--text-disabled); cursor: not-allowed; }
+.bw-iconbtn[data-selected] { background: var(--accent-subtle); color: var(--accent); }
+.bw-seg [data-selected] { background: var(--surface-panel); color: var(--text-primary); font-weight: 600; box-shadow: 0 0 0 1px var(--border-default); }
+.bw-tab[data-selected] { color: var(--text-primary); font-weight: 600; box-shadow: inset 0 -2px 0 var(--accent); }
+.bw-tab { outline: none; }
+.bw-tab[data-focus-visible] { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+.bw-menu-item[data-focused] { background: var(--surface-hover); outline: none; }
+.bw-menu-item[data-disabled] { color: var(--text-disabled); }
+.bw-menu-item[data-selected] { font-weight: 600; }
+.bw-menu:focus-visible { outline: none; }
+
+/* Switch e Checkbox (React Aria renderiza o input oculto; o visual é um span) */
+.bw-switch-field, .bw-check-field { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--control-sm); cursor: pointer; color: var(--text-primary); }
+.bw-switch-field[data-disabled], .bw-check-field[data-disabled] { color: var(--text-disabled); cursor: not-allowed; }
+.bw-switch-field .bw-switch { display: inline-block; box-sizing: border-box; }
+.bw-switch-field[data-selected] .bw-switch { background: var(--accent); border-color: var(--accent); }
+.bw-switch-field[data-selected] .bw-switch::after { transform: translateX(12px); background: var(--on-accent); }
+.bw-switch-field[data-disabled] .bw-switch { border-color: var(--border-subtle); background: var(--surface-app); }
+.bw-switch-field[data-focus-visible] .bw-switch { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.bw-switch-field[data-focus-visible], .bw-check-field[data-focus-visible] { outline: none; }
+.bw-checkbox { box-sizing: border-box; width: 14px; height: 14px; border: 1px solid var(--border-control); border-radius: var(--radius-xs); background: var(--surface-panel); display: grid; place-items: center; flex: none; color: var(--on-accent); }
+.bw-check-field[data-selected] .bw-checkbox, .bw-check-field[data-indeterminate] .bw-checkbox { background: var(--accent); border-color: var(--accent); }
+.bw-check-field[data-disabled] .bw-checkbox { border-color: var(--border-subtle); background: var(--surface-app); }
+.bw-check-field[data-focus-visible] .bw-checkbox { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.bw-checkbox svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* Campos */
+.bw-input input, .bw-input .react-aria-Input { all: unset; flex: 1; min-width: 0; font-variant-numeric: tabular-nums; }
+.bw-input[data-focus-within] { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.bw-field [slot="description"] { font-size: 11px; color: var(--text-muted); }
+.bw-field .bw-field-error { font-size: 11px; color: var(--danger); }
+.bw-field[data-invalid] .bw-input { border-color: var(--danger); }
+.bw-select[data-pressed], .bw-select[data-open] { border-color: var(--accent); }
+.bw-listbox { max-height: 320px; overflow: auto; outline: none; }
+.react-aria-Popover[data-entering] { animation: bw-pop-in 120ms; }
+@keyframes bw-pop-in { from { opacity: 0; transform: translateY(-2px); } }
+.bw-modal-overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: var(--scrim); }
+.bw-dialog:focus-visible { outline: none; }
+
+/* Árvore (React Aria Tree) */
+.bw-tree-item[data-selected] { background: var(--accent-subtle); }
+.bw-tree-item[data-hovered]:not([data-selected]) { background: var(--surface-hover); }
+.bw-tree-item[data-focus-visible] { outline: 2px solid var(--focus-ring); outline-offset: -2px; }
+.bw-tree-item .bw-chev-btn { all: unset; display: grid; place-items: center; width: 16px; height: 16px; color: var(--text-muted); cursor: pointer; }
+.bw-tree-item[data-expanded] .bw-chev-btn svg { transform: rotate(90deg); }
+.bw-tree-item:not([data-has-child-items]) .bw-chev-btn { visibility: hidden; }
+
+@media (prefers-reduced-motion: reduce) { .react-aria-Popover[data-entering] { animation: none; } }

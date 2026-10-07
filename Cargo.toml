@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/semantic",
+  "crates/query-planner",
+  "crates/sql-dialects",
+  "crates/query-service",
+  "crates/connector-sdk",
+  "crates/transform-engine",
+  "crates/ingest-executor",
+  "crates/preagg",
+  "crates/insights",
+  "crates/realtime-gateway",
+  "crates/stream-processor",
+  "crates/policy",
+  "crates/arrow-utils",
+  "crates/telemetry",
+  "crates/wasm-bindings",
+  "crates/connectors/postgres",
+  "crates/connectors/clickhouse",
+]
+
+[workspace.package]
+edition = "2021"
+license = "UNLICENSED"

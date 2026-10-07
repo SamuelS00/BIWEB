@@ -1,0 +1,26 @@
+# Times conforme docs/architecture (contextos). Ajuste os handles quando os times existirem.
+/apps/web/                      @biweb/builder-ux
+/apps/control-plane/            @biweb/platform
+/apps/control-plane/src/modules/assistant/      @biweb/assistant
+/apps/control-plane/src/modules/model-gateway/  @biweb/assistant
+/apps/render-service/           @biweb/dashboard-engine
+/packages/tokens/               @biweb/builder-ux
+/packages/ui/                   @biweb/builder-ux
+/packages/dashboard-builder/    @biweb/builder-ux
+/packages/dashboard-core/       @biweb/dashboard-engine
+/packages/dashboard-runtime/    @biweb/dashboard-engine
+/packages/layout-engine/        @biweb/dashboard-engine
+/packages/data-runtime/         @biweb/dashboard-engine
+/packages/viz-*/                @biweb/dashboard-engine
+/packages/assistant-ui/         @biweb/assistant
+/packages/schema/               @biweb/platform
+/schemas/                       @biweb/platform
+/proto/                         @biweb/platform
+/crates/semantic/               @biweb/semantic-query
+/crates/query-*/                @biweb/semantic-query
+/crates/sql-dialects/           @biweb/semantic-query
+/crates/connector*/             @biweb/data-pipelines
+/crates/ingest-executor/        @biweb/data-pipelines
+/crates/transform-engine/       @biweb/data-pipelines
+/docs/                          @biweb/architecture
+/docs/design/                   @biweb/builder-ux

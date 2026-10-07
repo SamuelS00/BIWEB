@@ -1,0 +1,258 @@
+{
+  "surface": {
+    "app": {
+      "$type": "color",
+      "$value": "#111316",
+      "$description": "Fundo do shell: rail, barra superior, área atrás dos painéis."
+    },
+    "canvas": {
+      "$type": "color",
+      "$value": "#0c0e10",
+      "$description": "Fundo do canvas do Builder (atrás do dashboard), com a grade pontilhada `canvas-dot`."
+    },
+    "panel": {
+      "$type": "color",
+      "$value": "#1a1d21",
+      "$description": "Painéis docked: Dados, Formato, IA, Outline, Inspector. Planos, sem sombra."
+    },
+    "elevated": {
+      "$type": "color",
+      "$value": "#23272c",
+      "$description": "Popover, menu, tooltip rico, dialog, toast. Única superfície com sombra (`shadow-popover`)."
+    },
+    "hover": {
+      "$type": "color",
+      "$value": "#262a30",
+      "$description": "Hover de linha de árvore, item de menu, PropertyRow."
+    },
+    "pressed": {
+      "$type": "color",
+      "$value": "#2e333a",
+      "$description": "Pressionado; segmento ativo do SegmentedControl em repouso."
+    }
+  },
+  "text": {
+    "primary": {
+      "$type": "color",
+      "$value": "#e8eaed",
+      "$description": "Texto principal e valores em `surface-panel`, `surface-app`, `surface-elevated` e `surface-hover`."
+    },
+    "secondary": {
+      "$type": "color",
+      "$value": "#b3b8bf",
+      "$description": "Rótulos de PropertyRow, metadados e cabeçalhos de seção nas mesmas superfícies de `text-primary`."
+    },
+    "muted": {
+      "$type": "color",
+      "$value": "#8f959d",
+      "$description": "Placeholder, contadores, dicas, resumo inline de seção recolhida. ≥4,5:1 em `surface-panel` e `surface-app` nos dois temas."
+    },
+    "disabled": {
+      "$type": "color",
+      "$value": "#6b717a",
+      "$description": "Rótulo de controle desabilitado (isento de contraste pela WCAG); sempre com motivo em tooltip."
+    }
+  },
+  "border": {
+    "subtle": {
+      "$type": "color",
+      "$value": "#2a2e34",
+      "$description": "Filete de 1 px entre seções do Inspector, linhas de tabela, divisões de painel. Decorativo: não delimita controle."
+    },
+    "default": {
+      "$type": "color",
+      "$value": "#3a3f46",
+      "$description": "Borda de widget no canvas de edição, separadores de toolbar."
+    },
+    "control": {
+      "$type": "color",
+      "$value": "#767d86",
+      "$description": "Borda de input, select, checkbox e switch desligado. ≥3:1 em `surface-panel` nos dois temas."
+    },
+    "focus": {
+      "$type": "color",
+      "$value": "{accent.DEFAULT}",
+      "$description": "Alias do foco. Use `focus-ring`."
+    }
+  },
+  "accent": {
+    "DEFAULT": {
+      "$type": "color",
+      "$value": "#86a6f7",
+      "$description": "Ação primária (botão Aplicar, Publicar), link, switch ligado, aba ativa. Única cor saturada do chrome."
+    },
+    "hover": {
+      "$type": "color",
+      "$value": "#a3bcf9",
+      "$description": "Hover de `accent`."
+    },
+    "subtle": {
+      "$type": "color",
+      "$value": "#1f2a44",
+      "$description": "Fundo de item selecionado em árvore e lista; chip de contexto da IA."
+    }
+  },
+  "on": {
+    "accent": {
+      "$type": "color",
+      "$value": "#0b1430",
+      "$description": "Texto e ícone sobre `accent`."
+    },
+    "danger": {
+      "$type": "color",
+      "$value": "#2a0c08",
+      "$description": "Texto sobre `danger`."
+    }
+  },
+  "focus": {
+    "ring": {
+      "$type": "color",
+      "$value": "#86a6f7",
+      "$description": "Anel de foco: 2 px sólido com 1 px de folga na cor da superfície. ≥3:1 em todas as superfícies do chrome."
+    }
+  },
+  "selection": {
+    "DEFAULT": {
+      "$type": "color",
+      "$value": "#86a6f7",
+      "$description": "Contorno de 1 px e handles do widget selecionado; caixa de marquee."
+    },
+    "handle-fill": {
+      "$type": "color",
+      "$value": "#1a1d21",
+      "$description": "Preenchimento dos 8 handles (contorno em `selection`)."
+    },
+    "label-text": {
+      "$type": "color",
+      "$value": "#0b1430",
+      "$description": "Texto do rótulo de dimensões (fundo `selection`)."
+    }
+  },
+  "guide": {
+    "DEFAULT": {
+      "$type": "color",
+      "$value": "#f06292",
+      "$description": "Guias de alinhamento e medidas transitórias. Diferente de `selection` por matiz e luminosidade."
+    }
+  },
+  "drop": {
+    "target": {
+      "$type": "color",
+      "$value": "#86a6f7",
+      "$description": "Borda tracejada de zona de drop ativa (FieldWell, container)."
+    },
+    "target-bg": {
+      "$type": "color",
+      "$value": "#1f2a44",
+      "$description": "Fundo da zona de drop ativa."
+    }
+  },
+  "danger": {
+    "DEFAULT": {
+      "$type": "color",
+      "$value": "#f2836f",
+      "$description": "Erro, destrutivo, remoção na pré-visualização de IA. Sempre com ícone ou palavra."
+    },
+    "subtle": {
+      "$type": "color",
+      "$value": "#3a1f1c",
+      "$description": "Fundo de Banner de erro; widget marcado para remoção no preview."
+    }
+  },
+  "success": {
+    "DEFAULT": {
+      "$type": "color",
+      "$value": "#4cc2b4",
+      "$description": "Sucesso, conectado, certificado. Verde-azulado (fora do eixo vermelho-verde) e sempre com ícone ou palavra."
+    },
+    "subtle": {
+      "$type": "color",
+      "$value": "#13302d",
+      "$description": "Fundo de Banner de sucesso."
+    }
+  },
+  "warning": {
+    "DEFAULT": {
+      "$type": "color",
+      "$value": "#e5ae45",
+      "$description": "Rascunho, aviso, campo depreciado, métrica não certificada. Sempre com ícone ou palavra."
+    },
+    "subtle": {
+      "$type": "color",
+      "$value": "#33280f",
+      "$description": "Fundo de Banner de aviso e do selo Rascunho."
+    }
+  },
+  "info": {
+    "DEFAULT": {
+      "$type": "color",
+      "$value": "{accent.DEFAULT}",
+      "$description": "Informação neutra; alias de `accent`."
+    }
+  },
+  "field": {
+    "dimension": {
+      "$type": "color",
+      "$value": "#7fb3db",
+      "$description": "Ícone de tipo de dimensão (categórica, data, booleana) no DatasetTree e no FieldChip."
+    },
+    "measure": {
+      "$type": "color",
+      "$value": "#e0a15a",
+      "$description": "Ícone de medida (soma_valor_liquido etc.)."
+    },
+    "metric": {
+      "$type": "color",
+      "$value": "#5cc4a8",
+      "$description": "Ícone de métrica publicada (Receita, Margem %)."
+    },
+    "geo": {
+      "$type": "color",
+      "$value": "#a3cc6a",
+      "$description": "Ícone de dimensão geográfica (Estado, Cidade)."
+    },
+    "calc": {
+      "$type": "color",
+      "$value": "#b6b2aa",
+      "$description": "Ícone de campo calculado (BEL) e de hierarquia."
+    }
+  },
+  "canvas": {
+    "dot": {
+      "$type": "color",
+      "$value": "#2b3036",
+      "$description": "Pontos da grade do canvas (a cada `space-2`)."
+    }
+  },
+  "ghost": {
+    "border": {
+      "$type": "color",
+      "$value": "#86a6f7",
+      "$description": "Contorno tracejado do widget fantasma (adição proposta pela IA)."
+    },
+    "bg": {
+      "$type": "color",
+      "$value": "#18213a",
+      "$description": "Fundo do widget fantasma."
+    }
+  },
+  "scrim": {
+    "DEFAULT": {
+      "$type": "color",
+      "$value": "rgba(0,0,0,0.60)",
+      "$description": "Véu atrás de Dialog. Não usar atrás de popover."
+    }
+  },
+  "shadow": {
+    "popover": {
+      "$type": "shadow",
+      "$value": "0 4px 12px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08)",
+      "$description": "Popover, menu, tooltip rico, dialog, toast."
+    },
+    "toolbar": {
+      "$type": "shadow",
+      "$value": "0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
+      "$description": "Mini-toolbar e WidgetFloatingActions sobre o canvas. Painéis nunca têm sombra."
+    }
+  }
+}

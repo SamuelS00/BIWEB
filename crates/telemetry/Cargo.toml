@@ -1,0 +1,9 @@
+[package]
+name = "biweb-telemetry"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+publish = false
+description = "Tracing/OTel e redação de logs."
+
+[dependencies]
