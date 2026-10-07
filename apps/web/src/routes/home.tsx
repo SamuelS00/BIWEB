@@ -5,16 +5,24 @@ import { Sparkline } from '../charts/charts';
 import { activity, connections, coverUrl, kpis, reports, user } from '../fixtures/lume-varejo';
 import { asset, useUi } from '../state/ui-store';
 import { ReportCard } from './reports-shared';
+import { NetHome } from './home-net';
+import { useGallery } from './gallery';
 
 function greeting() { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; }
 
 /** Início: o que mudou, onde parei, o que pedir ao Copilot e a saúde dos dados. */
 export function HomePage() {
+  const ws = useUi((s) => s.workspace);
+  return ws === 'rede' ? <NetHome /> : <CommercialHome />;
+}
+
+function CommercialHome() {
   const navigate = useNavigate();
   const { aiEnabled, askCopilot, favorites } = useUi();
   const [loading, setLoading] = useState(true);
   useEffect(() => { const t = setTimeout(() => setLoading(false), 320); return () => clearTimeout(t); }, []);
-  const recent = [...reports].sort((a, b) => a.updatedOrder - b.updatedOrder).slice(0, 4);
+  const gallery = useGallery();
+  const recent = [...gallery].sort((a, b) => a.updatedOrder - b.updatedOrder).slice(0, 4);
   const favs = reports.filter((r) => favorites.includes(r.id));
   const failing = connections.filter((c) => !c.ok);
   const d = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });

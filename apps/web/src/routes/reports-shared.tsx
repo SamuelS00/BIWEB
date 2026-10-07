@@ -1,6 +1,9 @@
 import { Link } from '@tanstack/react-router';
 import { Avatar, Badge, Icon } from '@biweb/ui';
-import { coverUrl, statusTone, type Report } from '../fixtures/lume-varejo';
+import type { GalleryItem } from './gallery';
+
+const statusTone = { Publicado: 'success', Rascunho: 'warning', Depreciado: 'neutral' } as const;
+type Report = GalleryItem;
 import { useUi } from '../state/ui-store';
 
 export function FavButton({ id, name }: { id: string; name: string }) {
@@ -29,8 +32,8 @@ export function ReportCard({ r, i, compact }: { r: Report; i: number; compact?: 
     <article className={`rp-card bw-lift${r.status === 'Depreciado' ? ' rp-card--dep' : ''}${compact ? ' rp-card--compact' : ''}`} style={{ ['--i' as string]: i }}>
       <Link to="/reports/$reportId" params={{ reportId: r.id }} className="rp-card-link" aria-label={`${r.name} · ${r.type} · ${r.status}`}>
         <div className="rp-cover">
-          <img src={coverUrl(r.cover, compact)} alt="" loading="lazy" width={480} height={270} />
-          <span className="rp-type"><Icon name={r.type === 'Apresentação' ? 'play' : r.type === 'Relatório paginado' ? 'report' : 'grid'} size={12} />{r.type}</span>
+          <img src={r.cover(compact)} alt="" loading="lazy" width={480} height={270} />
+          <span className="rp-type"><Icon name={r.type === 'Apresentação' ? 'play' : r.type === 'Relatório paginado' ? 'report' : r.type === 'Mapa operacional' ? 'pin' : r.type === 'Gêmeo digital' ? 'cube' : 'grid'} size={12} />{r.type}</span>
         </div>
         <div className="rp-body">
           <span className="rp-cat">{r.category}</span>

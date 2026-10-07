@@ -151,6 +151,50 @@
       "$type": "color",
       "$value": "rgba(15,17,19,0.65)",
       "$description": "Runtime · véu sobre marcas não destacadas no cross-filter."
+    },
+    "status": {
+      "normal": {
+        "$type": "color",
+        "$value": "#7aa3cf",
+        "$description": "Elemento de rede em operação normal (mapa, topologia, tabelas). Traço padrão."
+      },
+      "warning": {
+        "$type": "color",
+        "$value": "#e8b04a",
+        "$description": "Atenção: destaque moderado. Sempre com rótulo ou ícone além da cor."
+      },
+      "critical": {
+        "$type": "color",
+        "$value": "#ff6f61",
+        "$description": "Crítico: destaque forte, com pulso discreto no mapa."
+      },
+      "offline": {
+        "$type": "color",
+        "$value": "#8d959f",
+        "$description": "Offline: traço tracejado/interrompido; a cor é neutra de propósito."
+      }
+    },
+    "map": {
+      "land": {
+        "$type": "color",
+        "$value": "#1c2025",
+        "$description": "Mapa-base: área das regiões."
+      },
+      "boundary": {
+        "$type": "color",
+        "$value": "#323941",
+        "$description": "Mapa-base: limites entre regiões."
+      },
+      "label": {
+        "$type": "color",
+        "$value": "#9aa0a8",
+        "$description": "Mapa-base: rótulos de região."
+      },
+      "water": {
+        "$type": "color",
+        "$value": "#18222d",
+        "$description": "Mapa-base: fundo fora da área mapeada."
+      }
     }
   }
 }

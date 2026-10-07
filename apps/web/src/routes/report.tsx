@@ -69,7 +69,7 @@ export function ReportPage() {
           <div className="rv-eyebrow"><Link to="/reports" className="bw-link"><Icon name="arrowLeft" size={12} /> Relatórios</Link><span>·</span><span>{r.category}</span><span>·</span><span>{r.type}</span></div>
           <h1 className="rv-title">{r.name}</h1>
           <p className="rv-desc">{r.description}</p>
-          <div className="rv-meta"><StatusBadges r={r} /><span className="bw-row" style={{ gap: 6 }}><Avatar name={r.owner} size={20} />{r.owner}</span><span className="bw-secondary">Atualizado {r.updated}</span><span className="bw-secondary">{r.views.toLocaleString('pt-BR')} visualizações</span></div>
+          <div className="rv-meta"><StatusBadges r={{ ...r, cover: () => D.coverUrl(r.cover), pages: r.pages.length }} /><span className="bw-row" style={{ gap: 6 }}><Avatar name={r.owner} size={20} />{r.owner}</span><span className="bw-secondary">Atualizado {r.updated}</span><span className="bw-secondary">{r.views.toLocaleString('pt-BR')} visualizações</span></div>
         </div>
         <div className="rv-actions">
           <FavButton id={r.id} name={r.name} />

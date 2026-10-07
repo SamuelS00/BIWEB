@@ -1,10 +1,15 @@
 import { useEffect } from 'react';
 import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
-import { Avatar, Icon, IconButton, PopoverButton, SegmentedControl, Switch } from '@biweb/ui';
+import { Avatar, Icon, IconButton, Menu, PopoverButton, SegmentedControl, Switch } from '@biweb/ui';
 import { Copilot } from '@biweb/assistant-ui';
+import { Button as AriaButton } from 'react-aria-components';
 import { applyRootPrefs, asset, useUi } from '../state/ui-store';
 import { reports, user } from '../fixtures/lume-varejo';
 import { mockCopilot } from '../copilot/engine';
+import { networkCopilot } from '../copilot/network';
+import { useLibrary } from '../editor/library';
+import { useEditor } from '../editor/store';
+import { WORKSPACES } from '../routes/gallery';
 import { CommandPalette } from './CommandPalette';
 
 type Area = 'home' | 'reports' | 'data' | 'models' | 'copilot';
@@ -49,15 +54,18 @@ export function AppShell() {
   }, []);
   const cur = area(path);
   const reportMatch = /^\/reports\/([^/]+)/.exec(path);
-  const report = reportMatch ? reports.find((r) => r.id === reportMatch[1]) : undefined;
-  const context = report ? { label: `Relatório: ${report.name}`, reportId: report.id } : { label: `Workspace ${user.workspace}` };
-  const showDock = ui.aiEnabled && ui.copilotOpen && cur !== 'copilot';
+  const doc = useLibrary((s) => (reportMatch ? s.docs.find((d) => d.id === reportMatch[1]) : undefined));
+  const report = reportMatch ? (doc ?? reports.find((r) => r.id === reportMatch[1])) : undefined;
+  const inEditor = path.endsWith('/edit');
+  const engine = ui.workspace === 'rede' ? networkCopilot : mockCopilot;
+  const context = report ? { label: `Relatório: ${report.name}`, reportId: report.id } : { label: `Workspace ${WORKSPACES[ui.workspace].label}` };
+  const showDock = ui.aiEnabled && ui.copilotOpen && cur !== 'copilot' && !inEditor;
 
   return (
     <div className="app">
       <nav className="app-rail" aria-label="Áreas">
         <Link to="/" className="app-rail-mark" aria-label="BIWEB Studio · Início"><img src={asset('brand/mark.webp')} alt="" width={26} height={24} /></Link>
-        {NAV.filter((n) => n.id !== 'copilot' || ui.aiEnabled).map((n) => (
+        {NAV.filter((n) => (n.id !== 'copilot' || ui.aiEnabled) && (n.id !== 'models' || ui.workspace === 'comercial')).map((n) => (
           <Link key={n.id} to={n.to} className="app-rail-item" aria-current={cur === n.id ? 'page' : undefined}>
             <Icon name={n.icon} size={20} />
             <span>{n.label}</span>
@@ -79,7 +87,7 @@ export function AppShell() {
             <Icon name="search" size={12} />Buscar relatórios, métricas e ações<kbd>⌘K</kbd>
           </button>
           {ui.aiEnabled && (
-            <button type="button" className="app-copilot-btn" aria-pressed={ui.copilotOpen} onClick={() => ui.set({ copilotOpen: !ui.copilotOpen })}>
+            <button type="button" className="app-copilot-btn" aria-pressed={inEditor ? undefined : ui.copilotOpen} onClick={() => { if (inEditor) { useEditor.getState().set({ rightTab: 'ai' }); return; } ui.set({ copilotOpen: !ui.copilotOpen }); }}>
               <Icon name="copilot" size={16} />Copilot
             </button>
           )}
@@ -91,7 +99,7 @@ export function AppShell() {
             <div key={path} className="bw-page app-page"><Outlet /></div>
           </main>
           {showDock && (
-            <Copilot variant="dock" engine={mockCopilot} context={context} userName={user.name} brandMark={asset('brand/mark.webp')} dashTheme={ui.dashTheme}
+            <Copilot variant="dock" engine={engine} context={context} userName={user.name} brandMark={asset('brand/mark.webp')} dashTheme={ui.dashTheme}
               messages={ui.copilotMessages} setMessages={ui.setCopilotMessages} prompt={ui.copilotPrompt}
               onClose={() => ui.set({ copilotOpen: false })}
               onOpenReport={(id) => navigate({ to: '/reports/$reportId', params: { reportId: id } })}
@@ -104,8 +112,17 @@ export function AppShell() {
   );
 }
 
+function WorkspaceSwitch() {
+  const ws = useUi((s) => s.workspace), set = useUi((s) => s.set);
+  const navigate = useNavigate();
+  return (
+    <Menu title="Workspaces" trigger={<AriaButton className="app-ws" aria-label={`Workspace: ${WORKSPACES[ws].label}. Trocar workspace`}>{WORKSPACES[ws].label}<Icon name="chevronDown" size={12} /></AriaButton>}
+      items={(Object.keys(WORKSPACES) as (keyof typeof WORKSPACES)[]).map((k) => ({ id: k, label: `${WORKSPACES[k].label} · ${WORKSPACES[k].company}`, icon: k === ws ? 'check' as const : undefined, onAction: () => { set({ workspace: k, copilotMessages: [] }); navigate({ to: '/reports' }); } }))} />
+  );
+}
+
 function Crumbs({ path, reportName }: { path: string; reportName?: string }) {
-  const parts: { label: string; to?: string }[] = [{ label: 'Comercial', to: '/' }];
+  const parts: { label: string; to?: string }[] = [];
   if (path.startsWith('/reports')) parts.push({ label: 'Relatórios', to: '/reports' });
   if (reportName) parts.push({ label: reportName });
   if (path.endsWith('/edit')) parts.push({ label: 'Editar' });
@@ -115,9 +132,10 @@ function Crumbs({ path, reportName }: { path: string; reportName?: string }) {
   if (path === '/') parts.push({ label: 'Início' });
   return (
     <nav className="bw-crumbs" aria-label="Você está em">
+      <WorkspaceSwitch />
       {parts.map((p, i) => (
         <span key={p.label + i} className="bw-row" style={{ gap: 4, flexWrap: 'nowrap' }}>
-          {i > 0 && <Icon name="chevronRight" size={12} />}
+          <Icon name="chevronRight" size={12} />
           {i === parts.length - 1 ? <b>{p.label}</b> : p.to ? <Link to={p.to} className="bw-link">{p.label}</Link> : p.label}
         </span>
       ))}

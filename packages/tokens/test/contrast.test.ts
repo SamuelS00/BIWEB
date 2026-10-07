@@ -20,6 +20,8 @@ const runtime: [string, string, number][] = [
   ['dash-title', 'dash-widget-surface', 4.5], ['dash-subtitle', 'dash-widget-surface', 4.5], ['dash-positive', 'dash-widget-surface', 4.5],
   ['dash-negative', 'dash-widget-surface', 4.5], ['viz-axis', 'dash-widget-surface', 4.5], ['viz-tooltip-text', 'viz-tooltip-bg', 4.5],
   ...[1, 2, 3, 4, 5, 6, 7, 8].map((i) => [`viz-cat-${i}`, 'dash-widget-surface', 3] as [string, string, number]),
+  ...['normal', 'warning', 'critical', 'offline'].flatMap((s) => [[`viz-status-${s}`, 'dash-widget-surface', 3], [`viz-status-${s}`, 'viz-map-land', 3]] as [string, string, number][]),
+  ['viz-map-label', 'viz-map-land', 4.5],
 ];
 for (const theme of ['light', 'dark'] as const) {
   describe(`contraste · ${theme}`, () => {
