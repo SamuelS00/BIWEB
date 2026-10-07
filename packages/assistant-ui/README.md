@@ -1,9 +1,8 @@
 # @biweb/assistant-ui
 
-Painel de IA, chips de contexto, markdown seguro, citações e preview de ChangeSets. Opcional: nenhum pacote core importa este.
+Copilot do BIWEB Studio (IA opcional, ADR-0033): painel lateral e tela cheia, chip de contexto, respostas com evidências (mini-gráficos com tokens runtime), citações, links para relatórios, passos e ações. Markdown seguro: só **negrito**, sem HTML nem links remotos.
 
-- Épico: **E3.A7** (docs/architecture/32-epics-and-implementation-prompts.md)
-- Depende de: `@biweb/dashboard-core`, `@biweb/dashboard-runtime`, `@biweb/ui`, `@biweb/tokens`
-- Regras de fronteira: `.dependency-cruiser.cjs` na raiz.
-
-Status: esqueleto. A API pública abaixo é só o ponto de partida.
+- Recebe um `CopilotEngine` (`reply`, `suggestions`). Em produção, a implementação fala com a Assistant API via SSE; o app usa um motor de exemplo.
+- Nenhuma alteração é aplicada pela IA sem confirmação: ações sugeridas navegam ou abrem propostas.
+- Estilos: `@import "@biweb/assistant-ui/copilot.css"`.
+- Nenhum pacote core importa este pacote (regra `core-nao-importa-ia`). Com a IA desligada, o app não o renderiza.

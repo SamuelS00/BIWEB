@@ -10,4 +10,5 @@
 @import "@biweb/tokens/css/tailwind.css";
 @import "./components.css";
 @import "./react-aria.css";
+@import "./motion.css";
 @source "../components";

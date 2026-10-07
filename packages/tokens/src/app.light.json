@@ -78,17 +78,17 @@
   "accent": {
     "DEFAULT": {
       "$type": "color",
-      "$value": "#2350c4",
-      "$description": "Ação primária (botão Aplicar, Publicar), link, switch ligado, aba ativa. Única cor saturada do chrome."
+      "$value": "#1d4f91",
+      "$description": "Ação primária, link, switch ligado, aba ativa. Derivado do azul-marinho da marca."
     },
     "hover": {
       "$type": "color",
-      "$value": "#1c42a6",
+      "$value": "#153263",
       "$description": "Hover de `accent`."
     },
     "subtle": {
       "$type": "color",
-      "$value": "#e7edfb",
+      "$value": "#e6eef8",
       "$description": "Fundo de item selecionado em árvore e lista; chip de contexto da IA."
     }
   },
@@ -107,15 +107,15 @@
   "focus": {
     "ring": {
       "$type": "color",
-      "$value": "#2350c4",
+      "$value": "#1d4f91",
       "$description": "Anel de foco: 2 px sólido com 1 px de folga na cor da superfície. ≥3:1 em todas as superfícies do chrome."
     }
   },
   "selection": {
     "DEFAULT": {
       "$type": "color",
-      "$value": "#2350c4",
-      "$description": "Contorno de 1 px e handles do widget selecionado; caixa de marquee."
+      "$value": "#1677a8",
+      "$description": "Contorno e handles do widget selecionado; azul da marca escurecido para 3:1 no canvas."
     },
     "handle-fill": {
       "$type": "color",
@@ -138,12 +138,12 @@
   "drop": {
     "target": {
       "$type": "color",
-      "$value": "#2350c4",
+      "$value": "#1677a8",
       "$description": "Borda tracejada de zona de drop ativa (FieldWell, container)."
     },
     "target-bg": {
       "$type": "color",
-      "$value": "#e7edfb",
+      "$value": "#e3f1f8",
       "$description": "Fundo da zona de drop ativa."
     }
   },
@@ -227,12 +227,12 @@
   "ghost": {
     "border": {
       "$type": "color",
-      "$value": "#2350c4",
+      "$value": "#1677a8",
       "$description": "Contorno tracejado do widget fantasma (adição proposta pela IA)."
     },
     "bg": {
       "$type": "color",
-      "$value": "#f3f6fd",
+      "$value": "#eef6fb",
       "$description": "Fundo do widget fantasma."
     }
   },
@@ -253,6 +253,48 @@
       "$type": "shadow",
       "$value": "0 1px 3px rgba(16,18,22,0.14), 0 0 0 1px rgba(16,18,22,0.08)",
       "$description": "Mini-toolbar e WidgetFloatingActions sobre o canvas. Painéis nunca têm sombra."
+    },
+    "card": {
+      "$type": "shadow",
+      "$value": "0 1px 2px rgba(16,24,40,0.06), 0 0 0 1px rgba(16,24,40,0.06)",
+      "$description": "Cards de conteúdo (relatórios, Início) em repouso. Painéis continuam planos."
+    },
+    "card-hover": {
+      "$type": "shadow",
+      "$value": "0 12px 28px rgba(16,24,40,0.14), 0 0 0 1px rgba(16,24,40,0.08)",
+      "$description": "Card em hover/foco: sobe 2 px com esta sombra."
+    }
+  },
+  "brand": {
+    "navy": {
+      "$type": "color",
+      "$value": "#153263",
+      "$description": "Marca · azul-marinho do símbolo BIWEB. Capas, ilustrações e fundos de destaque; nunca texto sobre surface."
+    },
+    "blue": {
+      "$type": "color",
+      "$value": "#40a3c9",
+      "$description": "Marca · azul médio do símbolo. Capas e detalhes de marca."
+    },
+    "teal": {
+      "$type": "color",
+      "$value": "#16bcd8",
+      "$description": "Marca · turquesa do símbolo. Capas, indicador ativo do rail e destaques; não usar como texto em fundo claro."
+    },
+    "slate": {
+      "$type": "color",
+      "$value": "#546f93",
+      "$description": "Marca · azul-ardósia do símbolo."
+    },
+    "ink": {
+      "$type": "color",
+      "$value": "#0c1b36",
+      "$description": "Marca · fundo escuro de capas e do cabeçalho de relatório."
+    },
+    "mist": {
+      "$type": "color",
+      "$value": "#e2eef6",
+      "$description": "Marca · tom claro para texto e traços sobre fundos de marca."
     }
   }
 }

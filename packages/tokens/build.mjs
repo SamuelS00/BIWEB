@@ -20,7 +20,11 @@ StyleDictionary.registerTransform({
   filter: (t) => (t.$type ?? t.type) === 'typography',
   transform: (t) => { const v = t.$value ?? t.value; return `${v.fontWeight} ${v.fontSize}/${v.lineHeight} ${v.fontFamily}`; },
 });
-const transforms = ['attribute/cti', 'name/biweb', 'typography/biweb'];
+StyleDictionary.registerTransform({
+  name: 'cubicBezier/biweb', type: 'value', filter: (t) => (t.$type ?? t.type) === 'cubicBezier',
+  transform: (t) => `cubic-bezier(${(t.$value ?? t.value).join(', ')})`,
+});
+const transforms = ['attribute/cti', 'name/biweb', 'typography/biweb', 'cubicBezier/biweb'];
 
 async function run(sources, selector, name) {
   const sd = new StyleDictionary({
@@ -59,8 +63,7 @@ const tw = [
   '  --color-*: initial;',
   ...colorNames.map((k) => `  --color-${k}: var(--${k});`),
   '  --shadow-*: initial;',
-  '  --shadow-popover: var(--shadow-popover);',
-  '  --shadow-toolbar: var(--shadow-toolbar);',
+  ...Object.keys(appL.json).filter((k) => k.startsWith('shadow-')).map((k) => `  --${k}: var(--${k});`),
   '  --font-*: initial;',
   '  --font-sans: var(--font-sans);',
   '  --font-mono: var(--font-mono);',
@@ -74,6 +77,7 @@ const tw = [
   '  --text-body: 12px; --text-body--line-height: 16px;',
   '  --text-panel-title: 13px; --text-panel-title--line-height: 20px;',
   '  --text-page-title: 16px; --text-page-title--line-height: 24px;',
+  '  --text-display: 20px; --text-display--line-height: 28px;',
   '  --text-kpi: 28px; --text-kpi--line-height: 32px;',
   '}',
 ].join('\n');

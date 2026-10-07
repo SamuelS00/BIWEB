@@ -1,0 +1,42 @@
+/* Movimento do BIWEB Studio: sutil, curto e com propósito (entrada, resposta ao toque, mudança de estado).
+   Durações e curvas vêm dos tokens (--duration-*, --easing-*). Sem animação em prefers-reduced-motion. */
+@keyframes bw-fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes bw-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bw-slide-left { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes bw-grow-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes bw-grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes bw-draw { to { stroke-dashoffset: 0; } }
+@keyframes bw-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+@keyframes bw-blink { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+/* Entrada de página: o conteúdo sobe 6 px enquanto aparece. */
+.bw-page { animation: bw-fade-up var(--duration-page) var(--easing-enter) both; }
+/* Entrada escalonada de listas e grades: cada filho recebe style="--i: n". */
+.bw-stagger > * { animation: bw-fade-up 280ms var(--easing-enter) both; animation-delay: calc(min(var(--i, 0), 12) * 35ms); }
+/* Painéis que entram pela direita (Copilot). */
+.bw-slide-in { animation: bw-slide-left 220ms var(--easing-enter) both; }
+.bw-fade-in { animation: bw-fade 180ms var(--easing-standard) both; }
+
+/* Marcas de gráfico: barras crescem da base, linhas se desenham. Use pathLength="1" no <path>. */
+.bw-grow-y { transform-box: fill-box; transform-origin: bottom; animation: bw-grow-y 520ms var(--easing-enter) both; animation-delay: calc(var(--i, 0) * 28ms); }
+.bw-grow-x { transform-box: fill-box; transform-origin: left; animation: bw-grow-x 520ms var(--easing-enter) both; animation-delay: calc(var(--i, 0) * 40ms); }
+.bw-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: bw-draw 800ms var(--easing-enter) 120ms forwards; }
+
+/* Carregamento: blocos com o formato do conteúdo, pulsando devagar (sem spinner gigante). */
+.bw-skeleton { display: block; background: var(--surface-pressed); border-radius: var(--radius-sm); animation: bw-pulse 1.4s ease-in-out infinite; }
+.bw-typing { display: inline-flex; gap: 3px; align-items: center; height: 16px; }
+.bw-typing i { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); animation: bw-blink 1s infinite; }
+.bw-typing i:nth-child(2) { animation-delay: .15s; } .bw-typing i:nth-child(3) { animation-delay: .3s; }
+
+/* Microinterações compartilhadas */
+.bw-lift { transition: transform var(--duration-base) var(--easing-standard), box-shadow var(--duration-base) var(--easing-standard), border-color var(--duration-base); }
+.bw-lift:hover, .bw-lift:focus-within { transform: translateY(-2px); box-shadow: var(--shadow-card-hover); }
+.bw-rail-btn, .bw-pane-btn, .bw-tree-item, .bw-menu-item, .bw-tab, .bw-chip { transition: background-color var(--duration-fast) var(--easing-standard), color var(--duration-fast) var(--easing-standard), box-shadow var(--duration-base) var(--easing-standard); }
+.bw-rail-btn[aria-current="page"]::before { animation: bw-grow-y 200ms var(--easing-enter); }
+.bw-switch::after { transition: transform var(--duration-base) var(--easing-standard), background-color var(--duration-base); }
+.bw-section > :not(.bw-section-head) { animation: bw-fade 160ms var(--easing-standard); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+  .bw-lift:hover, .bw-lift:focus-within { transform: none; }
+}

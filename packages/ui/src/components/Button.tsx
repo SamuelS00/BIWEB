@@ -47,7 +47,7 @@ export function IconButton({ icon, label, shortcut, size = 'md', className, ...r
 export interface SegmentedControlProps<K extends Key> {
   /** Nome acessível do grupo. */
   label: string;
-  options: { id: K; label: string; disabledReason?: string }[];
+  options: { id: K; label: string; icon?: IconName; iconOnly?: boolean; disabledReason?: string }[];
   value: K;
   onChange: (value: K) => void;
 }
@@ -57,8 +57,8 @@ export function SegmentedControl<K extends Key>({ label, options, value, onChang
     <ToggleButtonGroup aria-label={label} className="bw-seg" selectionMode="single" disallowEmptySelection
       selectedKeys={[value]} onSelectionChange={(keys) => { const k = [...keys][0]; if (k !== undefined) onChange(k as K); }}>
       {options.map((o) => (
-        <ToggleButton key={String(o.id)} id={o.id} isDisabled={!!o.disabledReason}>
-          <span title={o.disabledReason}>{o.label}</span>
+        <ToggleButton key={String(o.id)} id={o.id} isDisabled={!!o.disabledReason} aria-label={o.iconOnly ? o.label : undefined}>
+          <span title={o.disabledReason ?? (o.iconOnly ? o.label : undefined)} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{o.icon && <Icon name={o.icon} size={12} />}{!o.iconOnly && o.label}</span>
         </ToggleButton>
       ))}
     </ToggleButtonGroup>

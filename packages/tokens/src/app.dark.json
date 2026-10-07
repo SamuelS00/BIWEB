@@ -78,24 +78,24 @@
   "accent": {
     "DEFAULT": {
       "$type": "color",
-      "$value": "#86a6f7",
-      "$description": "Ação primária (botão Aplicar, Publicar), link, switch ligado, aba ativa. Única cor saturada do chrome."
+      "$value": "#6cc6e0",
+      "$description": "Ação primária no tema escuro (turquesa clareado); texto sobre ele usa on-accent."
     },
     "hover": {
       "$type": "color",
-      "$value": "#a3bcf9",
+      "$value": "#93d6ea",
       "$description": "Hover de `accent`."
     },
     "subtle": {
       "$type": "color",
-      "$value": "#1f2a44",
+      "$value": "#13314a",
       "$description": "Fundo de item selecionado em árvore e lista; chip de contexto da IA."
     }
   },
   "on": {
     "accent": {
       "$type": "color",
-      "$value": "#0b1430",
+      "$value": "#0b1a33",
       "$description": "Texto e ícone sobre `accent`."
     },
     "danger": {
@@ -107,14 +107,14 @@
   "focus": {
     "ring": {
       "$type": "color",
-      "$value": "#86a6f7",
+      "$value": "#6cc6e0",
       "$description": "Anel de foco: 2 px sólido com 1 px de folga na cor da superfície. ≥3:1 em todas as superfícies do chrome."
     }
   },
   "selection": {
     "DEFAULT": {
       "$type": "color",
-      "$value": "#86a6f7",
+      "$value": "#6cc6e0",
       "$description": "Contorno de 1 px e handles do widget selecionado; caixa de marquee."
     },
     "handle-fill": {
@@ -124,7 +124,7 @@
     },
     "label-text": {
       "$type": "color",
-      "$value": "#0b1430",
+      "$value": "#0b1a33",
       "$description": "Texto do rótulo de dimensões (fundo `selection`)."
     }
   },
@@ -138,12 +138,12 @@
   "drop": {
     "target": {
       "$type": "color",
-      "$value": "#86a6f7",
+      "$value": "#6cc6e0",
       "$description": "Borda tracejada de zona de drop ativa (FieldWell, container)."
     },
     "target-bg": {
       "$type": "color",
-      "$value": "#1f2a44",
+      "$value": "#13314a",
       "$description": "Fundo da zona de drop ativa."
     }
   },
@@ -227,12 +227,12 @@
   "ghost": {
     "border": {
       "$type": "color",
-      "$value": "#86a6f7",
+      "$value": "#6cc6e0",
       "$description": "Contorno tracejado do widget fantasma (adição proposta pela IA)."
     },
     "bg": {
       "$type": "color",
-      "$value": "#18213a",
+      "$value": "#102a3f",
       "$description": "Fundo do widget fantasma."
     }
   },
@@ -253,6 +253,48 @@
       "$type": "shadow",
       "$value": "0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
       "$description": "Mini-toolbar e WidgetFloatingActions sobre o canvas. Painéis nunca têm sombra."
+    },
+    "card": {
+      "$type": "shadow",
+      "$value": "0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06)",
+      "$description": "Cards de conteúdo (relatórios, Início) em repouso. Painéis continuam planos."
+    },
+    "card-hover": {
+      "$type": "shadow",
+      "$value": "0 12px 28px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)",
+      "$description": "Card em hover/foco: sobe 2 px com esta sombra."
+    }
+  },
+  "brand": {
+    "navy": {
+      "$type": "color",
+      "$value": "#153263",
+      "$description": "Marca · azul-marinho do símbolo BIWEB. Capas, ilustrações e fundos de destaque; nunca texto sobre surface."
+    },
+    "blue": {
+      "$type": "color",
+      "$value": "#40a3c9",
+      "$description": "Marca · azul médio do símbolo. Capas e detalhes de marca."
+    },
+    "teal": {
+      "$type": "color",
+      "$value": "#16bcd8",
+      "$description": "Marca · turquesa do símbolo. Capas, indicador ativo do rail e destaques; não usar como texto em fundo claro."
+    },
+    "slate": {
+      "$type": "color",
+      "$value": "#546f93",
+      "$description": "Marca · azul-ardósia do símbolo."
+    },
+    "ink": {
+      "$type": "color",
+      "$value": "#0c1b36",
+      "$description": "Marca · fundo escuro de capas e do cabeçalho de relatório."
+    },
+    "mist": {
+      "$type": "color",
+      "$value": "#e2eef6",
+      "$description": "Marca · tom claro para texto e traços sobre fundos de marca."
     }
   }
 }

@@ -82,3 +82,32 @@ Os componentes são classes CSS com prefixo `bw-` em `components/bundle.css`, so
 - **Application:** ViewRail, AppToolbar (Breadcrumb + SaveSplitButton), CommandBar (⌘K), Inspector (PropertySection + PropertyRow), TreeView, PaneSwitcher, PageTabs, StatusBar, EmptyState, BreakpointSwitcher.
 - **BI:** WidgetFrame (com seleção), DropZones, KpiCard, MatrixTable, DatasetTree (FieldItem), FieldWell (FieldChip), FilterBuilder, GlobalContextBar (FilterChip), VisualizationPicker, MapLayerPanel (MapLayerItem), ModelEntityCard, ImpactPanel, DiffView, ChangeSetCard (proposta da IA).
 - Use Dialog só para confirmar decisões irreversíveis; configuração vive no Inspector. Erro persistente é Banner; confirmação breve é Toast.
+
+## Marca (assets em `apps/web/public/brand`, originais em `design-handoff/images`)
+
+- **Símbolo** (`mark`): rail, cabeçalho das respostas do Copilot, marca d'água do Início e estados vazios. Nunca deformar nem recolorir.
+- **Logo horizontal**: `logo-light` sobre fundos claros e `logo-dark` sobre fundos escuros (troca automática com o tema do app); altura de 24 px na barra superior.
+- **Logo mono** (`logo-mono`): rodapé de relatórios em tema claro e exportações.
+- **Logo empilhado** (`logo-stacked`): telas de entrada e materiais impressos.
+- **Ícone do app**: `favicon.png` e `apple-touch-icon.png`, gerados do símbolo.
+- Cores do símbolo viram tokens `brand-navy`, `brand-blue`, `brand-teal`, `brand-slate`, `brand-ink`, `brand-mist`. Use-as em capas, ilustrações e no indicador ativo do rail; nunca como cor de texto sobre `surface-*`. A ação primária (`accent`) deriva do azul-marinho da marca.
+
+## Capas de relatório (`apps/web/public/covers`)
+
+- 16:9, geradas por `tools/brand/covers.py` a partir da paleta da marca: campo sólido + grade pontilhada do canvas + barras inclinadas como as peças do símbolo, desenhando o tipo de dado do relatório (linha, barras, mapa, anéis). Símbolo em marca d'água no canto.
+- Sem texto na imagem: o título fica no card. Cada capa tem versão `-sm` (480 × 270) para listas e miniaturas.
+- Relatório depreciado mostra a capa dessaturada.
+
+## Elevação de conteúdo
+
+- Cards de conteúdo (relatórios, Início, conexões) usam `shadow-card` e sobem 2 px com `shadow-card-hover` em hover/foco. Painéis, Inspector e widgets dentro de dashboards continuam planos.
+- `type-display` (20 px) só na saudação do Início e no título do relatório aberto.
+
+## Movimento (`packages/ui/src/styles/motion.css`)
+
+- Entrada de página: sobe 6 px e aparece em `duration-page` (200 ms).
+- Listas e grades entram escalonadas (35 ms por item, até 12 itens).
+- Gráficos: barras crescem da base, linhas se desenham; KPIs entram em sequência.
+- Carregamento: blocos com o formato do conteúdo pulsando devagar; nada de spinner grande.
+- Copilot: painel entra pela direita, resposta aparece como se fosse escrita, evidências entram em seguida.
+- Tudo desliga com `prefers-reduced-motion`.

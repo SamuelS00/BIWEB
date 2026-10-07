@@ -260,6 +260,17 @@
         "letterSpacing": "0"
       },
       "$description": "Variação do KPI: seta + sinal + valor + base de comparação. Nunca só cor."
+    },
+    "display": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.sans}",
+        "fontSize": "20px",
+        "lineHeight": "28px",
+        "fontWeight": 600,
+        "letterSpacing": "-0.01em"
+      },
+      "$description": "Só na saudação do Início e no título do relatório aberto. Nunca no chrome de edição."
     }
   },
   "duration": {
@@ -274,6 +285,30 @@
     "slow": {
       "$type": "duration",
       "$value": "160ms"
+    },
+    "page": {
+      "$type": "duration",
+      "$value": "200ms"
+    }
+  },
+  "easing": {
+    "standard": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.2,
+        0,
+        0,
+        1
+      ]
+    },
+    "enter": {
+      "$type": "cubicBezier",
+      "$value": [
+        0,
+        0,
+        0,
+        1
+      ]
     }
   }
 }

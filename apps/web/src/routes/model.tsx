@@ -1,15 +1,24 @@
-import { Badge, Banner, Button } from '@biweb/ui';
+import { Badge, Banner, Button, FieldTypeIcon } from '@biweb/ui';
 import { model } from '../fixtures/lume-varejo';
 
-/** S07 · Modelo semântico: barra de rascunho/publicado. Diagrama: épico do editor de modelo (Fase 1–3). */
+/** S07 · Modelo semântico: rascunho/publicado e catálogo de entidades e métricas. */
 export function ModelPage() {
   return (
-    <div style={{ minHeight: '100%' }}>
-      <div className="flex items-center gap-2 px-3 bg-surface-app" style={{ height: 40, borderBottom: '1px solid var(--border-subtle)' }}>
-        <Badge tone="warning">Rascunho {model.draft}</Badge><span className="bw-cap bw-secondary">Publicado: {model.published} · alterações só valem após publicar</span>
-        <span className="flex-1" /><Button>Analisar impacto</Button><Button variant="primary">Publicar…</Button>
+    <div className="pg">
+      <header className="pg-head"><div><h1 className="pg-title">Vendas Varejo</h1><p className="pg-sub">Modelo semântico · publicado {model.published} · rascunho {model.draft}</p></div><span className="flex-1" /><Badge tone="warning">Rascunho {model.draft}</Badge><Button>Analisar impacto</Button><Button variant="primary">Publicar…</Button></header>
+      <Banner tone="info">O diagrama do modelo (entidades e relações 1/*) está desenhado no protótipo em docs/design/prototype.</Banner>
+      <div className="model-grid bw-stagger">
+        <article className="home-card" style={{ ['--i' as string]: 0 }}>
+          <h2 className="sec-title">Métricas</h2>
+          <ul className="model-list">{model.metrics.map((m) => <li key={m.id}><FieldTypeIcon kind="metric" /><span>{m.name}</span><span className="flex-1" />{m.certified ? <Badge tone="success" icon="check">Certificada</Badge> : <Badge tone="warning">Rascunho</Badge>}</li>)}</ul>
+        </article>
+        {model.entities.map((e, i) => (
+          <article key={e.id} className="home-card" style={{ ['--i' as string]: i + 1 }}>
+            <h2 className="sec-title">{e.name}</h2>
+            <ul className="model-list">{e.fields.map(([n, k]) => <li key={n}><FieldTypeIcon kind={k} /><span className={k === 'measure' ? 'bw-mono' : undefined}>{n}</span></li>)}</ul>
+          </article>
+        ))}
       </div>
-      <div className="p-6"><Banner tone="info">O diagrama do modelo (ModelEntityCard, relações 1/*) está desenhado em docs/design/components e no protótipo.</Banner></div>
     </div>
   );
 }

@@ -23,6 +23,8 @@ import { Button, Panel, PropertySection, PropertyRow, NumberField } from '@biweb
 | Primitives (React) | Button, IconButton, SegmentedControl, TextField, NumberField, Select, Switch, Checkbox, Tabs, Menu, Dialog, Badge, Counter, Banner, Icon |
 | Application (React) | Panel, PropertySection, PropertyRow, TreeView, ViewRail, PaneSwitcher, PageTabs, StatusBar, EmptyState |
 | BI (React) | FieldTypeIcon, FieldChip, FieldWell |
+| Conteúdo (React) | Avatar, Skeleton |
+| Movimento | `src/styles/motion.css`: `bw-page`, `bw-stagger` (+ `--i`), `bw-lift`, `bw-grow-x/y`, `bw-draw`, `bw-skeleton`, `bw-typing`; desliga com prefers-reduced-motion |
 | Só CSS por enquanto | Tooltip rico, Toast, Slider, Radio, ColorSwatchPicker, CommandBar, AppToolbar, BreakpointSwitcher, FilterBuilder, MatrixTable, MapLayerPanel, ModelEntityCard, ImpactPanel, DiffView, DropZones, WidgetFrame, KpiCard, GlobalContextBar, VisualizationPicker, ChangeSetCard |
 
 Os componentes "só CSS" já têm classes e prévia em `docs/design/components/`; ganham componente React no épico em que são usados (E2.6 Builder, E2.4 runtime, E3.A7 assistente). Widgets (`WidgetFrame`, `KpiCard`, `MatrixTable`) pertencem a `dashboard-runtime`/`viz-core` e usam só tokens runtime.

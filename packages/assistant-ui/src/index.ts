@@ -1,6 +1,6 @@
 /**
- * @biweb/assistant-ui
- * Painel de IA, chips de contexto, markdown seguro, citações e preview de ChangeSets. Opcional: nenhum pacote core importa este.
- * Épico E3.A7. Esqueleto: implementar conforme docs/architecture.
+ * @biweb/assistant-ui — Copilot (IA opcional). Nenhum pacote core importa este (ADR-0033).
+ * Estilos: importe "@biweb/assistant-ui/copilot.css" no app.
  */
-export const PACKAGE = "@biweb/assistant-ui" as const;
+export { Copilot, type CopilotProps } from './Copilot';
+export type { CopilotBlock, CopilotContext, CopilotEngine, CopilotMessage } from './types';

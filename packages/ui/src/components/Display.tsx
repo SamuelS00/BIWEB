@@ -79,3 +79,18 @@ export function FieldWell({ label, optional, hint, children }: { label: string; 
     </div>
   );
 }
+
+const AVATAR_TONES = ['brand-navy', 'brand-ink'];
+/** Iniciais de uma pessoa. A cor é estável por nome; o nome completo vai no title. */
+export function Avatar({ name, size = 24 }: { name: string; size?: number }) {
+  const initials = name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
+  const tone = AVATAR_TONES[[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_TONES.length];
+  return (
+    <span title={name} aria-label={name} role="img" style={{ width: size, height: size, borderRadius: '50%', display: 'inline-grid', placeItems: 'center', flex: 'none',
+      background: `var(--${tone})`, color: 'var(--brand-mist)', font: `600 ${size <= 20 ? 9 : size === 24 ? 10 : 12}px/1 var(--font-sans)` }}>{initials}</span>
+  );
+}
+/** Bloco de carregamento com o formato do conteúdo. */
+export function Skeleton({ width = '100%', height = 12, radius }: { width?: number | string; height?: number | string; radius?: number }) {
+  return <span className="bw-skeleton" aria-hidden="true" style={{ width, height, borderRadius: radius }} />;
+}

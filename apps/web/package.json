@@ -19,7 +19,9 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-intl": "^7.1.11",
-    "zustand": "^5.0.6"
+    "zustand": "^5.0.6",
+    "@biweb/assistant-ui": "workspace:*",
+    "react-aria-components": "^1.10.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.11",

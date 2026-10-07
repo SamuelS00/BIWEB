@@ -17,6 +17,7 @@ const tree: TreeNode[] = [
 
 /** S03–S05 · Builder: estrutura das zonas com componentes do design system. Canvas real: E2.4 + E2.6. */
 export function BuilderPage() {
+  // edição de /reports/$reportId/edit
   const intl = useIntl();
   const { panes, togglePane, dashTheme, aiEnabled } = useUi();
   const [page, setPage] = useState('geral');

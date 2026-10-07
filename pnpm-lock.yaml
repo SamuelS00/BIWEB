@@ -36,6 +36,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@biweb/assistant-ui':
+        specifier: workspace:*
+        version: link:../../packages/assistant-ui
       '@biweb/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
@@ -48,6 +51,9 @@ importers:
       react:
         specifier: ^19.1.0
         version: 19.3.0
+      react-aria-components:
+        specifier: ^1.10.0
+        version: 1.21.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react-dom:
         specifier: ^19.1.0
         version: 19.3.0(react@19.3.0)
@@ -95,12 +101,6 @@ importers:
 
   packages/assistant-ui:
     dependencies:
-      '@biweb/dashboard-core':
-        specifier: workspace:*
-        version: link:../dashboard-core
-      '@biweb/dashboard-runtime':
-        specifier: workspace:*
-        version: link:../dashboard-runtime
       '@biweb/tokens':
         specifier: workspace:*
         version: link:../tokens

@@ -1,0 +1,43 @@
+/* Copilot (assistant-ui). Mesmos tokens do produto; sem estética própria de IA. */
+.cp { display: flex; flex-direction: column; min-height: 0; height: 100%; background: var(--surface-panel); color: var(--text-primary); }
+.cp--dock { width: 380px; border-left: 1px solid var(--border-subtle); box-sizing: border-box; }
+.cp-head { display: flex; align-items: center; gap: var(--space-2); height: 44px; padding: 0 var(--space-2) 0 var(--space-3); border-bottom: 1px solid var(--border-subtle); color: var(--text-primary); }
+.cp-body { flex: 1; min-height: 0; overflow: auto; padding: var(--space-4) var(--space-4) var(--space-2); display: flex; flex-direction: column; gap: var(--space-4); }
+.cp--page .cp-body { padding-inline: max(var(--space-6), calc((100% - 760px) / 2)); }
+.cp--page .cp-input { padding-inline: max(var(--space-6), calc((100% - 760px) / 2)); }
+.cp-welcome { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); padding: var(--space-6) 0 var(--space-2); }
+.cp-welcome h2 { margin: var(--space-2) 0 0; font: var(--type-display); }
+.cp-welcome p { margin: 0; color: var(--text-secondary); max-width: 52ch; font-size: 13px; line-height: 20px; }
+.cp-suggest { display: flex; flex-direction: column; gap: var(--space-1); margin-top: var(--space-3); align-self: stretch; }
+.cp-suggest button { display: flex; align-items: center; gap: var(--space-2); min-height: 36px; padding: var(--space-2) var(--space-3); text-align: left; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--surface-panel); color: var(--text-primary); font: 400 12px/16px var(--font-sans); cursor: pointer; box-shadow: var(--shadow-card); transition: border-color var(--duration-fast), transform var(--duration-base) var(--easing-standard), box-shadow var(--duration-base); }
+.cp-suggest button svg { color: var(--accent); flex: none; }
+.cp-suggest button:hover { border-color: var(--accent); transform: translateX(2px); }
+.cp-suggest button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.cp-msg { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: var(--space-2); align-items: start; }
+.cp-msg--user .cp-text { margin: 2px 0 0; font-weight: 600; }
+.cp-ctx-used { display: inline-block; margin-top: 2px; font-size: 11px; color: var(--text-muted); }
+.cp-mark { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-subtle); }
+.cp-answer { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.cp-text { margin: 2px 0 0; font-size: 13px; line-height: 20px; }
+.cp-caret { display: inline-block; width: 2px; height: 14px; margin-left: 1px; vertical-align: -2px; background: var(--accent); animation: bw-blink .9s infinite; }
+.cp-cite { margin: 0; display: flex; gap: var(--space-1); align-items: center; font-size: 11px; color: var(--text-muted); }
+.cp-steps { margin: 0; padding-left: 18px; font-size: 13px; line-height: 20px; display: flex; flex-direction: column; gap: 4px; }
+.cp-evidence { margin: 0; padding: var(--space-3); border: 1px solid var(--dash-widget-border); border-radius: var(--radius-sm); background: var(--dash-widget-surface); color: var(--dash-title); display: flex; flex-direction: column; gap: 6px; }
+.cp-evidence figcaption { font: 600 11px/16px var(--font-sans); color: var(--dash-subtitle); }
+.cp-ev-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) 44px; gap: var(--space-2); align-items: center; font-size: 11px; font-variant-numeric: tabular-nums; }
+.cp-ev-k { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cp-ev-bar { height: 10px; }
+.cp-ev-bar i { display: block; height: 100%; border-radius: 1px; }
+.cp-ev-v { text-align: right; font-weight: 600; }
+.cp-links { display: flex; flex-direction: column; gap: var(--space-1); }
+.cp-link { display: grid; grid-template-columns: 56px minmax(0, 1fr) 12px; gap: var(--space-2); align-items: center; padding: var(--space-1); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--surface-panel); color: var(--text-primary); text-align: left; cursor: pointer; font: inherit; transition: border-color var(--duration-fast), background-color var(--duration-fast); }
+.cp-link:hover { border-color: var(--accent); background: var(--surface-hover); }
+.cp-link img { border-radius: 2px; object-fit: cover; display: block; }
+.cp-link b { display: block; font-size: 12px; } .cp-link small { display: block; color: var(--text-muted); font-size: 11px; }
+.cp-link:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.cp-actions { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.cp-input { border-top: 1px solid var(--border-subtle); padding: var(--space-2) var(--space-3) var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
+.cp-box { display: flex; align-items: flex-end; gap: var(--space-1); border: 1px solid var(--border-control); border-radius: var(--radius-md); padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2); background: var(--surface-panel); transition: border-color var(--duration-fast), box-shadow var(--duration-fast); }
+.cp-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+.cp-box textarea { flex: 1; resize: none; border: 0; outline: none; background: transparent; color: var(--text-primary); font: 400 13px/20px var(--font-sans); padding: 4px 0; }
+.cp-foot { font-size: 11px; color: var(--text-muted); }

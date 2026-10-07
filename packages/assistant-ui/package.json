@@ -4,15 +4,14 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./copilot.css": "./src/copilot.css"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@biweb/dashboard-core": "workspace:*",
-    "@biweb/dashboard-runtime": "workspace:*",
     "@biweb/ui": "workspace:*",
     "@biweb/tokens": "workspace:*"
   },

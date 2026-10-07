@@ -1,18 +1,23 @@
 # @biweb/web
 
-Application Shell (SPA) do BIWEB Studio: Vite + React 19 + TanStack Router + react-intl + Zustand, sobre `@biweb/ui` e `@biweb/tokens`.
+Application Shell (SPA) do BIWEB Studio: Vite + React 19 + TanStack Router + react-intl + Zustand, sobre `@biweb/ui`, `@biweb/tokens` e `@biweb/assistant-ui`.
 
 ```bash
 pnpm install
-pnpm dev          # gera os tokens e abre http://localhost:5173
+pnpm dev                 # http://localhost:5173
+pnpm --filter @biweb/web build:static   # build estático com rotas por # (prévias)
 ```
 
-| Rota | Tela (SCREEN_CATALOG) | Estado |
+| Rota | Tela | Conteúdo |
 |---|---|---|
-| `/` | S01 Home | Lista de dashboards (fixture Lume Varejo) |
-| `/connections` | S02 Conexões | Lista e estado de erro |
-| `/dashboards/:id` | S06 Viewer | Barra de contexto + KPIs; widgets via dashboard-runtime (E2.4) |
-| `/dashboards/:id/edit` | S03–S05 Builder | Zonas, painéis e Inspector com componentes reais; canvas via E2.4/E2.6. Carregado sob demanda |
-| `/models/:id` | S07 Modelo | Barra rascunho/publicado |
+| `/` | Início | Saudação, pulso do negócio (KPIs com sparkline), continue de onde parou, favoritos, Copilot, atividade e saúde dos dados |
+| `/reports` | Relatórios | Catálogo com capas em grade ou lista; filtros por categoria, status e tipo; busca; ordenação; favoritos |
+| `/reports/:id` | Relatório aberto | Cabeçalho com capa e metadados, barra de contexto, páginas, KPIs e gráficos de exemplo, filtro cruzado, ver como tabela, perguntar ao Copilot |
+| `/reports/:id/edit` | Editor | Painéis Dados e Inspector; canvas via E2.4/E2.6. Carregado sob demanda |
+| `/copilot` | Copilot | Conversa em tela cheia (a mesma do painel lateral) |
+| `/connections` | Dados | Conexões e datasets |
+| `/models/:id` | Modelo | Métricas e entidades do modelo semântico |
 
-Os dados em `src/fixtures/` vêm de `design-handoff/04-MOCK_DATA.md` e saem quando a Management API existir.
+⌘K abre a busca de relatórios e ações e permite perguntar ao Copilot. O Copilot usa um **motor de exemplo** (`src/copilot/engine.ts`) com respostas sobre os dados do Lume Varejo; em produção, a mesma interface fala com a Assistant API.
+
+Dados em `src/fixtures/` vêm de `design-handoff/04-MOCK_DATA.md` (os relatórios adicionais e números de visualização são exemplos). Marca e capas em `public/brand` e `public/covers`.

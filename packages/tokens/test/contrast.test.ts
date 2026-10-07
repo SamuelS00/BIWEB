@@ -13,7 +13,7 @@ const resolve = (map: Record<string, string>, k: string) => { const v = map[k]!;
 
 const app: [string, string, number][] = [
   ...['text-primary', 'text-secondary', 'text-muted'].flatMap((f) => ['surface-panel', 'surface-app', 'surface-hover', 'surface-elevated'].map((b) => [f, b, 4.5] as [string, string, number])),
-  ['accent', 'surface-panel', 4.5], ['on-accent', 'accent', 4.5], ['border-control', 'surface-panel', 3], ['focus-ring', 'surface-canvas', 3],
+  ['accent', 'surface-panel', 4.5], ['accent', 'surface-app', 4.5], ['on-accent', 'accent', 4.5], ['on-accent', 'accent-hover', 4.5], ['selection', 'surface-canvas', 3], ['border-control', 'surface-panel', 3], ['focus-ring', 'surface-canvas', 3],
   ['danger', 'surface-panel', 4.5], ['success', 'surface-panel', 4.5], ['warning', 'surface-panel', 4.5], ['guide', 'surface-canvas', 3],
 ];
 const runtime: [string, string, number][] = [
