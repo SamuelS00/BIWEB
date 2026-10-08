@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
-import { Avatar, Icon, IconButton, Menu, PopoverButton, SegmentedControl, Switch } from '@biweb/ui';
+import { Avatar, Icon, IconButton, Menu, PopoverButton, SegmentedControl, Switch, type IconName } from '@biweb/ui';
 import { Copilot } from '@biweb/assistant-ui';
 import { Button as AriaButton } from 'react-aria-components';
 import { applyRootPrefs, asset, useUi } from '../state/ui-store';
@@ -10,14 +10,17 @@ import { networkCopilot } from '../copilot/network';
 import { useLibrary } from '../editor/library';
 import { useEditor } from '../editor/store';
 import { WORKSPACES } from '../routes/gallery';
+import { REPORTS } from '../routes/maps/model';
 import { CommandPalette } from './CommandPalette';
 
-type Area = 'home' | 'reports' | 'data' | 'models' | 'copilot';
+type Area = 'home' | 'reports' | 'data' | 'models' | 'copilot' | 'maps' | 'workflows';
 function area(path: string): Area {
   if (path.startsWith('/reports')) return 'reports';
   if (path.startsWith('/connections')) return 'data';
   if (path.startsWith('/models')) return 'models';
   if (path.startsWith('/copilot')) return 'copilot';
+  if (path.startsWith('/maps')) return 'maps';
+  if (path.startsWith('/workflows')) return 'workflows';
   return 'home';
 }
 
@@ -35,12 +38,14 @@ function Preferences() {
   );
 }
 
-const NAV: { id: Area; label: string; icon: 'home' | 'report' | 'data' | 'model' | 'copilot'; to: string }[] = [
+const NAV: { id: Area; label: string; icon: IconName; to: string }[] = [
   { id: 'home', label: 'Início', icon: 'home', to: '/' },
   { id: 'reports', label: 'Relatórios', icon: 'report', to: '/reports' },
   { id: 'data', label: 'Dados', icon: 'data', to: '/connections' },
   { id: 'models', label: 'Modelos', icon: 'model', to: '/models/sem_vendas_varejo' },
   { id: 'copilot', label: 'Copilot', icon: 'copilot', to: '/copilot' },
+  { id: 'maps', label: 'Mapas', icon: 'pin', to: '/maps' },
+  { id: 'workflows', label: 'Fluxos', icon: 'share', to: '/workflows' },
 ];
 
 export function AppShell() {
@@ -129,6 +134,8 @@ function Crumbs({ path, reportName }: { path: string; reportName?: string }) {
   if (path.startsWith('/models')) parts.push({ label: 'Modelos' }, { label: 'Vendas Varejo' });
   if (path.startsWith('/connections')) parts.push({ label: 'Dados e conexões' });
   if (path.startsWith('/copilot')) parts.push({ label: 'Copilot' });
+  if (path.startsWith('/maps')) { const map = REPORTS.find((r) => path === `/maps/${r.id}`); parts.push({ label: 'Mapas', to: '/maps' }, ...(map ? [{ label: map.name }] : [])); }
+  if (path.startsWith('/workflows')) parts.push({ label: 'Fluxos' });
   if (path === '/') parts.push({ label: 'Início' });
   return (
     <nav className="bw-crumbs" aria-label="Você está em">

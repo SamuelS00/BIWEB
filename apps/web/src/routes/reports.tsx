@@ -30,7 +30,15 @@ export function ReportsPage() {
     .filter((r) => status === 'all' || r.status === status)
     .filter((r) => type === 'all' || r.type === type)
     .filter((r) => !q || norm(`${r.name} ${r.description} ${r.owner}`).includes(norm(q)))
-    .sort((a, b) => (sort === 'name' ? a.name.localeCompare(b.name) : sort === 'views' ? b.views - a.views : a.updatedOrder - b.updatedOrder)), [q, cat, status, type, sort, favorites, reports]);
+    .sort((a, b) => {
+      if (workspace === 'rede' && (a.id === 'net_operacoes' || b.id === 'net_operacoes')) return a.id === 'net_operacoes' ? -1 : 1;
+      if (workspace === 'rede' && sort === 'recent') {
+        const order = ['net_incidentes', 'net_gemeo', 'net_campo', 'net_capacidade', 'geo_dependency', 'geo_replay'];
+        const ai = order.indexOf(a.id), bi = order.indexOf(b.id);
+        if (ai >= 0 || bi >= 0) return (ai < 0 ? order.length : ai) - (bi < 0 ? order.length : bi);
+      }
+      return sort === 'name' ? a.name.localeCompare(b.name) : sort === 'views' ? b.views - a.views : a.updatedOrder - b.updatedOrder;
+    }), [q, cat, status, type, sort, favorites, reports, workspace]);
   const count = (c: Cat) => c === 'Todos' ? reports.length : c === 'Favoritos' ? reports.filter((r) => favorites.includes(r.id)).length : reports.filter((r) => r.category === c).length;
 
   return (

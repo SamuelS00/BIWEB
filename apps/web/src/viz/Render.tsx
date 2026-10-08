@@ -1,4 +1,4 @@
-import { Component, lazy, memo, Suspense, useCallback, useMemo, type ReactNode } from 'react';
+import { Component, lazy, memo, Suspense, useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Icon, Skeleton } from '@biweb/ui';
 import { applyRules } from '../data/query';
 import { getTable } from '../data/registry';
@@ -72,6 +72,7 @@ class CompBoundary extends Component<{ children: ReactNode; name: string }, { er
 /** Moldura visual (título, fundo, borda) — a mesma no editor, na visualização e no Focus Mode. */
 export const CompFrame = memo(function CompFrame({ comp, interactive, editing, mode, onFocus }: { comp: Comp; interactive: boolean; editing: boolean; mode: 'edit' | 'preview' | 'focus'; onFocus?: () => void }) {
   const s = comp.style;
+  const [tableView, setTableView] = useState(false);
   const ask = () => useEditor.getState().set({ rightTab: 'ai', selection: [comp.id] });
   return (
     <div className={`cf cf--${comp.type} cf-bg--${s.background}${s.border ? ' cf--border' : ''} cf-fs--${s.fontSize}`} style={{ padding: comp.type === 'map' || comp.type === 'scene3d' ? 0 : s.padding }} data-type={comp.type}>
@@ -87,7 +88,10 @@ export const CompFrame = memo(function CompFrame({ comp, interactive, editing, m
         </div>
       )}
       {comp.type === 'container' && <span className="cf-container-label">{String(comp.props.label ?? '')}</span>}
-      <div className="cf-body"><CompBoundary name={comp.name}><CompBody comp={comp} interactive={interactive} editing={editing} /></CompBoundary></div>
+      <div className="cf-body">
+        {(comp.type === 'chart' || comp.type === 'map') && comp.data && <div className="cf-view-switch"><button type="button" aria-pressed={tableView} onClick={() => setTableView((v) => !v)}><Icon name={tableView ? 'chart' : 'table'} size={12}/>{tableView ? 'Voltar ao visual' : 'Ver como tabela'}</button>{tableView && <span>Linhas do modelo semântico após filtros · configuração preservada</span>}</div>}
+        <CompBoundary name={comp.name}>{tableView && comp.data ? <TableView comp={{ ...comp, type: 'table', props: { columns: getTable(comp.data.dataset, comp.data.table).fields.filter((f) => !f.hidden).slice(0, 8).map((f) => f.name), rowLimit: 250, density: 'compact' } }} /> : <CompBody comp={comp} interactive={interactive} editing={editing} />}</CompBoundary>
+      </div>
     </div>
   );
 });

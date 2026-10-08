@@ -83,38 +83,60 @@ export interface CopilotProps {
 export function Copilot({ engine, context, variant, userName, brandMark, dashTheme = 'light', onClose, onOpenReport, onAction, prompt, messages, setMessages }: CopilotProps) {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [contextEnabled, setContextEnabled] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState<{ title: string; at: string; messages: CopilotMessage[] }[]>(() => { try { return JSON.parse(localStorage.getItem('biweb.copilot-history') ?? '[]') as { title: string; at: string; messages: CopilotMessage[] }[]; } catch { return []; } });
   const [reveal, setReveal] = useState<Record<string, number>>({});
   const body = useRef<HTMLDivElement>(null);
   const lastNonce = useRef<number | null>(null);
+  const activeRequest = useRef(0);
 
   const send = async (text: string) => {
     const q = text.trim(); if (!q || busy) return;
+    const requestId = ++activeRequest.current;
+    const activeContext = contextEnabled ? context : { ...context, label: 'Sem contexto anexado' };
     setInput(''); setBusy(true);
-    setMessages((m) => [...m, { id: nid(), role: 'user', blocks: [{ kind: 'text', text: q }], context: context.label, at: new Date() }]);
-    const blocks = await engine.reply(q, context);
+    setMessages((m) => [...m, { id: nid(), role: 'user', blocks: [{ kind: 'text', text: q }], context: activeContext.label, at: new Date() }]);
+    let blocks: CopilotBlock[];
+    try { blocks = await engine.reply(q, activeContext); }
+    catch { if (requestId === activeRequest.current) { setMessages((m) => [...m, { id: nid(), role: 'assistant', blocks: [{ kind: 'text', text: 'Não consegui concluir a consulta. Tente novamente.' }], at: new Date() }]); setBusy(false); } return; }
+    if (requestId !== activeRequest.current) return;
     const id = nid();
     setMessages((m) => [...m, { id, role: 'assistant', blocks, at: new Date() }]);
     const total = (blocks.find((b) => b.kind === 'text') as { text: string } | undefined)?.text.length ?? 0;
     const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduce || total === 0) { setReveal((r) => ({ ...r, [id]: total })); setBusy(false); return; }
     let n = 0;
-    const t = setInterval(() => { n = Math.min(total, n + 4); setReveal((r) => ({ ...r, [id]: n })); if (n >= total) { clearInterval(t); setBusy(false); } }, 16);
+    const t = setInterval(() => { if (requestId !== activeRequest.current) { clearInterval(t); return; } n = Math.min(total, n + 4); setReveal((r) => ({ ...r, [id]: n })); if (n >= total) { clearInterval(t); setBusy(false); } }, 16);
   };
   useEffect(() => { if (prompt && prompt.nonce !== lastNonce.current) { lastNonce.current = prompt.nonce; void send(prompt.text); } }, [prompt]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { body.current?.scrollTo({ top: body.current.scrollHeight, behavior: 'smooth' }); }, [messages, reveal]);
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(input); } };
   const empty = messages.length === 0;
+  const interrupt = () => { activeRequest.current++; setBusy(false); setMessages((m) => [...m, { id: nid(), role: 'assistant', blocks: [{ kind: 'text', text: 'Consulta interrompida pelo usuário.' }], at: new Date() }]); };
+  const newConversation = () => {
+    if (messages.length) {
+      const first = messages.find((m) => m.role === 'user');
+      const title = first?.blocks.find((b) => b.kind === 'text');
+      const next = [{ title: title?.kind === 'text' ? title.text : 'Conversa sem título', at: new Date().toLocaleString('pt-BR'), messages }, ...history].slice(0, 12);
+      setHistory(next); try { localStorage.setItem('biweb.copilot-history', JSON.stringify(next)); } catch { /* armazenamento indisponível */ }
+    }
+    activeRequest.current++; setBusy(false); setMessages(() => []); setHistoryOpen(false);
+  };
 
   return (
     <section className={`cp cp--${variant}${variant === 'dock' ? ' bw-slide-in' : ''}`} aria-label="Copilot">
       {variant === 'dock' && (
         <header className="cp-head">
           <Icon name="copilot" /><span className="bw-panel-title" style={{ flex: 1 }}>Copilot</span>
-          {messages.length > 0 && <IconButton icon="refresh" label="Nova conversa" size="sm" onPress={() => setMessages(() => [])} />}
+          <IconButton icon="book" label="Histórico de conversas" size="sm" onPress={() => setHistoryOpen((v) => !v)} />
+          {messages.length > 0 && <IconButton icon="refresh" label="Nova conversa" size="sm" onPress={newConversation} />}
           {onClose && <IconButton icon="close" label="Fechar Copilot" size="sm" onPress={onClose} />}
         </header>
       )}
       <div className="cp-body" ref={body} aria-live="polite">
+        {variant === 'page' && <div className="cp-page-tools"><span className="bw-cap bw-muted">Conversa</span><span className="flex-1"/><Button size="sm" icon="book" onPress={() => setHistoryOpen((v) => !v)}>Histórico</Button>{messages.length > 0 && <Button size="sm" icon="refresh" onPress={newConversation}>Nova conversa</Button>}</div>}
+        {historyOpen && <div className="cp-history" aria-label="Histórico de conversas"><b>Histórico recente</b>{history.length ? history.map((h, i) => <button key={`${h.at}-${i}`} type="button" onClick={() => { activeRequest.current++; setBusy(false); setMessages(() => h.messages); setHistoryOpen(false); }}><span>{h.title}</span><small>{h.at}</small></button>) : <small>Nenhuma conversa arquivada ainda.</small>}</div>}
         {empty && (
           <div className="cp-welcome bw-page">
             <img src={brandMark} alt="" width={40} height={38} />
@@ -140,10 +162,10 @@ export function Copilot({ engine, context, variant, userName, brandMark, dashThe
             )}
           </article>
         ))}
-        {busy && messages[messages.length - 1]?.role === 'user' && <div className="cp-msg cp-msg--assistant"><span className="cp-mark" aria-hidden="true"><img src={brandMark} alt="" width={16} height={15} /></span><span className="bw-typing" aria-label="Copilot está respondendo"><i /><i /><i /></span></div>}
+        {busy && messages[messages.length - 1]?.role === 'user' && <div className="cp-msg cp-msg--assistant"><span className="cp-mark" aria-hidden="true"><img src={brandMark} alt="" width={16} height={15} /></span><span className="bw-typing" aria-label="Copilot está respondendo"><i /><i /><i /></span><span className="cp-tool-status">Consultando fontes do workspace</span><Button size="sm" onPress={interrupt}>Interromper</Button></div>}
       </div>
       <footer className="cp-input">
-        <span className="bw-ctx-chip" title="O Copilot usa este contexto na resposta"><Icon name="report" size={12} />{context.label}</span>
+        <button type="button" className={`bw-ctx-chip cp-context-toggle${contextEnabled ? ' is-active' : ''}`} aria-pressed={contextEnabled} onClick={() => setContextEnabled((v) => !v)} title="Editar contexto usado na resposta"><Icon name="report" size={12} />{contextEnabled ? context.label : 'Sem contexto anexado'}<Icon name={contextEnabled ? 'check' : 'plus'} size={12}/></button>
         <div className="cp-box">
           <textarea id={`copilot-input-${variant}`} rows={2} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={onKey} placeholder="Pergunte sobre dados, relatórios ou como fazer algo" aria-label="Mensagem para o Copilot" />
           <IconButton icon="send" label="Enviar" isDisabled={!input.trim() || busy} onPress={() => void send(input)} />

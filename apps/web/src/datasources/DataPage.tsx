@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Badge, Button, FieldTypeIcon, Icon, type IconName, type Tone } from '@biweb/ui';
+import { Badge, Button, FieldTypeIcon, Icon, SegmentedControl, type IconName, type Tone } from '@biweb/ui';
 import { useData } from '../data/registry';
 import type { Dataset } from '../data/types';
 import { useLibrary } from '../editor/library';
@@ -36,6 +36,8 @@ export function DataPage() {
   const docs = useLibrary((s) => s.docs);
   const navigate = useNavigate();
   const [wizard, setWizard] = useState(false);
+  const [connectionMode, setConnectionMode] = useState<'form' | 'agent'>('form');
+  const [connectionTested, setConnectionTested] = useState(false);
   const [selected, setSelected] = useState<string>(datasets[0]?.id ?? 'ds_rede_sp');
   const portRef = useRef<HTMLElement>(null);
 
@@ -78,6 +80,24 @@ export function DataPage() {
         <span className="flex-1" />
         <Button variant="primary" size="lg" icon="plus" onPress={() => setWizard(true)}>Importar dados</Button>
       </header>
+
+      <section className="ds-section" aria-labelledby="connector-catalog">
+        <div className="sec-head"><div><h2 id="connector-catalog" className="sec-title">Catálogo de conectores</h2><p className="bw-cap bw-muted">Escolha uma fonte; o assistente opcional preenche o mesmo formulário.</p></div><SegmentedControl label="Modo de configuração" value={connectionMode} onChange={(v) => setConnectionMode(v)} options={[{ id: 'form', label: 'Formulário' }, { id: 'agent', label: 'Assistido' }]} /></div>
+        <div className="conn-catalog">
+          <div className="conn-catalog-list" role="listbox" aria-label="Conectores disponíveis">
+            {[
+              ['PostgreSQL', 'Banco de dados · credencial gerenciada'], ['API REST', 'JSON ou GeoJSON · token protegido'], ['CSV / planilha', 'Upload com detecção de tipo'],
+            ].map(([name, desc], i) => <button key={name} type="button" className={`conn-choice${i === 0 ? ' is-selected' : ''}`} onClick={() => setConnectionTested(false)}><Icon name={i === 2 ? 'table' : i === 1 ? 'share' : 'data'} size={16}/><span><b>{name}</b><small>{desc}</small></span><Icon name="chevronRight" size={12}/></button>)}
+          </div>
+          <div className="conn-setup">
+            <div className="conn-setup-head"><b>{connectionMode === 'agent' ? 'Configuração assistida' : 'PostgreSQL'}</b><span className="bw-cap bw-muted">Etapa 1 de 5 · Credenciais</span></div>
+            {connectionMode === 'agent' ? <p className="bw-secondary">Descreva a fonte. O Copilot pode preencher endereço e schema; segredos continuam apenas nos campos protegidos.</p> : <p className="bw-secondary">Insira a origem da conexão e valide o acesso antes de descobrir o schema.</p>}
+            <div className="conn-setup-fields"><label>Host<input defaultValue="db.exemplo.local" aria-label="Host" /></label><label>Banco<input defaultValue="netops" aria-label="Banco" /></label><label>Usuário<input defaultValue="biweb_reader" aria-label="Usuário" /></label><label>Senha<input type="password" value="••••••••" readOnly aria-label="Senha protegida" /></label></div>
+            <div className="conn-setup-actions"><Button size="sm" onPress={() => setConnectionTested(true)}>Testar conexão</Button><Button size="sm" isDisabled={!connectionTested}>Próximo: schema</Button>{connectionTested && <Badge tone="success" icon="check">Teste demonstrativo aprovado</Badge>}</div>
+            <small className="bw-muted">Demonstração local. Nenhuma conexão ou credencial foi enviada.</small>
+          </div>
+        </div>
+      </section>
 
       <section className="ds-section" aria-labelledby="ds-sources">
         <div className="sec-head"><h2 id="ds-sources" className="sec-title">Fontes de dados</h2><span className="bw-cap bw-muted">Conexões e arquivos do workspace Operações de Rede</span></div>

@@ -72,6 +72,7 @@ export function ReportView({ id }: { id: string }) {
         {filterComps.map((f) => { const fld = getField(f.data!.dataset, f.data!.table, String(f.props.field)); return <span key={f.id} className="bw-filter" data-active><span className="bw-k">{fld?.label}:</span> <b>{(fv[f.id] ?? []).map((v) => labelOf(v, fld)).join(', ')}</b><button className="bw-iconbtn bw-iconbtn--sm" aria-label={`Limpar ${fld?.label}`} onClick={() => st.setFilter(f.id, [])}><Icon name="close" size={12} /></button></span>; })}
         {cross && <span className="bw-filter" data-active><span className="bw-k">Seleção:</span> <b>{cross.label}</b><button className="bw-iconbtn bw-iconbtn--sm" aria-label="Limpar seleção" onClick={() => st.setCross(null)}><Icon name="close" size={12} /></button></span>}
         <span className="bw-live">Ao vivo · dados de 06/10/2026 08:00</span>
+        {doc.id === 'net_operacoes' || doc.id === 'net_geografica' || doc.id === 'net_incidentes' || doc.id === 'net_gemeo' ? <Link to="/maps/$mapId" params={{ mapId: doc.id === 'net_incidentes' ? 'incidents' : doc.id === 'net_gemeo' ? 'lights' : 'network' }} className="bw-filter"><Icon name="pin" size={12} />Abrir workspace de mapa</Link> : null}
       </div>
       <div className="rv-doccanvas"><Canvas /></div>
       <Toasts />

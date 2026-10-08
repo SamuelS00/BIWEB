@@ -1,6 +1,6 @@
 /**
- * Copilot de construção: interpreta o pedido (intents + modelos), monta um plano em etapas e executa cada etapa
- * sobre o documento (mesma store do canvas). Tudo vira UM passo de undo rotulado "IA: …".
+ * Copilot de construção: interpreta o pedido, apresenta as etapas para revisão item a item e só então aplica
+ * as etapas aceitas sobre o documento (mesma store do canvas). Tudo vira UM passo de undo rotulado "IA: …".
  * A IA é simulada; as mudanças no estado são reais.
  */
 import { create } from 'zustand';
@@ -14,10 +14,12 @@ export interface PlanStep { label: string; run: (tx: string) => string[] | void 
 export interface Plan { intent: string; thinking: string; steps: PlanStep[]; summary: () => string; answer?: string[]; actions?: { label: string; prompt: string }[] }
 export interface ChatMsg {
   id: string; role: 'user' | 'ai'; text: string; context?: string;
-  state?: 'thinking' | 'running' | 'done' | 'answer'; steps?: { label: string; done: boolean }[]; summary?: string; answer?: string[];
+  state?: 'thinking' | 'proposal' | 'running' | 'done' | 'answer'; steps?: { label: string; done: boolean; accepted?: boolean | null }[]; summary?: string; answer?: string[];
   actions?: { label: string; prompt: string }[]; tx?: string; touched?: string[]; undone?: boolean;
 }
 export const useCopilotChat = create<{ msgs: ChatMsg[]; busy: boolean; set: (p: Partial<{ msgs: ChatMsg[]; busy: boolean }>) => void }>((set) => ({ msgs: [], busy: false, set }));
+const pendingPlans = new Map<string, Plan>();
+const stoppedPlans = new Set<string>();
 
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const st = () => useEditor.getState();
@@ -129,7 +131,8 @@ function newPageFor(tx: string, name: string) {
   return pg.id;
 }
 const kpiRow = (n: number) => { const w = (W - 2 * M - (n - 1) * G) / n; return (i: number, y = 104) => ({ x: Math.round(M + i * (w + G)), y, w: Math.round(w), h: 128 }); };
-const selected = () => { const p = page(); return p.comps.filter((c) => st().selection.includes(c.id)); };
+let omitSelectionForPlan = false;
+const selected = () => { if (omitSelectionForPlan) return []; const p = page(); return p.comps.filter((c) => st().selection.includes(c.id)); };
 const countRows = (table: string, filters: Comp['localFilters'] = []) => rowsOf(DS, table, { rules: st().doc!.rules, filters }).length;
 
 /* ---------- intents ---------- */
@@ -385,33 +388,59 @@ export function planFor(text: string): Plan {
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : ms));
 
-/** Executa um pedido: estado "pensando", etapas com destaque no canvas, resumo e Desfazer. */
-export async function ask(text: string) {
+/** Monta uma proposta revisável; nenhuma etapa altera o relatório antes da confirmação explícita. */
+export async function ask(text: string, contextOverride?: string, useCanvasSelection = true) {
   const chat = useCopilotChat.getState();
   if (chat.busy || !text.trim()) return;
   const sel = selected();
-  const context = sel.length === 1 ? `${COMP_META[sel[0]!.type].label}: ${sel[0]!.name}` : `Página: ${page().name}`;
+  const context = contextOverride ?? (sel.length === 1 ? `${COMP_META[sel[0]!.type].label}: ${sel[0]!.name}` : `Página: ${page().name}`);
   const um: ChatMsg = { id: uid('m'), role: 'user', text, context };
   const am: ChatMsg = { id: uid('m'), role: 'ai', text: '', state: 'thinking' };
   const upd = (p: Partial<ChatMsg>) => useCopilotChat.setState((s) => ({ msgs: s.msgs.map((m) => (m.id === am.id ? { ...m, ...p } : m)) }));
   useCopilotChat.setState((s) => ({ msgs: [...s.msgs, um, am], busy: true }));
   await wait(650);
+  omitSelectionForPlan = !useCanvasSelection;
   const plan = planFor(text);
+  omitSelectionForPlan = false;
   if (!plan.steps.length) { upd({ state: 'answer', answer: plan.answer, actions: plan.actions, text: plan.intent }); useCopilotChat.setState({ busy: false }); return; }
-  const tx = `ai:${am.id}`;
-  const touched: string[] = [];
-  upd({ state: 'running', text: plan.thinking, summary: plan.intent, steps: plan.steps.map((s) => ({ label: s.label, done: false })) });
-  for (let i = 0; i < plan.steps.length; i++) {
-    await wait(420);
-    try { const ids = plan.steps[i]!.run(tx); if (ids) touched.push(...ids); } catch (e) { console.error(e); }
-    upd({ steps: plan.steps.map((s, j) => ({ label: s.label, done: j <= i })) });
-  }
-  // rótulo do passo de undo = intenção
-  useEditor.setState((s) => { const top = s.past[s.past.length - 1]; return top?.tx === tx ? { past: [...s.past.slice(0, -1), { ...top, label: `IA: ${plan.intent}` }] } : {}; });
-  if (touched.length) useEditor.getState().set({ selection: touched.filter((id) => page().comps.some((c) => c.id === id)).slice(0, 12) });
-  upd({ state: 'done', summary: plan.summary(), tx, touched });
+  pendingPlans.set(am.id, plan);
+  upd({ state: 'proposal', text: plan.thinking, summary: plan.intent, steps: plan.steps.map((s) => ({ label: s.label, done: false, accepted: null })) });
   useCopilotChat.setState({ busy: false });
 }
+
+export function chooseProposalStep(messageId: string, index: number, accepted: boolean) {
+  const chat = useCopilotChat.getState();
+  useCopilotChat.setState({ msgs: chat.msgs.map((m) => m.id === messageId ? { ...m, steps: m.steps?.map((s, i) => i === index ? { ...s, accepted } : s) } : m) });
+}
+
+export async function applyProposal(messageId: string) {
+  const chat = useCopilotChat.getState();
+  const msg = chat.msgs.find((m) => m.id === messageId);
+  const plan = pendingPlans.get(messageId);
+  if (!msg || !plan || msg.state !== 'proposal' || !msg.steps || msg.steps.length !== plan.steps.length || msg.steps.some((s) => s.accepted == null) || chat.busy) return;
+  const reviewedSteps = msg.steps;
+  const accepted = reviewedSteps.flatMap((s, i) => s.accepted ? [i] : []);
+  if (!accepted.length) { useCopilotChat.setState({ msgs: chat.msgs.map((m) => m.id === messageId ? { ...m, state: 'done', summary: 'Nenhuma mudança foi aplicada.', steps: m.steps?.map((s) => ({ ...s, done: true })) } : m) }); pendingPlans.delete(messageId); return; }
+  const tx = `ai:${messageId}`, touched: string[] = [];
+  stoppedPlans.delete(messageId);
+  useCopilotChat.setState({ busy: true, msgs: chat.msgs.map((m) => m.id === messageId ? { ...m, state: 'running' } : m) });
+  for (const i of accepted) {
+    if (stoppedPlans.has(messageId)) break;
+    await wait(420);
+    if (stoppedPlans.has(messageId)) break;
+    try { const ids = plan.steps[i]!.run(tx); if (ids) touched.push(...ids); } catch (e) { console.error(e); }
+    const current = useCopilotChat.getState().msgs;
+    useCopilotChat.setState({ msgs: current.map((m) => m.id === messageId ? { ...m, steps: m.steps?.map((s, j) => j === i ? { ...s, done: true } : s) } : m) });
+  }
+  useEditor.setState((s) => { const top = s.past[s.past.length - 1]; return top?.tx === tx ? { past: [...s.past.slice(0, -1), { ...top, label: `IA: ${plan.intent}` }] } : {}; });
+  if (touched.length) useEditor.getState().set({ selection: touched.filter((id) => page().comps.some((c) => c.id === id)).slice(0, 12) });
+  const stopped = stoppedPlans.has(messageId);
+  const current = useCopilotChat.getState().msgs;
+  useCopilotChat.setState({ busy: false, msgs: current.map((m) => m.id === messageId ? { ...m, state: 'done', summary: stopped ? 'Pedido interrompido. As etapas já aplicadas permanecem como um único passo de desfazer.' : plan.summary(), tx, touched } : m) });
+  pendingPlans.delete(messageId);
+}
+
+export function stopProposal(messageId: string) { stoppedPlans.add(messageId); }
 
 /** Desfaz a ação da IA (um clique) se ela ainda for o último passo do histórico. */
 export function undoAi(m: ChatMsg) {

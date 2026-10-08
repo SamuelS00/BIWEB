@@ -248,3 +248,6 @@
 .rv-docbar .rv-pages { margin: 0; }
 .rv-doccanvas { flex: 1; min-height: 480px; display: flex; }
 .rv-doccanvas .ed-canvas { flex: 1; }
+.ai-review-steps li { display:grid; grid-template-columns:18px minmax(0,1fr) auto; align-items:center; gap:6px; padding:5px 0; border-bottom:1px solid var(--border-subtle); }
+.ai-review-actions { display:flex; gap:3px; }.ai-review-actions button { min-height:24px; }
+.ai-context { display:flex; align-items:center; flex-wrap:wrap; gap:5px; }.ai-context-chip { display:inline-flex; align-items:center; gap:4px; min-height:24px; padding:2px 6px; border:1px solid var(--border-default); border-radius:var(--radius-sm); background:var(--surface-panel); color:var(--text-secondary); font:11px/14px var(--font-sans); cursor:pointer; }.ai-context-chip.is-active { color:var(--accent); border-color:var(--accent); background:var(--accent-subtle); }
