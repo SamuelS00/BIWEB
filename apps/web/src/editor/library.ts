@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import type { ReportDoc } from './doc';
 import { seedReports } from './templates';
+import { seedBiReports } from './templates-bi';
+
+const allSeeds = () => [...seedReports(), ...seedBiReports()];
 
 /** Biblioteca de relatórios do workspace Operações de Rede. Persistida no navegador; os modelos iniciais vêm de templates.ts. */
 const KEY = 'biweb.reports.v1';
@@ -16,7 +19,7 @@ interface LibState {
 }
 function initial(): ReportDoc[] {
   const saved = load();
-  const seeds = seedReports();
+  const seeds = allSeeds();
   const out = seeds.map((s) => saved[s.id] ?? s);
   for (const d of Object.values(saved)) if (!seeds.some((s) => s.id === d.id)) out.push(d);
   return out;
@@ -27,9 +30,9 @@ export const useLibrary = create<LibState>((set, get) => ({
   save: (doc) => {
     const docs = get().docs.some((d) => d.id === doc.id) ? get().docs.map((d) => (d.id === doc.id ? doc : d)) : [doc, ...get().docs];
     set({ docs });
-    const seeds = new Map(seedReports().map((s) => [s.id, s]));
+    const seeds = new Map(allSeeds().map((s) => [s.id, s]));
     persist(Object.fromEntries(docs.filter((d) => seeds.get(d.id) !== d).map((d) => [d.id, d])));
   },
   remove: (id) => { const docs = get().docs.filter((d) => d.id !== id); set({ docs }); persist(Object.fromEntries(docs.map((d) => [d.id, d]))); },
-  reset: (id) => { const s = seedReports().find((x) => x.id === id); if (s) get().save(s); },
+  reset: (id) => { const s = allSeeds().find((x) => x.id === id); if (s) get().save(s); },
 }));

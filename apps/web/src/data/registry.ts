@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { generateNetwork, historyOf, NOW, type Network } from '../net/generate';
+import { buildVendasDataset } from './vendas';
 import type { Dataset, Field, Table } from './types';
 
 let net: Network | null = null;
@@ -56,10 +57,11 @@ const readImported = (): string[] => { try { return JSON.parse(localStorage.getI
 
 interface DataState { datasets: Dataset[]; addImported: (name: string) => Dataset }
 const cache = new Map<string, Dataset>();
+const vendas = () => { if (!cache.has('ds_vendas')) cache.set('ds_vendas', buildVendasDataset()); return cache.get('ds_vendas')!; };
 const mk = (id: string, name: string, imported: boolean) => { if (!cache.has(id)) cache.set(id, buildNetworkDataset(id, name, imported)); return cache.get(id)!; };
 
 export const useData = create<DataState>((set, get) => ({
-  datasets: [mk('ds_rede_sp', 'Rede Metropolitana SP', false), ...readImported().map((n, i) => mk(`ds_import_${i + 1}`, n, true))],
+  datasets: [mk('ds_rede_sp', 'Rede Metropolitana SP', false), vendas(), ...readImported().map((n, i) => mk(`ds_import_${i + 1}`, n, true))],
   addImported: (name) => {
     const list = readImported();
     const ds = mk(`ds_import_${list.length + 1}`, name, true);

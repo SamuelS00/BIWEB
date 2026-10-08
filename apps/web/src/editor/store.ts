@@ -3,6 +3,7 @@ import { produce, type Draft } from 'immer';
 import type { Filter } from '../data/types';
 import { makeComp, newPage, uid, type Comp, type CompType, type Page, type ReportDoc } from './doc';
 import { useLibrary } from './library';
+import { filtersFromComp } from '../viz/filterOps';
 
 /**
  * Store central do editor. O documento é imutável (immer): cada alteração gera um passo de histórico rotulado.
@@ -10,7 +11,9 @@ import { useLibrary } from './library';
  */
 export type RightTab = 'build' | 'data' | 'visual' | 'interactions' | 'rules' | 'ai';
 interface Step { doc: ReportDoc; label: string; tx?: string; pageId: string }
-export interface Cross { source: string; table: string; field: string; value: unknown; label: string }
+export interface Cross { source: string; table: string; field: string; value: unknown; label: string; mode?: 'filter' | 'highlight' }
+/** Per-widget changes made while reading a report (filters, sort, table view). They never touch the saved document. */
+export interface ViewOverride { filters?: Filter[]; props?: Record<string, unknown>; asTable?: boolean }
 export interface Toast { id: number; text: string; tone: 'success' | 'info' | 'danger'; action?: { label: string; run: () => void } }
 
 interface EditorState {
@@ -21,7 +24,7 @@ interface EditorState {
   saveState: 'saved' | 'saving'; savedAt: number | null;
   flash: Record<string, number>; toasts: Toast[]; layoutAnim: number;
   // estado de execução (não entra no undo): filtros/slicers, cross-filter, drill, elemento selecionado em mapa/3D
-  filterValues: Record<string, unknown[]>; cross: Cross | null; drill: Record<string, unknown[]>; picked: { comp: string; kind: string; id: string } | null;
+  filterValues: Record<string, unknown[]>; cross: Cross | null; drill: Record<string, unknown[]>; picked: { comp: string; kind: string; id: string } | null; view: Record<string, ViewOverride>; returnTo: { page: string; label: string } | null;
 
   load: (doc: ReportDoc) => void;
   commit: (label: string, fn: (d: Draft<ReportDoc>) => void, opts?: { tx?: string; select?: string[]; flash?: string[] }) => void;
@@ -38,9 +41,9 @@ interface EditorState {
   align: (op: 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom') => void; distribute: (axis: 'h' | 'v') => void;
   nudge: (dx: number, dy: number) => void;
   // páginas
-  addPage: (name?: string) => void; duplicatePage: (id: string) => void; renamePage: (id: string, name: string) => void; movePage: (id: string, dir: -1 | 1) => void; deletePage: (id: string) => void; goPage: (id: string) => void;
+  addPage: (name?: string) => void; duplicatePage: (id: string) => void; renamePage: (id: string, name: string) => void; movePage: (id: string, dir: -1 | 1) => void; deletePage: (id: string) => void; goPage: (id: string, carry?: Cross | null) => void;
   // execução
-  setFilter: (compId: string, values: unknown[]) => void; setCross: (c: Cross | null) => void; filtersFor: (comp: Comp) => Filter[];
+  setView: (compId: string, patch: Partial<ViewOverride> | null) => void; clearAll: () => void; setFilter: (compId: string, values: unknown[]) => void; setCross: (c: Cross | null) => void; filtersFor: (comp: Comp) => Filter[];
   saveNow: (label?: string) => void; toast: (t: Omit<Toast, 'id'>) => void;
 }
 
@@ -59,9 +62,9 @@ export const useEditor = create<EditorState>((set, get) => {
   };
   return {
     doc: null, past: [], future: [], pageId: '', selection: [], mode: 'edit', zoom: 1, fit: true, clipboard: null, rightTab: 'build', interactive: null, focusComp: null,
-    saveState: 'saved', savedAt: null, flash: {}, toasts: [], layoutAnim: 0, filterValues: {}, cross: null, drill: {}, picked: null,
+    saveState: 'saved', savedAt: null, flash: {}, toasts: [], layoutAnim: 0, filterValues: {}, cross: null, drill: {}, picked: null, view: {}, returnTo: null,
 
-    load: (doc) => set({ doc, past: [], future: [], pageId: doc.pages[0]!.id, selection: [], interactive: null, focusComp: null, filterValues: {}, cross: null, drill: {}, picked: null, saveState: 'saved', savedAt: doc.updatedAt }),
+    load: (doc) => set({ doc, past: [], future: [], pageId: doc.pages[0]!.id, selection: [], interactive: null, focusComp: null, filterValues: {}, cross: null, drill: {}, picked: null, view: {}, returnTo: null, saveState: 'saved', savedAt: doc.updatedAt }),
     commit: (label, fn, opts) => {
       const { doc, past, pageId } = get();
       if (!doc) return;
@@ -198,23 +201,29 @@ export const useEditor = create<EditorState>((set, get) => {
       get().commit(`Excluir página ${name}`, (x) => { x.pages = x.pages.filter((p) => p.id !== id); });
       if (get().pageId === id) set({ pageId: get().doc!.pages[0]!.id, selection: [] });
     },
-    goPage: (id) => set({ pageId: id, selection: [], interactive: null, cross: null, picked: null }),
+    goPage: (id, carry) => set({ pageId: id, selection: [], interactive: null, cross: carry ? { ...carry, mode: 'filter' } : null, picked: null, returnTo: carry ? { page: get().pageId, label: carry.label } : null }),
 
+    setView: (compId, patch) => { const view = { ...get().view }; if (patch === null) delete view[compId]; else view[compId] = { ...view[compId], ...patch }; set({ view }); },
+    clearAll: () => set({ filterValues: {}, cross: null, drill: {}, picked: null, view: {}, returnTo: null }),
     setFilter: (compId, values) => set({ filterValues: { ...get().filterValues, [compId]: values } }),
     setCross: (c) => set({ cross: c }),
     /** Filtros que valem para um componente: filtros/segmentações da página que miram nele + cross-filter + filtros locais. */
     filtersFor: (comp) => {
-      const p = get().page(); const out: Filter[] = [...comp.localFilters];
+      const p = get().page(), doc = get().doc; const out: Filter[] = [...(doc?.filters ?? []), ...(p?.filters ?? []), ...comp.localFilters, ...(get().view[comp.id]?.filters ?? [])];
       if (!p || !comp.interactions.receive) return out;
-      for (const f of p.comps) {
-        if ((f.type !== 'filter' && f.type !== 'slicer') || f.id === comp.id) continue;
+      const scoped = (doc?.pages ?? []).flatMap((pg) => pg.comps.filter((f) => (f.type === 'filter' || f.type === 'slicer') && (pg.id === p.id || f.props.scope === 'report')));
+      for (const f of scoped) {
+        if (f.id === comp.id) continue;
         const vals = get().filterValues[f.id] ?? (f.props.defaultValues as unknown[] | undefined) ?? [];
         const targets = f.props.targets as 'all' | string[];
         if (!vals.length || (targets !== 'all' && !targets.includes(comp.id))) continue;
-        out.push({ field: String(f.props.field), op: 'in', value: vals });
+        out.push(...filtersFromComp(f, vals));
       }
       const cr = get().cross;
-      if (cr && cr.source !== comp.id) out.push({ field: cr.field, op: '=', value: cr.value });
+      if (cr && cr.source !== comp.id && cr.mode !== 'highlight') {
+        const aff = p.comps.find((c) => c.id === cr.source)?.interactions.affects;
+        if (!aff || aff === 'all' || aff.includes(comp.id)) out.push({ field: cr.field, op: '=', value: cr.value });
+      }
       const dr = get().drill[comp.id];
       if (dr?.length && comp.interactions.drill) dr.forEach((v, i) => out.push({ field: comp.interactions.drill![i]!, op: '=', value: v }));
       return out;

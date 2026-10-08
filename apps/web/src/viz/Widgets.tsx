@@ -9,131 +9,65 @@ import { useEditor } from '../editor/store';
 import { asset } from '../state/ui-store';
 import { useEmit } from './Chart';
 import { Empty, fieldOf, StatusDot, Tip, useRows, useRules, useSize } from './common';
+import { inWindow, maxDate, periodWindow, shiftYear, dateFieldOf } from './engine/model';
+import { liveAgo, StateOverlay, useLiveTick } from './states';
 
 const NOW_DAY = Math.floor(Date.UTC(2026, 9, 6) / 86_400_000) * 86_400_000;
 
 /* ---------------- KPI ---------------- */
 export const KpiView = memo(function KpiView({ comp }: { comp: Comp }) {
   const p = comp.props as unknown as KpiProps;
-  const rows = useRows(comp);
+  const ds = comp.data!.dataset, tb = comp.data!.table;
+  const dateName = p.dateField ?? dateFieldOf(ds, tb)?.name;
+  const periodic = !!p.period && p.period !== 'all' && !!dateName;
+  const wantPrev = (p.compare === 'prev' || p.compare === 'both') && periodic;
+  const all = useRows(comp, undefined, wantPrev ? dateName : undefined);
   const hist = useRows(comp, 'historico');
   const mf = fieldOf(comp, p.measure);
-  const value = useMemo(() => aggregate(rows, { ds: comp.data!.dataset, table: comp.data!.table, measure: p.measure, agg: p.agg })[0]!.value, [rows, p.measure, p.agg, comp.data]);
-  const spark = useMemo(() => (p.spark && p.sparkMeasure ? aggregate(hist, { ds: comp.data!.dataset, table: 'historico', groupBy: 'dia', measure: p.sparkMeasure, agg: 'avg' }).map((s) => s.value) : []), [hist, p.spark, p.sparkMeasure, comp.data]);
+  const end = useMemo(() => (dateName ? maxDate(ds, tb, dateName) : 0), [ds, tb, dateName]);
+  const w = useMemo(() => (periodic ? periodWindow(p.period, end) : null), [periodic, p.period, end]);
+  const rows = useMemo(() => (dateName && w ? inWindow(all, dateName, w) : all), [all, dateName, w]);
+  const prevRows = useMemo(() => (wantPrev && w && dateName ? inWindow(all, dateName, [shiftYear(w[0]), shiftYear(w[1])]) : null), [wantPrev, w, all, dateName]);
+  const one = (rs: Row[], measure = p.measure, agg = p.agg) => aggregate(rs, { ds, table: tb, measure, agg })[0]!.value;
+  const value = useMemo(() => one(rows), [rows, p.measure, p.agg, ds, tb]); // eslint-disable-line react-hooks/exhaustive-deps
+  const prev = useMemo(() => (prevRows && prevRows.length ? one(prevRows) : null), [prevRows, p.measure, p.agg, ds, tb]); // eslint-disable-line react-hooks/exhaustive-deps
+  const targetValue = p.targetField ? aggregate(rows, { ds, table: tb, measure: p.targetField, agg: 'sum' })[0]!.value : p.target;
+  const spark = useMemo(() => {
+    if (!p.spark) return [];
+    if (dateName && periodic) return aggregate(rows, { ds, table: tb, groupBy: dateName, measure: p.measure, agg: p.agg, grain: p.sparkGrain ?? (p.period === 'last12m' || p.period === 'ytd' ? 'month' : 'day'), sort: 'none' }).map((s) => s.value);
+    return p.sparkMeasure ? aggregate(hist, { ds, table: 'historico', groupBy: 'dia', measure: p.sparkMeasure, agg: 'avg' }).map((s) => s.value) : [];
+  }, [rows, hist, p, dateName, periodic, ds, tb]);
   const fmtV = (v: number) => fmt(v, aggFormat(p.agg, mf), true);
-  const hasT = p.compare === 'target' && p.target != null;
-  const ok = hasT && (p.targetDir === 'above' ? value >= p.target! : value <= p.target!);
+  const hasT = (p.compare === 'target' || p.compare === 'both') && targetValue != null && targetValue !== 0;
+  const better = (a: number, b: number) => (p.lowerIsBetter ? a <= b : a >= b);
+  const ok = hasT && (p.targetDir === 'below' || p.lowerIsBetter ? value <= targetValue! : value >= targetValue!);
+  const dPrev = prev ? value / prev - 1 : null, dPrevPp = prev != null && mf?.format === 'pct' ? value - prev : null;
+  const live = useLiveTick(p.live), [bump, setBump] = useState(false);
+  const last = useRef(value);
+  useEffect(() => { if (!p.live || last.current === value) { last.current = value; return; } last.current = value; setBump(true); const t = setTimeout(() => setBump(false), 700); return () => clearTimeout(t); }, [value, p.live]);
   const [ref, size] = useSize<HTMLDivElement>();
+  const sec = (p.secondary ?? []).map((q) => ({ ...q, v: one(rows, q.measure, q.agg), f: fieldOf(comp, q.measure) }));
+  const tonePrev = dPrev == null ? '' : better(value, prev!) ? 'is-ok' : 'is-bad';
   return (
-    <div className="vz-kpi" ref={ref}>
-      <div className="vz-kpi-value bw-num">{fmtV(value)}</div>
+    <div className="vz-kpi" ref={ref} data-live={p.live ? '' : undefined}>
+      <div className="vz-kpi-top"><div className={`vz-kpi-value bw-num${bump ? ' is-bump' : ''}`}>{fmtV(value)}</div>{p.live && <span className="vz-live-badge vz-live-inline"><i />{liveAgo(live)}</span>}</div>
+      {dPrev != null && <div className={`vz-kpi-delta ${tonePrev}`}>{dPrev >= 0 ? '▲' : '▼'} {Math.abs(dPrev * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}%{dPrevPp != null ? ` (${dPrevPp >= 0 ? '+' : '−'}${Math.abs(dPrevPp).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} pp)` : ''} <span>vs ano anterior · {fmtV(prev!)}</span></div>}
       {hasT ? (
-        <div className={`vz-kpi-delta ${ok ? 'is-ok' : 'is-bad'}`}>{ok ? '✓' : p.targetDir === 'above' ? '▼' : '▲'} {ok ? 'dentro da meta' : 'fora da meta'} <span>meta {p.targetDir === 'above' ? '≥' : '≤'} {fmtV(p.target!)}</span></div>
-      ) : <div className="vz-kpi-delta"><span>{AGG_LABEL[p.agg].toLowerCase()} de {rows.length.toLocaleString('pt-BR')} {rows.length === 1 ? 'linha' : 'linhas'}</span></div>}
-      {spark.length > 1 && size.w > 60 && size.h - 54 >= 10 && <Spark values={spark} w={size.w} h={Math.min(40, size.h - 54)} ok={!hasT || ok} />}
+        <div className={`vz-kpi-delta ${ok ? 'is-ok' : 'is-bad'}`}>{ok ? '✓' : p.targetDir === 'above' && !p.lowerIsBetter ? '▼' : '▲'} {ok ? 'dentro da meta' : 'fora da meta'} <span>meta {p.targetDir === 'above' && !p.lowerIsBetter ? '≥' : '≤'} {fmtV(targetValue!)}{p.targetField ? ` · ${fmt((value / targetValue!) * 100, 'pct')}` : ''}</span></div>
+      ) : dPrev == null && <div className="vz-kpi-delta"><span>{AGG_LABEL[p.agg].toLowerCase()} de {rows.length.toLocaleString('pt-BR')} {rows.length === 1 ? 'linha' : 'linhas'}</span></div>}
+      {sec.length > 0 && <div className="vz-kpi-sec">{sec.map((q) => <span key={q.label}>{q.label}<b className="bw-num">{fmt(q.v, aggFormat(q.agg, q.f), true)}</b></span>)}</div>}
+      {spark.length > 1 && size.w > 60 && size.h - 54 - (sec.length ? 22 : 0) >= 10 && <Spark values={spark} w={size.w} h={Math.min(40, size.h - 54 - (sec.length ? 22 : 0))} ok={!hasT || ok} />}
+      <StateOverlay state={p.state} comp={comp} />
     </div>
   );
 });
 function Spark({ values, w, h, ok }: { values: number[]; w: number; h: number; ok: boolean }) {
-  const mn = Math.min(...values), mx = Math.max(...values), sp = mx - mn || 1;
-  const d = values.map((v, i) => `${i ? 'L' : 'M'}${((i / (values.length - 1)) * (w - 4) + 2).toFixed(1)} ${(h - 2 - ((v - mn) / sp) * (h - 4)).toFixed(1)}`).join(' ');
-  return <svg width={w} height={h} className="vz-spark" aria-hidden="true"><path d={d} style={{ fill: 'none', stroke: ok ? 'var(--viz-cat-1)' : 'var(--dash-negative)', strokeWidth: 1.5 }} /></svg>;
+  const mn = Math.min(...values), mx = Math.max(...values), sp = mx - mn || 1, pts = values.map((v, i) => [(i / (values.length - 1)) * (w - 4) + 2, h - 2 - ((v - mn) / sp) * (h - 4)] as const);
+  const d = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' '), color = ok ? 'var(--viz-cat-1)' : 'var(--dash-negative)';
+  return <svg width={w} height={h} className="vz-spark" aria-hidden="true"><path d={`${d} L${w - 2} ${h} L2 ${h} Z`} style={{ fill: color, fillOpacity: 0.1 }} /><path d={d} style={{ fill: 'none', stroke: color, strokeWidth: 1.5 }} /><circle cx={pts.at(-1)![0]} cy={pts.at(-1)![1]} r={2.4} style={{ fill: color }} /></svg>;
 }
 
-/* ---------------- Tabela virtualizada ---------------- */
-export const TableView = memo(function TableView({ comp }: { comp: Comp }) {
-  const p = comp.props as unknown as TableProps;
-  const rows = useRows(comp);
-  const t = getTable(comp.data!.dataset, comp.data!.table);
-  const [sort, setSort] = useState<[string | undefined, 'asc' | 'desc']>([p.sortBy, p.sortDir]);
-  useEffect(() => setSort([p.sortBy, p.sortDir]), [p.sortBy, p.sortDir]);
-  const sorted = useMemo(() => {
-    const [k, dir] = sort;
-    if (!k) return rows;
-    const m = dir === 'asc' ? 1 : -1;
-    return [...rows].sort((a, b) => (k === 'status' ? (STATUS_ORDER.indexOf(String(a[k])) - STATUS_ORDER.indexOf(String(b[k]))) * m : typeof a[k] === 'number' ? ((a[k] as number) - (b[k] as number)) * m : String(a[k]).localeCompare(String(b[k]), 'pt-BR') * m));
-  }, [rows, sort]);
-  const list = p.rowLimit ? sorted.slice(0, p.rowLimit) : sorted;
-  const [ref, size] = useSize<HTMLDivElement>();
-  const [top, setTop] = useState(0);
-  const rh = p.density === 'compact' ? 26 : 32;
-  const first = Math.max(0, Math.floor(top / rh) - 6), last = Math.min(list.length, Math.ceil((top + size.h) / rh) + 6);
-  const { emit, active: crossActive } = useEmit(comp);
-  const pickedId = useEditor((s) => s.picked?.id);
-  const active = crossActive ?? pickedId;
-  const cols = p.columns.map((c) => t.fields.find((f) => f.name === c)).filter((f): f is NonNullable<typeof f> => !!f);
-  if (!cols.length) return <Empty text="Sem colunas" hint="Adicione campos na aba Dados" />;
-  const tpl = cols.map((c) => (c.name === 'nome' || c.name === 'elementoNome' ? 'minmax(120px, 2fr)' : c.kind === 'measure' ? 'minmax(52px, .8fr)' : 'minmax(60px, 1fr)')).join(' ');
-  return (
-    <div className="vz-table" role="table" aria-label={comp.style.title || 'Tabela'} aria-rowcount={list.length}>
-      <div className="vz-tr vz-th" role="row" style={{ gridTemplateColumns: tpl }}>
-        {cols.map((c) => (
-          <button key={c.name} type="button" role="columnheader" aria-sort={sort[0] === c.name ? (sort[1] === 'asc' ? 'ascending' : 'descending') : 'none'} className={c.kind === 'measure' ? 'is-num' : undefined}
-            onClick={() => setSort(([k, d]) => [c.name, k === c.name && d === 'desc' ? 'asc' : 'desc'])}>
-            {c.label}{sort[0] === c.name && <span aria-hidden="true">{sort[1] === 'asc' ? ' ↑' : ' ↓'}</span>}
-          </button>
-        ))}
-      </div>
-      <div className="vz-tbody" ref={ref} onScroll={(e) => setTop(e.currentTarget.scrollTop)}>
-        {list.length === 0 ? <Empty text="Nenhuma linha" hint="Os filtros atuais não deixaram nenhuma linha" /> : (
-          <div style={{ height: list.length * rh, position: 'relative' }}>
-            {list.slice(first, last).map((r, i) => {
-              const key = r[t.key];
-              return (
-                <div key={String(key)} role="row" className={`vz-tr${r._highlight ? ' is-hl' : ''}${active === key ? ' is-active' : ''}`} style={{ gridTemplateColumns: tpl, height: rh, transform: `translateY(${(first + i) * rh}px)` }}
-                  onClick={() => { const el = t.id === 'eventos' ? String(r.elemento) : String(key); const st = useEditor.getState(); if (t.id === 'enlaces' || t.id === 'nos' || t.id === 'eventos') st.set({ picked: st.picked?.id === el ? null : { comp: comp.id, kind: t.id === 'nos' ? 'node' : 'link', id: el } }); else emit(t.key, key, `${t.name}: ${String(r.nome ?? key)}`); }}>
-                  {cols.map((c) => <Cell key={c.name} r={r} f={c} statusColors={p.statusColors} />)}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-      <div className="vz-tfoot">{list.length.toLocaleString('pt-BR')} {list.length === 1 ? 'linha' : 'linhas'}{rows.length !== t.rows.length && ` de ${t.rows.length.toLocaleString('pt-BR')}`}</div>
-    </div>
-  );
-});
-function Cell({ r, f, statusColors }: { r: Row; f: { name: string; kind: string; format?: Parameters<typeof fmt>[1] }; statusColors: boolean }) {
-  const v = r[f.name];
-  if ((f.name === 'status' || f.name === 'severidade') && typeof v === 'string') {
-    return <span role="cell" className="vz-td vz-status">{statusColors && <StatusDot s={v} />}{STATUS_LABEL[v] ?? v}{r._label ? <em className="vz-rule-tag" title={(r._rules as string[] | undefined)?.join(', ')}>{String(r._label)}</em> : r._statusOriginal ? <em className="vz-rule-tag" title={`Regra: ${(r._rules as string[]).join(', ')}`}>regra</em> : null}{r._alert ? <Icon name="warning" size={12} className="vz-alert" /> : null}</span>;
-  }
-  return <span role="cell" className={`vz-td${f.kind === 'measure' ? ' is-num' : ''}`} title={typeof v === 'string' ? v : undefined}>{fmt(v, f.format)}</span>;
-}
-
-/* ---------------- Matriz ---------------- */
-export const MatrixView = memo(function MatrixView({ comp }: { comp: Comp }) {
-  const p = comp.props as unknown as MatrixProps;
-  const rows = useRows(comp);
-  const ds = comp.data!.dataset, tb = comp.data!.table;
-  const { emit, active } = useEmit(comp);
-  const cells = useMemo(() => aggregate(rows, { ds, table: tb, groupBy: p.rows, series: p.cols, measure: p.measure, agg: p.agg, sort: 'label' }), [rows, p, ds, tb]);
-  const rf = fieldOf(comp, p.rows), cf = fieldOf(comp, p.cols), mf = fieldOf(comp, p.measure);
-  const rk = [...new Set(cells.map((c) => String(c.key)))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
-  const ck = [...new Set(cells.map((c) => c.series!))].sort((a, b) => (p.cols === 'status' ? STATUS_ORDER.indexOf(a) - STATUS_ORDER.indexOf(b) : a.localeCompare(b, 'pt-BR')));
-  const get = (r: string, c: string) => cells.find((x) => String(x.key) === r && x.series === c)?.value;
-  const max = Math.max(...cells.map((c) => c.value), 1);
-  const f = (v?: number) => (v == null ? '' : fmt(v, aggFormat(p.agg, mf), true));
-  const tot = (vs: (number | undefined)[]) => { const xs = vs.filter((v): v is number => v != null); return p.agg === 'avg' ? xs.reduce((a, b) => a + b, 0) / (xs.length || 1) : p.agg === 'max' ? Math.max(...xs) : p.agg === 'min' ? Math.min(...xs) : xs.reduce((a, b) => a + b, 0); };
-  if (!rk.length) return <Empty text="Nada para mostrar" />;
-  return (
-    <div className="vz-matrix-wrap">
-      <table className="vz-matrix">
-        <thead><tr><th>{rf?.label}</th>{ck.map((c) => <th key={c} className="is-num">{labelOf(c, cf)}</th>)}{p.totals && <th className="is-num">Total</th>}</tr></thead>
-        <tbody>
-          {rk.map((r) => (
-            <tr key={r} className={active !== undefined && active !== r ? 'is-dim' : undefined} onClick={() => emit(p.rows, r, `${rf?.label}: ${r}`)}>
-              <th>{labelOf(r, rf)}</th>
-              {ck.map((c) => { const v = get(r, c); const t = v == null ? 0 : v / max; return <td key={c} className="is-num" style={p.heat && v != null ? { background: `color-mix(in srgb, var(--viz-seq-5) ${Math.round(8 + t * 62)}%, transparent)`, color: t > 0.55 ? 'var(--viz-tooltip-text)' : undefined } : undefined}>{f(v)}</td>; })}
-              {p.totals && <td className="is-num is-total">{f(tot(ck.map((c) => get(r, c))))}</td>}
-            </tr>
-          ))}
-        </tbody>
-        {p.totals && <tfoot><tr><th>Total</th>{ck.map((c) => <td key={c} className="is-num">{f(tot(rk.map((r) => get(r, c))))}</td>)}<td className="is-num">{f(tot(cells.map((x) => x.value)))}</td></tr></tfoot>}
-      </table>
-    </div>
-  );
-});
+export { TableView, MatrixView } from './DataTable';
 
 /* ---------------- Indicador de status ---------------- */
 export const StatusView = memo(function StatusView({ comp }: { comp: Comp }) {

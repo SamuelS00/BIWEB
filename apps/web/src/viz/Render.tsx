@@ -1,4 +1,4 @@
-import { Component, lazy, memo, Suspense, useCallback, useMemo, useState, type ReactNode } from 'react';
+import { Component, lazy, memo, Suspense, useCallback, useMemo, type ReactNode } from 'react';
 import { Icon, Skeleton } from '@biweb/ui';
 import { applyRules } from '../data/query';
 import { getTable } from '../data/registry';
@@ -6,7 +6,8 @@ import type { NetStatus } from '../net/generate';
 import type { Comp, Scene3DProps } from '../editor/doc';
 import { useEditor } from '../editor/store';
 import { ChartView } from './Chart';
-import { useDashTheme, useRules } from './common';
+import { useDashTheme, useFilters, useRules } from './common';
+import { WidgetToolbar } from './WidgetToolbar';
 import { MapView } from './map/MapView';
 import { CardView, FilterView, ImageView, KpiView, MatrixView, SlicerView, StatusView, TableView, TextView, TimelineView } from './Widgets';
 import './viz.css';
@@ -70,27 +71,27 @@ class CompBoundary extends Component<{ children: ReactNode; name: string }, { er
 }
 
 /** Moldura visual (título, fundo, borda) — a mesma no editor, na visualização e no Focus Mode. */
-export const CompFrame = memo(function CompFrame({ comp, interactive, editing, mode, onFocus }: { comp: Comp; interactive: boolean; editing: boolean; mode: 'edit' | 'preview' | 'focus'; onFocus?: () => void }) {
+export const CompFrame = memo(function CompFrame({ comp: base, interactive, editing, mode, onFocus }: { comp: Comp; interactive: boolean; editing: boolean; mode: 'edit' | 'preview' | 'focus'; onFocus?: () => void }) {
+  const view = useEditor((s) => s.view[base.id]);
+  const comp = useMemo(() => (view?.props ? { ...base, props: { ...base.props, ...view.props } } : base), [base, view?.props]);
   const s = comp.style;
-  const [tableView, setTableView] = useState(false);
-  const ask = () => useEditor.getState().set({ rightTab: 'ai', selection: [comp.id] });
+  const tableView = !!view?.asTable;
+  const selected = useEditor((st) => st.cross?.source === comp.id);
+  const effective = useFilters(comp);
+  const received = effective.length - comp.localFilters.length - (view?.filters?.length ?? 0);
+  const hasToolbar = !['text', 'image', 'filter', 'slicer', 'container'].includes(comp.type);
   return (
-    <div className={`cf cf--${comp.type} cf-bg--${s.background}${s.border ? ' cf--border' : ''} cf-fs--${s.fontSize}`} style={{ padding: comp.type === 'map' || comp.type === 'scene3d' ? 0 : s.padding }} data-type={comp.type}>
+    <div className={`cf cf--${comp.type} cf-bg--${s.background}${s.border ? ' cf--border' : ''} cf-fs--${s.fontSize}${selected ? ' is-selected' : ''}`} style={{ padding: comp.type === 'map' || comp.type === 'scene3d' ? 0 : s.padding }} data-type={comp.type} data-comp={comp.id}>
+      {hasToolbar && mode !== 'focus' && <div className="cf-toolbar"><WidgetToolbar comp={comp} mode={mode} onFocus={onFocus} /></div>}
       {s.showTitle && (s.title || s.subtitle) && (
         <div className="cf-head" style={comp.type === 'map' || comp.type === 'scene3d' ? { padding: `${s.padding}px ${s.padding}px 0` } : undefined}>
-          <div className="cf-title"><b>{s.title}</b>{s.subtitle && <span>{s.subtitle}</span>}</div>
-          {mode !== 'focus' && onFocus && !['text', 'image', 'filter', 'slicer', 'container'].includes(comp.type) && (
-            <div className="cf-actions">
-              {mode === 'edit' && <button type="button" className="cf-act" aria-label="Perguntar ao Copilot sobre este componente" title="Perguntar ao Copilot" onClick={(e) => { e.stopPropagation(); ask(); }}><Icon name="copilot" size={12} /></button>}
-              <button type="button" className="cf-act" aria-label="Abrir em foco" title="Focus Mode" onClick={(e) => { e.stopPropagation(); onFocus(); }}><Icon name="expand" size={12} /></button>
-            </div>
-          )}
+          <div className="cf-title"><b>{s.title}{selected && <span className="cf-chipflag is-sel">Selecionado</span>}{received > 0 && comp.data && <span className="cf-chipflag" title={`${received} ${received === 1 ? 'filtro recebido' : 'filtros recebidos'} de outros visuais, da página ou do relatório`}>Filtrado</span>}{comp.props.live === true && <span className="cf-chipflag is-live">● Ao vivo</span>}</b>{s.subtitle && <span>{s.subtitle}</span>}</div>
         </div>
       )}
       {comp.type === 'container' && <span className="cf-container-label">{String(comp.props.label ?? '')}</span>}
       <div className="cf-body">
-        {(comp.type === 'chart' || comp.type === 'map') && comp.data && <div className="cf-view-switch"><button type="button" aria-pressed={tableView} onClick={() => setTableView((v) => !v)}><Icon name={tableView ? 'chart' : 'table'} size={12}/>{tableView ? 'Voltar ao visual' : 'Ver como tabela'}</button>{tableView && <span>Linhas do modelo semântico após filtros · configuração preservada</span>}</div>}
-        <CompBoundary name={comp.name}>{tableView && comp.data ? <TableView comp={{ ...comp, type: 'table', props: { columns: getTable(comp.data.dataset, comp.data.table).fields.filter((f) => !f.hidden).slice(0, 8).map((f) => f.name), rowLimit: 250, density: 'compact' } }} /> : <CompBody comp={comp} interactive={interactive} editing={editing} />}</CompBoundary>
+        {tableView && comp.data && <div className="cf-view-switch"><button type="button" aria-pressed onClick={() => useEditor.getState().setView(comp.id, { asTable: false })}><Icon name="chart" size={12}/>Voltar ao visual</button><span>Linhas do modelo semântico após filtros · configuração preservada</span></div>}
+        <CompBoundary name={comp.name}>{tableView && comp.data ? <TableView comp={{ ...comp, type: 'table', props: { columns: getTable(comp.data.dataset, comp.data.table).fields.filter((f) => !f.hidden).slice(0, 8).map((f) => f.name), rowLimit: 250, density: 'compact', search: true, exportable: true, sortBy: undefined, sortDir: 'desc' } }} /> : <CompBody comp={comp} interactive={interactive} editing={editing} />}</CompBoundary>
       </div>
     </div>
   );

@@ -3,7 +3,13 @@ import type { Agg, Filter, Rule } from '../data/types';
 import type { Grain } from '../data/query';
 
 export type CompType = 'kpi' | 'chart' | 'table' | 'matrix' | 'text' | 'image' | 'filter' | 'slicer' | 'map' | 'scene3d' | 'card' | 'container' | 'timeline' | 'status';
-export type ChartKind = 'bar' | 'hbar' | 'line' | 'area' | 'pie' | 'scatter';
+export type ChartKind = 'bar' | 'hbar' | 'line' | 'area' | 'pie' | 'scatter'
+  | 'step' | 'combo' | 'stacked' | 'stacked100' | 'grouped' | 'waterfall' | 'bullet' | 'histogram' | 'box' | 'bubble' | 'treemap' | 'funnel' | 'heat' | 'calendar' | 'gauge' | 'sankey' | 'sparkbars';
+export type PeriodKey = 'all' | 'ytd' | 'last12m' | 'last90d' | 'last30d' | 'last7d';
+export type RefKind = 'avg' | 'median' | 'target' | 'sla' | 'threshold' | 'forecast' | 'max' | 'min';
+export interface RefLine { id: string; kind: RefKind; value?: number; label?: string }
+export interface Annotation { id: string; at: number; label: string; tone?: 'info' | 'warning' | 'danger' }
+export type DemoState = 'live' | 'loading' | 'error' | 'noaccess' | 'stale';
 export type MapVariant = 'assets' | 'heat' | 'routes' | 'topology';
 
 export interface Binding { dataset: string; table: string }
@@ -13,6 +19,9 @@ export interface CompInteractions {
   /** Este componente reage a filtros e seleções dos outros. */ receive: boolean;
   /** Clicar navega para outra página. */ navigateTo?: string;
   /** Hierarquia de drill-down (ex.: regiao → nome). */ drill?: string[];
+  /** Filtrar os outros componentes ou só destacar a seleção (cross-highlight). */ crossMode?: 'filter' | 'highlight';
+  /** Quais componentes reagem à seleção deste. */ affects?: 'all' | string[];
+  /** Drill-through: leva a seleção atual para a página de destino. */ carryContext?: boolean;
 }
 export interface Comp {
   id: string; type: CompType; name: string;
@@ -22,24 +31,34 @@ export interface Comp {
   data?: Binding; localFilters: Filter[];
   props: Record<string, unknown>;
 }
-export interface Page { id: string; name: string; w: number; h: number; comps: Comp[] }
+export interface Page { id: string; name: string; w: number; h: number; comps: Comp[]; /** Filtros que valem para todos os componentes desta página. */ filters?: Filter[] }
 export interface ReportDoc {
-  id: string; name: string; description: string; category: 'Operações' | 'Executivo' | 'Engenharia' | 'Campo' | 'Capacidade';
+  id: string; name: string; description: string; category: 'Operações' | 'Executivo' | 'Engenharia' | 'Campo' | 'Capacidade' | 'Comercial' | 'Financeiro' | 'Clientes';
   kind: 'Dashboard' | 'Mapa operacional' | 'Gêmeo digital' | 'Relatório paginado';
-  datasets: string[]; pages: Page[]; rules: Rule[];
+  datasets: string[]; pages: Page[]; rules: Rule[]; /** Filtros que valem para todas as páginas do relatório. */ filters?: Filter[];
   status: 'Rascunho' | 'Publicado'; version: number; publishedAt?: number; updatedAt: number; owner: string; certified?: boolean; views: number;
   cover: 'map' | 'topology' | 'routes' | 'chart' | 'heat' | '3d' | 'kpi';
   origin?: 'copilot';
 }
 
 /* ---------- props por tipo (o Inspector e os renderers usam estes formatos) ---------- */
-export interface KpiProps { measure: string; agg: Agg; format?: string; label: string; target?: number; targetDir: 'above' | 'below'; spark: boolean; sparkMeasure?: string; compare: 'none' | 'target' }
-export interface ChartProps { kind: ChartKind; x: string; y: string; agg: Agg; series?: string; sort: 'value' | 'asc' | 'label' | 'none'; limit: number; legend: boolean; labels: boolean; tooltip: boolean; grain: Grain; y2?: string /* scatter: medida do eixo Y */; responsive: 'fit' | 'scroll' }
-export interface TableProps { columns: string[]; sortBy?: string; sortDir: 'asc' | 'desc'; statusColors: boolean; density: 'compact' | 'default'; rowLimit: number }
-export interface MatrixProps { rows: string; cols: string; measure: string; agg: Agg; heat: boolean; totals: boolean }
+export interface KpiProps { measure: string; agg: Agg; format?: string; label: string; target?: number; targetDir: 'above' | 'below'; spark: boolean; sparkMeasure?: string; compare: 'none' | 'target' | 'prev' | 'both';
+  /** Janela de tempo (ancorada na data mais recente dos dados) e campo de data. */ period?: PeriodKey; dateField?: string;
+  /** Campo (medida) cuja soma é a meta do período. */ targetField?: string; sparkGrain?: Grain; /** Menor é melhor (ex.: latência, churn). */ lowerIsBetter?: boolean; unit?: string; live?: boolean; state?: DemoState; secondary?: { label: string; measure: string; agg: Agg }[] }
+export interface ChartProps { kind: ChartKind; x: string; y: string; agg: Agg; series?: string; sort: 'value' | 'asc' | 'label' | 'none'; limit: number; legend: boolean; labels: boolean; tooltip: boolean; grain: Grain; y2?: string /* scatter: medida do eixo Y; combo: medida da linha; bubble: tamanho */; responsive: 'fit' | 'scroll';
+  /** Campo (medida) usado como meta, ex.: `meta`. */ target?: string; compare?: 'none' | 'prev' | 'target' | 'both';
+  period?: PeriodKey; dateField?: string; refs?: RefLine[]; notes?: Annotation[]; zoom?: boolean; tooltipFields?: string[]; bins?: number;
+  /** Rótulos das barras que fecham total na cascata. */ totals?: string[]; movingAvg?: number; live?: boolean; state?: DemoState; colorBy?: string; thresholds?: [number, number] }
+export type Tone3 = 'critical' | 'warning' | 'healthy';
+export interface CfRule { op: '<' | '<=' | '>' | '>=' | 'between'; v: number; v2?: number; tone: Tone3 }
+/** Conditional formatting for one column: a color scale, data bars, tone rules or status icons. */
+export interface CondFormat { id: string; field: string; kind: 'scale' | 'bars' | 'rules' | 'icons'; rules?: CfRule[]; reverse?: boolean }
+export interface TableProps { columns: string[]; sortBy?: string; sortDir: 'asc' | 'desc'; statusColors: boolean; density: 'compact' | 'default'; rowLimit: number;
+  search?: boolean; columnPicker?: boolean; totals?: boolean; groupBy?: string; cf?: CondFormat[]; trend?: { measure: string; label?: string }; exportable?: boolean; live?: boolean; state?: DemoState }
+export interface MatrixProps { rows: string; cols: string; measure: string; agg: Agg; heat: boolean; totals: boolean; rowHier?: string[]; cf?: CondFormat[]; period?: PeriodKey }
 export interface TextProps { text: string; size: 'sm' | 'md' | 'lg' | 'xl'; align: 'left' | 'center' | 'right'; weight: 'regular' | 'strong'; tone: 'title' | 'subtitle' }
 export interface ImageProps { src: string; fit: 'contain' | 'cover'; alt: string }
-export interface FilterProps { field: string; multi: boolean; targets: 'all' | string[]; defaultValues: unknown[]; style: 'dropdown' | 'list' }
+export interface FilterProps { field: string; multi: boolean; targets: 'all' | string[]; defaultValues: unknown[]; style: 'dropdown' | 'list' | 'search' | 'range' | 'daterange' | 'relative' | 'toggle' | 'hierarchy'; scope?: 'page' | 'report'; hierarchy?: string[]; rangeMin?: number; rangeMax?: number }
 export interface SlicerProps { field: string; multi: boolean; targets: 'all' | string[]; showCounts: boolean; orientation: 'horizontal' | 'vertical' }
 export interface MapLayers { regioes: boolean; enlaces: boolean; nos: boolean; eventos: boolean; rotas: boolean; heat: boolean; cobertura: boolean; clusters: boolean; clientes: boolean }
 export interface MapProps { variant: MapVariant; layers: MapLayers; colorBy: 'status' | 'utilizacao' | 'atenuacao_dB' | 'camada'; heatField: 'eventos' | 'atenuacao_dB' | 'utilizacao'; legend: boolean; detailPanel: boolean; layerPanel: boolean; labels: boolean; routeId?: string; focus?: string }

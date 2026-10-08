@@ -2,11 +2,12 @@ import { useEffect, useMemo } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { Avatar, Badge, Button, Icon, Menu } from '@biweb/ui';
 import { labelOf } from '../data/query';
-import { getField } from '../data/registry';
+import { getDataset, getField } from '../data/registry';
 import { NOW } from '../net/generate';
 import { useUi } from '../state/ui-store';
 import { FavButton } from '../routes/reports-shared';
 import { Canvas } from './Canvas';
+import { FilterBar } from '../viz/FilterBar';
 import { FocusOverlay, Toasts } from './chrome';
 import { coverFor } from './covers';
 import { useLibrary } from './library';
@@ -35,7 +36,6 @@ export function ReportView({ id }: { id: string }) {
   if (!lib) return null;
   if (!doc) return <div className="pg"><p className="bw-secondary">Carregando…</p></div>;
   const page = doc.pages.find((p) => p.id === pageId) ?? doc.pages[0]!;
-  const filterComps = page.comps.filter((c) => (c.type === 'filter' || c.type === 'slicer') && (fv[c.id] ?? []).length);
   const st = useEditor.getState();
   return (
     <div className="rv rv--doc">
@@ -52,7 +52,7 @@ export function ReportView({ id }: { id: string }) {
               {alerts > 0 && <Badge tone="danger" icon="warning">{alerts} {alerts === 1 ? 'alerta de regra' : 'alertas de regra'}</Badge>}
             </span>
             <span className="bw-row" style={{ gap: 6 }}><Avatar name={doc.owner} size={20} />{doc.owner}</span>
-            <span className="bw-secondary">Dataset <Link to="/connections" className="bw-link"><b>Rede Metropolitana SP</b></Link></span>
+            <span className="bw-secondary">Dataset <Link to="/connections" className="bw-link"><b>{getDataset(doc.datasets[0] ?? 'ds_rede_sp').name}</b></Link></span>
             <span className="bw-secondary">Atualizado {ago(doc.updatedAt)}</span>
           </div>
         </div>
@@ -69,11 +69,10 @@ export function ReportView({ id }: { id: string }) {
       <div className="rv-docbar">
         {doc.pages.length > 1 && <div className="rv-pages" role="tablist" aria-label="Páginas">{doc.pages.map((p) => <button key={p.id} role="tab" aria-selected={p.id === page.id} onClick={() => st.goPage(p.id)}>{p.name}</button>)}</div>}
         <span className="flex-1" />
-        {filterComps.map((f) => { const fld = getField(f.data!.dataset, f.data!.table, String(f.props.field)); return <span key={f.id} className="bw-filter" data-active><span className="bw-k">{fld?.label}:</span> <b>{(fv[f.id] ?? []).map((v) => labelOf(v, fld)).join(', ')}</b><button className="bw-iconbtn bw-iconbtn--sm" aria-label={`Limpar ${fld?.label}`} onClick={() => st.setFilter(f.id, [])}><Icon name="close" size={12} /></button></span>; })}
-        {cross && <span className="bw-filter" data-active><span className="bw-k">Seleção:</span> <b>{cross.label}</b><button className="bw-iconbtn bw-iconbtn--sm" aria-label="Limpar seleção" onClick={() => st.setCross(null)}><Icon name="close" size={12} /></button></span>}
         <span className="bw-live">Ao vivo · dados de 06/10/2026 08:00</span>
         {doc.id === 'net_operacoes' || doc.id === 'net_geografica' || doc.id === 'net_incidentes' || doc.id === 'net_gemeo' ? <Link to="/maps/$mapId" params={{ mapId: doc.id === 'net_incidentes' ? 'incidents' : doc.id === 'net_gemeo' ? 'lights' : 'network' }} className="bw-filter"><Icon name="pin" size={12} />Abrir workspace de mapa</Link> : null}
       </div>
+      <FilterBar />
       <div className="rv-doccanvas"><Canvas /></div>
       <Toasts />
       <FocusOverlay />

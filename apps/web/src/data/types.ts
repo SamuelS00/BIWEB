@@ -1,7 +1,9 @@
 /** Modelo de dados do protótipo: Data Source → Dataset → Report → Page → Component. Os dados pertencem à empresa, não ao relatório. */
 export type FieldKind = 'dimension' | 'date' | 'geo' | 'measure';
-export type FieldFormat = 'int' | 'dec' | 'pct' | 'db' | 'km' | 'gbps' | 'ms' | 'date' | 'datetime' | 'text';
-export interface Field { name: string; label: string; kind: FieldKind; format?: FieldFormat; hidden?: boolean; description?: string }
+export type FieldFormat = 'int' | 'dec' | 'pct' | 'db' | 'km' | 'gbps' | 'ms' | 'date' | 'datetime' | 'text' | 'brl' | 'month';
+/** Calculated field: sum(num) / sum(den) × scale, so ratios stay correct at any level of aggregation. */
+export interface FieldCalc { num: string; den: string; scale?: number; offset?: number; /** 'diff' = sum(num) − sum(den) */ op?: 'ratio' | 'diff' }
+export interface Field { name: string; label: string; kind: FieldKind; format?: FieldFormat; hidden?: boolean; description?: string; calc?: FieldCalc; /** Hierarchy this field belongs to, in drill order. */ hierarchy?: string }
 export type Row = Record<string, unknown>;
 export interface Table { id: string; name: string; description: string; key: string; geometry?: 'point' | 'line' | 'polygon'; fields: Field[]; rows: Row[] }
 export interface Relationship { from: string; to: string; label: string } // "tabela.campo" → "tabela.campo" (N:1)

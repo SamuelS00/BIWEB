@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { rowsOf } from '../data/query';
+import { liveRows, useLiveTick } from './states';
 import { getTable } from '../data/registry';
 import type { Filter, Row } from '../data/types';
 import type { Comp } from '../editor/doc';
@@ -25,7 +26,7 @@ export function useSize<T extends HTMLElement>() {
 
 /** Filtros efetivos de um componente (página, segmentações, cross-filter, drill, locais). Re-renderiza só quando eles mudam. */
 export function useFilters(comp: Comp, exclude?: string): Filter[] {
-  const key = useEditor(useShallow((s) => [s.filterValues, s.cross, s.drill, s.doc?.pages.find((p) => p.id === s.pageId)?.comps] as const));
+  const key = useEditor(useShallow((s) => [s.filterValues, s.cross, s.drill, s.view, s.doc?.filters, s.doc?.pages.find((p) => p.id === s.pageId)?.comps, s.doc?.pages.find((p) => p.id === s.pageId)?.filters] as const));
   return useMemo(() => {
     const fs = useEditor.getState().filtersFor(comp);
     return exclude ? fs.filter((f) => f.field !== exclude) : fs;
@@ -39,7 +40,8 @@ export function useRows(comp: Comp, table?: string, exclude?: string): Row[] {
   const filters = useFilters(comp, exclude);
   const rules = useRules();
   const ds = comp.data?.dataset ?? 'ds_rede_sp', t = table ?? comp.data?.table ?? 'enlaces';
-  return useMemo(() => rowsOf(ds, t, { rules, filters }), [ds, t, rules, filters]);
+  const live = useLiveTick(comp.props.live as boolean | undefined);
+  return useMemo(() => liveRows(rowsOf(ds, t, { rules, filters }), ds, t, live), [ds, t, rules, filters, live]);
 }
 export const fieldOf = (comp: Comp, name?: string, table?: string) => (name ? getTable(comp.data?.dataset ?? 'ds_rede_sp', table ?? comp.data?.table ?? 'enlaces').fields.find((f) => f.name === name) : undefined);
 

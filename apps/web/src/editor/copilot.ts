@@ -252,7 +252,7 @@ const INTENTS: Intent[] = [
     if (!c || c.type !== 'chart') return null;
     const n = norm(text);
     const kind: ChartKind = /horizonta/.test(n) ? 'hbar' : /pizza/.test(n) ? 'pie' : /area/.test(n) ? 'area' : /dispers/.test(n) ? 'scatter' : /linha/.test(n) ? 'line' : 'bar';
-    const names: Record<ChartKind, string> = { bar: 'barras', hbar: 'barras horizontais', line: 'linha', area: 'área', pie: 'pizza', scatter: 'dispersão' };
+    const names: Partial<Record<ChartKind, string>> = { bar: 'barras', hbar: 'barras horizontais', line: 'linha', area: 'área', pie: 'pizza', scatter: 'dispersão' };
     return { intent: 'Trocar visualização', thinking: `Trocar ${c.name} para ${names[kind]}.`, steps: [{ label: `Trocar para ${names[kind]}`, run: (tx) => { st().update(c.id, (d) => { d.props.kind = kind; if (kind === 'scatter') { d.props.x = 'extensao_km'; d.props.y = 'atenuacao_dB'; } }, `IA: trocar para ${names[kind]}`, tx); return [c.id]; } }], summary: () => `Troquei ${c.name} para ${names[kind]}.` };
   } },
   { id: 'title', test: /(mude|troque|altere|renomeie).*(titulo|nome).*(para|:)\s*(.+)/, plan: (text) => {
