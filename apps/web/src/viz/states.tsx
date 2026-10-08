@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { Icon } from '@biweb/ui';
 import { frac } from '../routes/maps/base';
 import { getTable } from '../data/registry';
+import { setLiveTick } from '../data/live';
 import type { Row } from '../data/types';
 import type { Comp, DemoState } from '../editor/doc';
 import { useEditor } from '../editor/store';
@@ -10,7 +11,7 @@ import { useEditor } from '../editor/store';
 let tick = 0, timer: ReturnType<typeof setInterval> | undefined, users = 0;
 const subs = new Set<() => void>();
 const subscribe = (fn: () => void) => { subs.add(fn); return () => { subs.delete(fn); }; };
-function start() { if (!timer) timer = setInterval(() => { tick++; subs.forEach((f) => f()); }, 2000); }
+function start() { if (!timer) timer = setInterval(() => { tick++; setLiveTick(tick); subs.forEach((f) => f()); }, 2000); }
 /** Ticks every 2 s while at least one live widget is mounted. Returns 0 for widgets that are not live. */
 export function useLiveTick(live?: boolean): number {
   const value = useSyncExternalStore(subscribe, () => tick);
@@ -22,7 +23,7 @@ const hash = (s: string) => { let h = 0; for (let i = 0; i < s.length; i++) h = 
 
 /** Small random walk over the live measures (utilization, availability, attenuation, latency). Rows that moved are flagged for highlight. */
 export function liveRows(rows: Row[], ds: string, table: string, t: number): Row[] {
-  if (!t) return rows;
+  if (!t || table === 'telemetria') return rows;
   const fields = getTable(ds, table).fields.filter((f) => f.kind === 'measure' && ['pct', 'db', 'ms'].includes(f.format ?? '') && !f.calc);
   if (!fields.length) return rows;
   return rows.map((r) => {

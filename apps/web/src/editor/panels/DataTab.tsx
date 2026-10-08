@@ -47,7 +47,7 @@ function DatasetTree() {
                       {isOpen && fs.map((f) => (
                         <div key={f.name} className="ed-fld" draggable title={f.description ?? `Arraste para um slot · ${f.label}`}
                           onDragStart={(e) => { e.dataTransfer.setData('application/x-biweb-field', JSON.stringify({ table: t.id, field: f.name })); e.dataTransfer.effectAllowed = 'copy'; }}>
-                          <FieldTypeIcon kind={kindOf(f)} /><span>{f.label}</span><span className="bw-mono bw-muted">{f.name}</span>
+                          <FieldTypeIcon kind={kindOf(f)} /><span>{f.label}</span>{f.calc && <span className="bw-mono bw-muted" title="Campo calculado" aria-label="Campo calculado">ƒx</span>}<span className="bw-cap bw-muted">{f.kind === 'date' ? 'data' : f.kind === 'measure' ? 'métrica' : 'dimensão'}</span>
                         </div>
                       ))}
                     </div>

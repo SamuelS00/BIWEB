@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, Icon } from '@biweb/ui';
-import { ask, applyProposal, chooseProposalStep, DEMO_PROMPTS, stopProposal, undoAi, useCopilotChat, type ChatMsg } from '../copilot';
+import { ask, applyProposal, chooseProposalStep, DEMO_PROMPTS, DEMO_PROMPTS_BI, stopProposal, undoAi, useCopilotChat, type ChatMsg } from '../copilot';
 import { COMP_META } from '../doc';
 import { useEditor } from '../store';
 
@@ -54,6 +54,7 @@ export function AiTab() {
   const sel = useEditor((s) => (s.selection.length === 1 ? s.page()?.comps.find((c) => c.id === s.selection[0]) : undefined));
   const nSel = useEditor((s) => s.selection.length);
   const pageName = useEditor((s) => s.page()?.name);
+  const doc = useEditor((s) => s.doc);
   const [q, setQ] = useState('');
   const [selectionContext, setSelectionContext] = useState(true);
   const [pageContext, setPageContext] = useState(true);
@@ -75,7 +76,7 @@ export function AiTab() {
           <div className="ai-empty">
             <p>Eu altero este relatório: crio páginas e componentes, conecto filtros, crio regras, troco visualizações e reorganizo o layout. Toda ação vira um passo de Desfazer.</p>
             <span className="bw-label">Experimente</span>
-            {DEMO_PROMPTS.map((p) => <button key={p} type="button" className="ai-suggest" onClick={() => send(p)}><Icon name="arrowRight" size={12} />{p}</button>)}
+            {(doc?.datasets[0] === 'ds_vendas' ? DEMO_PROMPTS_BI : DEMO_PROMPTS).map((p) => <button key={p} type="button" className="ai-suggest" onClick={() => send(p)}><Icon name="arrowRight" size={12} />{p}</button>)}
           </div>
         )}
         {msgs.map((m) => <Msg key={m.id} m={m} busy={busy} />)}

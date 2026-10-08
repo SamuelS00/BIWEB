@@ -1,3 +1,4 @@
+import { INCIDENT_MIN } from '../data/live';
 import { NOW } from '../net/generate';
 import type { Filter } from '../data/types';
 import { MARGIN_RULES } from '../viz/cf';
@@ -123,7 +124,8 @@ export function seedBiReports(): ReportDoc[] {
         C('chart', 660, 240, 596, 330, { title: 'Distribuição de disponibilidade', subtitle: 'quantos enlaces em cada faixa · SLA em 99,9%', props: chart('histogram', 'disponibilidade', 'disponibilidade', { bins: 14, legend: false, live: true, refs: [{ id: 's', kind: 'sla', value: 99.9, label: 'SLA' }] }) }),
         C('chart', 24, 586, 420, 330, { title: 'Utilização × atenuação', subtitle: 'cada ponto é um enlace', props: chart('scatter', 'utilizacao', 'atenuacao_dB', { series: 'camada', limit: 400, legend: true, refs: [{ id: 'f', kind: 'forecast' }] }) }),
         C('table', 460, 586, 796, 330, { title: 'Enlaces mais carregados', subtitle: 'linhas piscam quando o valor muda · clique para destacar no mapa', props: { columns: ['id', 'nome', 'regiao', 'status', 'utilizacao', 'atenuacao_dB', 'disponibilidade'], sortBy: 'utilizacao', sortDir: 'desc', statusColors: true, density: 'compact', rowLimit: 60, search: true, exportable: true, live: true, trend: { measure: 'utilizacao', label: '30 dias' }, cf: [{ id: 'u', field: 'utilizacao', kind: 'bars' }, { id: 'd', field: 'disponibilidade', kind: 'rules', rules: [{ op: '<', v: 99.5, tone: 'critical' }, { op: 'between', v: 99.5, v2: 99.9, tone: 'warning' }, { op: '>', v: 99.9, tone: 'healthy' }] }] } }),
-      ], 940)],
+        C('chart', 24, 932, 1232, 300, { title: 'Tráfego por POP · últimos 40 minutos', subtitle: 'janela deslizante, atualiza a cada 2 s · a faixa marca o incidente no POP Lapa', table: 'telemetria', props: chart('line', 'ts', 'trafego_gbps', { agg: 'avg', series: 'pop', grain: 'minute', sort: 'none', limit: 0, legend: true, live: true, zoom: false, tooltipFields: ['latencia_ms', 'perda_pct'], notes: [{ id: 'i1', at: INCIDENT_MIN * 60_000, label: 'Pico de tráfego e perda no POP Lapa', tone: 'danger' }] }) }),
+      ], 1260)],
     }));
   }
   cache = out;

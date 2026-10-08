@@ -109,10 +109,12 @@ export function aggregateValues(vals: unknown[], agg: Agg): number {
   return Math.max(...nums);
 }
 
-export type Grain = 'day' | 'week' | 'month' | 'quarter' | 'year';
+export type Grain = 'minute' | 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year';
 const DAY = 86_400_000;
 export function groupKey(v: unknown, f?: Field, grain: Grain = 'day') {
   if (f?.kind === 'date' && typeof v === 'number') {
+    if (grain === 'minute') return Math.floor(v / 60_000) * 60_000;
+    if (grain === 'hour') return Math.floor(v / 3_600_000) * 3_600_000;
     const d = Math.floor(v / DAY) * DAY;
     if (grain === 'week') return d - (new Date(d).getUTCDay() * DAY);
     if (grain === 'month' || grain === 'quarter' || grain === 'year') { const x = new Date(d), m = grain === 'year' ? 0 : grain === 'quarter' ? Math.floor(x.getUTCMonth() / 3) * 3 : x.getUTCMonth(); return Date.UTC(x.getUTCFullYear(), m, 1); }
@@ -154,7 +156,7 @@ export function aggregate(rows: Row[], o: { ds: string; table: string; groupBy?:
   if (o.limit && gf?.kind !== 'date' && !o.series) out = out.slice(0, o.limit);
   return out;
 }
-export const labelOf = (k: unknown, f?: Field, grain: Grain = 'day') => (f?.kind === 'date' ? (grain === 'month' ? fmt(k, 'month') : grain === 'quarter' ? `T${Math.floor(new Date(Number(k)).getUTCMonth() / 3) + 1}/${String(new Date(Number(k)).getUTCFullYear()).slice(2)}` : grain === 'year' ? String(new Date(Number(k)).getUTCFullYear()) : fmt(k, 'date')) : f?.name === 'status' || f?.name === 'severidade' ? STATUS_LABEL[String(k)] ?? String(k) : String(k ?? '—'));
+export const labelOf = (k: unknown, f?: Field, grain: Grain = 'day') => (f?.kind === 'date' ? (grain === 'minute' || grain === 'hour' ? new Date(Number(k)).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) : grain === 'month' ? fmt(k, 'month') : grain === 'quarter' ? `T${Math.floor(new Date(Number(k)).getUTCMonth() / 3) + 1}/${String(new Date(Number(k)).getUTCFullYear()).slice(2)}` : grain === 'year' ? String(new Date(Number(k)).getUTCFullYear()) : fmt(k, 'date')) : f?.name === 'status' || f?.name === 'severidade' ? STATUS_LABEL[String(k)] ?? String(k) : String(k ?? '—'));
 
 /** Valores distintos de um campo (para slicers, filtros e o construtor de regras). */
 export function distinct(ds: string, table: string, field: string): unknown[] {

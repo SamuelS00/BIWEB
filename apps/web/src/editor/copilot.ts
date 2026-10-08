@@ -9,6 +9,9 @@ import { getTable } from '../data/registry';
 import type { FilterOp, Rule, RuleStatus } from '../data/types';
 import { COMP_META, DS, makeComp, uid, type ChartKind, type ChartProps, type Comp, type CompType, type KpiProps, type Page } from './doc';
 import { overlaps, useEditor } from './store';
+import { adaptKind, KIND_BY_ID, KINDS } from '../viz/engine/kinds';
+import { PERIOD_LABEL } from '../viz/engine/model';
+import { MARGIN_RULES } from '../viz/cf';
 
 export interface PlanStep { label: string; run: (tx: string) => string[] | void }
 export interface Plan { intent: string; thinking: string; steps: PlanStep[]; summary: () => string; answer?: string[]; actions?: { label: string; prompt: string }[] }
@@ -112,7 +115,7 @@ export function layoutIssues(p: Page): LayoutIssue[] {
 /* ---------- ajudantes de criação ---------- */
 function add(tx: string, type: CompType, r: { x: number; y: number; w: number; h: number }, o: { title?: string; subtitle?: string; table?: string; props?: Record<string, unknown>; filters?: Comp['localFilters']; preset?: Record<string, unknown>; style?: Partial<Comp['style']> } = {}, label?: string) {
   const p = page();
-  const c = makeComp(type, r, o.preset ?? {}, Math.max(0, ...p.comps.map((x) => x.z)) + 1);
+  const c = makeComp(type, r, o.preset ?? {}, Math.max(0, ...p.comps.map((x) => x.z)) + 1, st().doc!.datasets[0] ?? DS);
   if (o.title !== undefined) { c.style.title = o.title; c.name = o.title || c.name; }
   if (o.subtitle !== undefined) c.style.subtitle = o.subtitle;
   if (c.data) c.data.dataset = st().doc!.datasets[0] ?? DS;
@@ -137,7 +140,122 @@ const countRows = (table: string, filters: Comp['localFilters'] = []) => rowsOf(
 
 /* ---------- intents ---------- */
 type Intent = { id: string; test: RegExp; plan: (text: string) => Plan | null };
+const curDs = () => st().doc!.datasets[0] ?? DS;
+const MEASURES: Record<string, { ds: string; table: string; field: string; agg: 'sum' | 'avg'; label: string; date: string }> = {
+  receita: { ds: 'ds_vendas', table: 'vendas', field: 'receita', agg: 'sum', label: 'Receita', date: 'data' }, vendas: { ds: 'ds_vendas', table: 'vendas', field: 'receita', agg: 'sum', label: 'Receita', date: 'data' },
+  faturamento: { ds: 'ds_vendas', table: 'vendas', field: 'receita', agg: 'sum', label: 'Receita', date: 'data' }, margem: { ds: 'ds_vendas', table: 'vendas', field: 'margem_pct', agg: 'sum', label: 'Margem %', date: 'data' },
+  pedidos: { ds: 'ds_vendas', table: 'vendas', field: 'pedidos', agg: 'sum', label: 'Pedidos', date: 'data' }, ticket: { ds: 'ds_vendas', table: 'vendas', field: 'ticket_medio', agg: 'sum', label: 'Ticket médio', date: 'data' },
+  disponibilidade: { ds: DS, table: 'historico', field: 'disponibilidade', agg: 'avg', label: 'Disponibilidade', date: 'dia' }, utilizacao: { ds: DS, table: 'historico', field: 'utilizacao', agg: 'avg', label: 'Utilização', date: 'dia' },
+  atenuacao: { ds: DS, table: 'historico', field: 'atenuacao_dB', agg: 'avg', label: 'Atenuação', date: 'dia' },
+};
+const KIND_WORDS: [RegExp, ChartKind][] = [[/barras? horizontais?|ranking/, 'hbar'], [/(100|cem) ?%|empilhadas? 100/, 'stacked100'], [/empilhad/, 'stacked'], [/agrupad/, 'grouped'], [/combinad|colunas? e linha|barras e linha/, 'combo'], [/cascata|waterfall/, 'waterfall'], [/histograma/, 'histogram'], [/box ?plot|caixa/, 'box'],
+  [/bolhas?|bubble/, 'bubble'], [/dispers/, 'scatter'], [/rosca|pizza|donut|pie/, 'pie'], [/treemap|mapa de arvore/, 'treemap'], [/funil|funnel/, 'funnel'], [/sankey/, 'sankey'], [/medidor|gauge|velocimetro/, 'gauge'], [/bullet/, 'bullet'], [/degrau|step/, 'step'],
+  [/calendario/, 'calendar'], [/tabela de calor|heat ?table|mapa de calor de tabela/, 'heat'], [/area/, 'area'], [/linha/, 'line'], [/colunas?|barras?/, 'bar']];
+const fieldLabels = (c: Comp) => getTable(c.data!.dataset, c.data!.table).fields;
+const NEW_INTENTS: Intent[] = [
+  { id: 'kind-any', test: /(troque|mude|transforme|converta|passe|vire).*(para|em|a) (um |uma )?(grafico de |grafico em )?(barras?|colunas?|linha|area|pizza|rosca|dispers|bolhas|histograma|box|cascata|waterfall|treemap|funil|sankey|medidor|bullet|degrau|calendario|tabela de calor|combinad|empilhad|agrupad)/, plan: (text) => {
+    const c = selected()[0], n = norm(text);
+    if (!c || c.type !== 'chart') return null;
+    const tail = n.slice(n.search(/\b(para|em)\b/)), kind = KIND_WORDS.find(([re]) => re.test(tail))?.[1];
+    if (!kind) return null;
+    const fs = fieldLabels(c), { patch, notes } = adaptKind(c.props as unknown as ChartProps, kind, fs), label = KIND_BY_ID[kind].label.toLowerCase();
+    return { intent: `Trocar visualização · ${label}`, thinking: `${KIND_BY_ID[kind].label} responde a «${KIND_BY_ID[kind].question}». Os campos compatíveis são mantidos; o que mudar aparece abaixo.`,
+      steps: [{ label: `Trocar ${c.name} para ${label}`, run: (tx) => { st().update(c.id, (d) => { Object.assign(d.props, patch); }, `IA: trocar para ${label}`, tx); return [c.id]; } }, ...notes.map((t) => ({ label: t, run: () => undefined }))],
+      summary: () => `Troquei ${c.name} para ${label}, mantendo os campos.${notes.length ? ` ${notes.join(' ')}` : ''} Continua editável nas abas Dados e Visual.` };
+  } },
+  { id: 'metric-by-time', test: /(adicione|crie|mostre|coloque|inclua|quero).*(receita|vendas|faturamento|margem|pedidos|ticket|disponibilidade|utilizacao|atenuacao).*(por|ao longo|mes a mes|evolucao)/, plan: (text) => {
+    const n = norm(text), key = Object.keys(MEASURES).find((k) => n.includes(k));
+    if (!key) return null;
+    const m = MEASURES[key]!, grain = /trimestre/.test(n) ? 'quarter' : /(por |a )ano|anual/.test(n) ? 'year' : /semana/.test(n) ? 'week' : /(por |de )dia|diari/.test(n) ? 'day' : m.ds === 'ds_vendas' ? 'month' : 'day';
+    const gl = { day: 'dia', week: 'semana', month: 'mês', quarter: 'trimestre', year: 'ano' }[grain], kind: ChartKind = grain === 'month' || grain === 'quarter' || grain === 'year' ? 'bar' : 'line';
+    const period = m.ds === 'ds_vendas' ? (grain === 'day' ? 'last90d' : grain === 'week' ? 'last12m' : grain === 'year' ? 'all' : 'last12m') : 'all', cmp = /(ano anterior|compar|yoy|meta)/.test(n);
+    const steps: PlanStep[] = [];
+    if (curDs() !== m.ds) steps.push({ label: `Usar o dataset ${m.ds === 'ds_vendas' ? 'Lume Varejo · Vendas' : 'Rede Metropolitana SP'}`, run: (tx) => { st().commit('IA: escolher dataset', (d) => { d.datasets = [m.ds]; }, { tx }); } });
+    steps.push({ label: `Criar gráfico de ${kind === 'bar' ? 'colunas' : 'linha'}: ${m.label.toLowerCase()} por ${gl}${cmp && m.ds === 'ds_vendas' ? ', com ano anterior' : ''}`, run: (tx) => {
+      const spot = freeArea(page(), 640, 320);
+      return [add(tx, 'chart', { ...spot, w: 640, h: 320 }, { title: `${m.label} por ${gl}`, subtitle: period === 'last12m' ? 'últimos 12 meses' : period === 'last90d' ? 'últimos 90 dias' : 'período completo', table: m.table,
+        props: { kind, x: m.date, y: m.field, agg: m.agg, grain, sort: 'none', limit: 0, legend: cmp, labels: false, tooltip: true, responsive: 'fit', period: m.ds === 'ds_vendas' ? period : undefined, compare: cmp && m.ds === 'ds_vendas' ? 'prev' : undefined, zoom: true } })];
+    } });
+    return { intent: `Build with AI · ${m.label.toLowerCase()} por ${gl}`, thinking: `${m.label} ao longo do tempo é uma pergunta de tendência: ${kind === 'bar' ? 'colunas por ' + gl : 'linha'}, com tooltip rico e zoom por arrasto.`, steps, summary: () => `Adicionei ${m.label.toLowerCase()} por ${gl}. Edite os campos na aba Dados e o visual na aba Visual: nada ficou travado.` };
+  } },
+  { id: 'compare-prev', test: /(adicione|inclua|mostre|coloque|faca|compare).*(comparacao|compar).*(ano anterior|periodo anterior|yoy)|(ano anterior|yoy)/, plan: () => {
+    const c = selected()[0];
+    if (!c || !['chart', 'kpi'].includes(c.type) || !c.data) return null;
+    const hasDate = fieldLabels(c).some((f) => f.kind === 'date');
+    if (!hasDate) return { intent: 'Comparar com o ano anterior', thinking: '', steps: [], summary: () => '', answer: [`A tabela ${getTable(c.data.dataset, c.data.table).name} não tem campo de data, então não há como comparar com o ano anterior.`, 'Escolha um visual baseado em vendas diárias ou em outra tabela com data.'] };
+    return { intent: 'Comparar com o ano anterior', thinking: 'O mesmo recorte do ano anterior vira uma série fantasma, e o tooltip mostra a variação (YoY).',
+      steps: [{ label: `Comparar ${c.name} com o ano anterior`, run: (tx) => { st().update(c.id, (d) => { const hasT = !!(d.props.target || d.props.targetField); d.props.compare = hasT ? 'both' : 'prev'; if (!d.props.period || d.props.period === 'all') d.props.period = c.type === 'kpi' ? 'last30d' : 'last12m'; if (c.type === 'chart') d.props.legend = true; }, 'IA: comparar com o ano anterior', tx); return [c.id]; } }],
+      summary: () => `Liguei a comparação com o ano anterior em ${c.name} (${PERIOD_LABEL[(c.props.period as keyof typeof PERIOD_LABEL) ?? 'last12m'] ?? 'período'}).` };
+  } },
+  { id: 'tooltip-field', test: /(mostre|inclua|adicione|coloque|exiba).*(margem|pedidos|ticket|meta|receita|utilizacao|atenuacao|disponibilidade|capacidade).*(tooltip|dica)/, plan: (text) => {
+    const c = selected()[0], n = norm(text);
+    if (!c || c.type !== 'chart' || !c.data) return null;
+    const fs = fieldLabels(c), cand = ({ margem: ['margem_pct', 'margem'], pedidos: ['pedidos'], ticket: ['ticket_medio'], meta: ['meta'], receita: ['receita'], utilizacao: ['utilizacao'], atenuacao: ['atenuacao_dB'], disponibilidade: ['disponibilidade'], capacidade: ['capacidade'] } as Record<string, string[]>)[Object.keys({ margem: 0, pedidos: 0, ticket: 0, meta: 0, receita: 0, utilizacao: 0, atenuacao: 0, disponibilidade: 0, capacidade: 0 }).find((k) => n.includes(k)) ?? ''] ?? [];
+    const f = cand.map((x) => fs.find((y) => y.name === x)).find(Boolean);
+    if (!f) return { intent: 'Tooltip', thinking: '', steps: [], summary: () => '', answer: ['Esse campo não existe na tabela deste gráfico. Veja os campos disponíveis na aba Dados.'] };
+    return { intent: `Mostrar ${f.label} no tooltip`, thinking: `${f.label} vira uma linha extra no tooltip, por ponto do gráfico.`, steps: [{ label: `Adicionar ${f.label} ao tooltip de ${c.name}`, run: (tx) => { st().update(c.id, (d) => { const cur = (d.props.tooltipFields as string[] | undefined) ?? []; if (!cur.includes(f.name)) d.props.tooltipFields = [...cur, f.name]; d.props.tooltip = true; }, 'IA: campo no tooltip', tx); return [c.id]; } }], summary: () => `Agora o tooltip de ${c.name} mostra ${f.label}.` };
+  } },
+  { id: 'add-filter-bi', test: /(adicione|crie|coloque|inclua).*(filtro|segmenta).*(regiao|canal|categoria|estado|cidade|loja|segmento|periodo|data)/, plan: (text) => {
+    const n = norm(text);
+    if (curDs() !== 'ds_vendas' && !/(periodo|data)/.test(n)) return null;
+    const table = page().comps.find((c) => c.data?.dataset === curDs())?.data?.table ?? (curDs() === 'ds_vendas' ? 'vendas' : 'enlaces');
+    const fs = getTable(curDs(), table).fields;
+    const want = ['regiao', 'canal', 'categoria', 'estado', 'cidade', 'loja', 'segmento'].find((f) => n.includes(f) && fs.some((x) => x.name === f));
+    const date = fs.find((f) => f.kind === 'date');
+    if (/(periodo|data)/.test(n) && date) return { intent: 'Criar filtro de período', thinking: 'Uma janela relativa (últimos 7, 30, 90 dias, 12 meses) vale para toda a página.', steps: [{ label: 'Adicionar filtro de período (janela relativa)', run: (tx) => { const spot = freeArea(page(), 420, 72); return [add(tx, 'filter', { ...spot, w: 420, h: 72 }, { title: 'Período', table, props: { field: date.name, style: 'relative', multi: false, targets: 'all', defaultValues: [] } })]; } }], summary: () => 'Adicionei um filtro de período. Ele vale para a página; mude para «Relatório» na aba Interação para valer em todas.' };
+    if (!want) return null;
+    const label = fs.find((f) => f.name === want)!.label, type: CompType = want === 'canal' || want === 'segmento' ? 'slicer' : 'filter';
+    return { intent: `Criar filtro de ${label.toLowerCase()}`, thinking: `${type === 'filter' ? 'Lista suspensa' : 'Segmentação'} por ${label.toLowerCase()}, ligada a toda a página.`, steps: [{ label: `Adicionar ${type === 'filter' ? 'filtro' : 'segmentação'} ${label}`, run: (tx) => { const spot = freeArea(page(), type === 'filter' ? 232 : 420, 72); return [add(tx, type, { ...spot, w: type === 'filter' ? 232 : 420, h: 72 }, { title: label, table, props: { field: want, multi: true, targets: 'all' } })]; } }], summary: () => `Adicionei ${type === 'filter' ? 'o filtro' : 'a segmentação'} ${label}, ligado a todos os componentes da página. Use a aba Interação para limitar o alcance.` };
+  } },
+  { id: 'link-chart', test: /(faca|faça|ligue|conecte|configure).*(grafico|visual|isso|esse|este).*(filtr|destac)/, plan: (text) => {
+    const c = selected()[0], n = norm(text);
+    if (!c || !c.data || !COMP_META[c.type].data) return null;
+    const type: CompType | undefined = /mapa/.test(n) ? 'map' : /tabela/.test(n) ? 'table' : /matriz/.test(n) ? 'matrix' : undefined;
+    const targets = page().comps.filter((x) => x.id !== c.id && COMP_META[x.type].data && x.type !== 'filter' && x.type !== 'slicer' && (!type || x.type === type));
+    if (!targets.length) return { intent: 'Ligar visuais', thinking: '', steps: [], summary: () => '', answer: [`Não há ${type === 'map' ? 'mapa' : type === 'table' ? 'tabela' : 'outro visual'} nesta página para receber o filtro.`] };
+    const highlight = /destac/.test(n);
+    return { intent: highlight ? 'Cross-highlight' : 'Cross-filter', thinking: `Clicar em ${c.name} ${highlight ? 'destaca' : 'filtra'} ${targets.map((t) => t.name).join(', ')}.`,
+      steps: [{ label: `Clicar em ${c.name} ${highlight ? 'destaca' : 'filtra'}: ${targets.map((t) => t.name).join(', ')}`, run: (tx) => { st().update(c.id, (d) => { d.interactions.emitCross = true; d.interactions.crossMode = highlight ? 'highlight' : 'filter'; d.interactions.affects = targets.map((t) => t.id); }, 'IA: ligar interação', tx); return [c.id]; } }],
+      summary: () => `Pronto: ao clicar em ${c.name}, ${highlight ? 'destaco' : 'filtro'} ${targets.length === 1 ? targets[0]!.name : `${targets.length} visuais`}. Ajuste quais visuais reagem na aba Interação.` };
+  } },
+  { id: 'ref-line', test: /(adicione|coloque|mostre|inclua|crie).*(linha de |linha da |linha do )?(media|mediana|meta|sla|limite|projecao|tendencia)/, plan: (text) => {
+    const c = selected()[0], n = norm(text);
+    if (!c || c.type !== 'chart' || !KIND_BY_ID[(c.props as unknown as ChartProps).kind].supportsRefs) return null;
+    const kind = /mediana/.test(n) ? 'median' : /sla/.test(n) ? 'sla' : /limite/.test(n) ? 'threshold' : /(projecao|tendencia)/.test(n) ? 'forecast' : /meta/.test(n) ? 'target' : 'avg', num = /(\d+(?:[.,]\d+)?)/.exec(n)?.[1];
+    const ref = { id: uid('r'), kind, ...(num ? { value: Number(num.replace(',', '.')) } : {}) } as import('./doc').RefLine;
+    if (['target', 'sla', 'threshold'].includes(kind) && ref.value == null) return { intent: 'Linha de referência', thinking: '', steps: [], summary: () => '', answer: ['Qual o valor? Por exemplo: «adicione uma linha de meta em 70».'] };
+    return { intent: 'Linha de referência', thinking: 'Uma linha de referência dá contexto: o leitor vê se o valor está acima ou abaixo do esperado.', steps: [{ label: `Adicionar linha de ${kind === 'avg' ? 'média' : kind === 'median' ? 'mediana' : kind === 'forecast' ? 'projeção' : kind}${ref.value != null ? ` em ${ref.value}` : ''} em ${c.name}`, run: (tx) => { st().update(c.id, (d) => { d.props.refs = [...((d.props.refs as import('./doc').RefLine[] | undefined) ?? []), ref]; }, 'IA: linha de referência', tx); return [c.id]; } }], summary: () => `Adicionei a linha de referência em ${c.name}. Edite ou remova na aba Visual.` };
+  } },
+  { id: 'exec-bi', test: /(crie|monte|gere|faca).*(pagina|painel|dashboard).*(executiv|comercial|resumo|desempenho)/, plan: () => {
+    if (curDs() !== 'ds_vendas') return null;
+    return { intent: 'Build with AI · página executiva comercial', thinking: 'Resumo primeiro (receita, meta, margem, ticket), depois a evolução com meta e ano anterior, o atingimento por região e o que explica a variação.',
+      steps: [
+        { label: 'Criar a página Visão executiva', run: (tx) => { newPageFor(tx, 'Visão executiva'); } },
+        { label: 'Adicionar título e filtros de região e canal', run: (tx) => [add(tx, 'text', { x: M, y: 24, w: 700, h: 44 }, { props: { text: 'Desempenho comercial', size: 'xl', weight: 'strong' } }), add(tx, 'filter', { x: 776, y: 16, w: 232, h: 72 }, { title: 'Região', props: { field: 'regiao', multi: true, targets: 'all' } }), add(tx, 'slicer', { x: 1024, y: 16, w: 232, h: 72 }, { title: 'Canal', props: { field: 'canal', multi: true, showCounts: false, targets: 'all' } })] },
+        { label: 'Adicionar 4 indicadores com meta e ano anterior', run: (tx) => { const r = kpiRow(4); return [
+          add(tx, 'kpi', r(0, 104), { title: 'Receita · 30 dias', props: { measure: 'receita', agg: 'sum', compare: 'both', targetField: 'meta', period: 'last30d', spark: true } }),
+          add(tx, 'kpi', r(1, 104), { title: 'Atingimento da meta', props: { measure: 'atingimento', agg: 'sum', compare: 'both', target: 100, period: 'last30d', spark: true } }),
+          add(tx, 'kpi', r(2, 104), { title: 'Margem bruta', props: { measure: 'margem_pct', agg: 'sum', compare: 'both', target: 30, period: 'last30d', spark: true } }),
+          add(tx, 'kpi', r(3, 104), { title: 'Ticket médio', props: { measure: 'ticket_medio', agg: 'sum', compare: 'prev', period: 'last30d', spark: true } })]; } },
+        { label: 'Adicionar receita × meta × ano anterior (combinado)', run: (tx) => [add(tx, 'chart', { x: M, y: 256, w: 760, h: 300 }, { title: 'Receita, meta e margem', subtitle: 'por mês · 12 meses', props: { kind: 'combo', x: 'data', y: 'receita', y2: 'margem_pct', target: 'meta', compare: 'both', period: 'last12m', grain: 'month', sort: 'none', limit: 0, agg: 'sum', legend: true, labels: false, tooltip: true, responsive: 'fit', tooltipFields: ['pedidos', 'ticket_medio'] } })] },
+        { label: 'Adicionar atingimento por região (bullet)', run: (tx) => [add(tx, 'chart', { x: 800, y: 256, w: 456, h: 300 }, { title: 'Atingimento por região', subtitle: 'receita vs meta', props: { kind: 'bullet', x: 'regiao', y: 'receita', target: 'meta', period: 'last12m', agg: 'sum', sort: 'value', limit: 8, legend: false, labels: true, tooltip: true, grain: 'day', responsive: 'fit' } })] },
+        { label: 'Adicionar cascata da variação por categoria', run: (tx) => [add(tx, 'chart', { x: M, y: 572, w: 560, h: 300 }, { title: 'O que explica a variação', subtitle: 'ano anterior → atual', props: { kind: 'waterfall', x: 'categoria', y: 'receita', compare: 'prev', period: 'last12m', sort: 'none', labels: true, agg: 'sum', limit: 0, legend: false, tooltip: true, grain: 'day', responsive: 'fit' } })] },
+        { label: 'Adicionar matriz de margem por região e canal', run: (tx) => [add(tx, 'matrix', { x: 600, y: 572, w: 656, h: 300 }, { title: 'Margem % por região e canal', props: { rows: 'regiao', cols: 'canal', measure: 'margem_pct', agg: 'sum', heat: false, totals: true, period: 'last12m', rowHier: ['regiao', 'categoria'], cf: [{ id: 'cf1', field: 'margem_pct', kind: 'rules', rules: MARGIN_RULES }] } })] },
+      ], summary: () => 'Criei a página Visão executiva: indicadores com meta e ano anterior, evolução combinada, atingimento por região, cascata da variação e matriz de margem. Todos os visuais são editáveis.' };
+  } },
+  { id: 'annotate', test: /(anote|marque|anotacao|adicione uma anotacao).*(em|no mes de|de)\s+\w+/, plan: (text) => {
+    const c = selected()[0], n = norm(text);
+    if (!c || c.type !== 'chart') return null;
+    const months = ['janeiro', 'fevereiro', 'marco', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'], mi = months.findIndex((m) => n.includes(m)), year = Number(/(20\d\d)/.exec(n)?.[1] ?? 2026);
+    if (mi < 0) return null;
+    const label = text.replace(/^(anote|marque|adicione uma anotacao|anotacao)\s*:?\s*/i, '').replace(/\s+(em|no mes de|de)\s+\w+(\s+de)?\s*(20\d\d)?\s*$/i, '').trim() || 'Evento';
+    return { intent: 'Anotação', thinking: 'A anotação marca no gráfico o que explica a curva.', steps: [{ label: `Anotar «${label}» em ${months[mi]} de ${year}`, run: (tx) => { st().update(c.id, (d) => { d.props.notes = [...((d.props.notes as import('./doc').Annotation[] | undefined) ?? []), { id: uid('n'), at: Date.UTC(year, mi, 1), label, tone: 'info' }]; }, 'IA: anotação', tx); return [c.id]; } }], summary: () => `Anotei «${label}» em ${months[mi]} de ${year}. A anotação aparece em gráficos com eixo de tempo.` };
+  } },
+];
+void KINDS;
+
 const INTENTS: Intent[] = [
+  ...NEW_INTENTS,
   { id: 'exec', test: /(visao|painel|pagina).*(executiv)|executiv.*disponibilidade|disponibilidade da rede/, plan: () => {
     let ids: string[] = [];
     return {
@@ -451,6 +569,16 @@ export function undoAi(m: ChatMsg) {
   useCopilotChat.setState((c) => ({ msgs: c.msgs.map((x) => (x.id === m.id ? { ...x, undone: true } : x)) }));
 }
 export const canUndoAi = (m: ChatMsg, pastTopTx?: string) => !!m.tx && !m.undone && pastTopTx === m.tx;
+export const DEMO_PROMPTS_BI = [
+  'Adicione receita por mês.',
+  'Transforme isso em barras horizontais.',
+  'Adicione comparação com ano anterior.',
+  'Mostre margem no tooltip.',
+  'Crie um filtro por região.',
+  'Faça esse gráfico filtrar o mapa.',
+  'Crie uma página executiva.',
+  'Adicione uma linha de média.',
+];
 export const DEMO_PROMPTS = [
   'Crie uma visão executiva da disponibilidade da rede.',
   'Adicione um mapa mostrando os enlaces com maior atenuação.',

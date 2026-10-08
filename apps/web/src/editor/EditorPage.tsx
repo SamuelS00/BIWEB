@@ -71,7 +71,7 @@ function Toolbar({ onPublish }: { onPublish: () => void }) {
     <div className="ed-toolbar" role="toolbar" aria-label="Editor">
       <IconButton icon="arrowLeft" label="Voltar ao relatório" onPress={() => navigate({ to: '/reports/$reportId', params: { reportId: doc.id } })} />
       <input className="ed-docname" aria-label="Nome do relatório" value={doc.name} onChange={(e) => st.commit('Renomear relatório', (d) => { d.name = e.target.value; }, { tx: 'rename-doc' })} onKeyDown={(e) => { e.stopPropagation(); if (e.key === 'Enter') e.currentTarget.blur(); }} />
-      <span className={`ed-save ed-save--${saveState}`} role="status">{saveState === 'saving' ? 'Salvando…' : savedAt ? `Salvo ${new Date(savedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Salvo'}</span>
+      <span className={`ed-save ed-save--${saveState}`} role="status" title={saveState === 'saving' ? 'Editando: o rascunho é salvo automaticamente' : 'Rascunho salvo. Use Publicar para disponibilizar a versão'}>{saveState === 'saving' ? 'Alterações não salvas · salvando…' : savedAt ? `Salvo ${new Date(savedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Salvo'}</span>
       <span className={`bw-badge${doc.status === 'Publicado' ? ' bw-badge--success' : ' bw-badge--warning'}`}>{doc.status}{doc.version ? ` v${doc.version}` : ''}</span>
       <span className="ed-sep" />
       <IconButton icon="undo" label={canUndo ? `Desfazer: ${undoLabel}` : 'Nada para desfazer'} shortcut="⌘Z" isDisabled={!canUndo} onPress={() => st.undo()} />

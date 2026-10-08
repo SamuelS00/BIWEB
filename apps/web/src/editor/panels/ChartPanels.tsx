@@ -12,7 +12,7 @@ import { fieldOpts, fieldsOf, Row, Section, useProp, Well } from './shared';
 const AGGS: Agg[] = ['sum', 'avg', 'min', 'max', 'count', 'distinct'];
 const isMeasure = (f: { kind: string }) => f.kind === 'measure';
 const isDim = (f: { kind: string }) => f.kind !== 'measure';
-const GRAINS = [{ id: 'day', label: 'Dia' }, { id: 'week', label: 'Sem.' }, { id: 'month', label: 'Mês' }, { id: 'quarter', label: 'Tri.' }, { id: 'year', label: 'Ano' }] as const;
+const GRAINS = [{ id: 'minute', label: 'Min.' }, { id: 'hour', label: 'Hora' }, { id: 'day', label: 'Dia' }, { id: 'week', label: 'Sem.' }, { id: 'month', label: 'Mês' }, { id: 'quarter', label: 'Tri.' }, { id: 'year', label: 'Ano' }] as const;
 const PERIODS = (Object.keys(PERIOD_LABEL) as PeriodKey[]).map((id) => ({ id, label: PERIOD_LABEL[id] }));
 
 /** Field wells for a chart, driven by the roles of its kind: each visual asks only for what it needs. */

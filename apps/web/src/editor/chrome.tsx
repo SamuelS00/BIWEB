@@ -3,13 +3,18 @@ import { Dialog as AriaDialog, Modal, ModalOverlay } from 'react-aria-components
 import { Button, Dialog, Icon, IconButton } from '@biweb/ui';
 import { CompFrame } from '../viz/Render';
 import { useDashTheme } from '../viz/common';
-import { COMP_META, PALETTE } from './doc';
+import { COMP_META, PALETTE, type Comp } from './doc';
 import { getDataset } from '../data/registry';
 import { useData } from '../data/registry';
 import { CATEGORIES, KIND_ICON } from '../viz/engine/kinds';
 import { layoutIssues } from './copilot';
 import { useEditor } from './store';
 import { useLibrary } from './library';
+import { describeFilter } from '../viz/filters';
+import { useFilters, useRows } from '../viz/common';
+import { getTable } from '../data/registry';
+import { fmt } from '../data/query';
+
 
 /** Toasts do editor/visualizador (confirmação breve; erro persistente é Banner). */
 export function Toasts() {
@@ -24,6 +29,26 @@ export function Toasts() {
         </div>
       ))}
     </div>
+  );
+}
+
+/** Side panel of Focus Mode: which filters shape this visual, what it reads, and the rows behind it. */
+function FocusSide({ comp }: { comp: Comp }) {
+  const filters = useFilters(comp), rows = useRows(comp);
+  const ds = comp.data?.dataset ?? '', tb = comp.data?.table ?? '';
+  const t = comp.data ? getTable(ds, tb) : undefined, cols = (t?.fields.filter((f) => !f.hidden).slice(0, 5) ?? []);
+  if (!comp.data || !t) return null;
+  return (
+    <aside className="ed-focus-side" aria-label="Detalhes do visual">
+      <section><h4 className="bw-cap bw-muted">Filtros ativos · {filters.length}</h4>
+        {filters.length ? <div className="ed-focus-chips">{filters.map((f, i) => <span key={i} className="bw-badge">{describeFilter(ds, tb, f)}</span>)}</div> : <p className="bw-secondary">Nenhum filtro: mostrando todos os dados.</p>}
+      </section>
+      <section><h4 className="bw-cap bw-muted">Fonte</h4><p className="bw-secondary">{t.name} · {rows.length.toLocaleString('pt-BR')} de {t.rows.length.toLocaleString('pt-BR')} linhas após filtros</p></section>
+      <section><h4 className="bw-cap bw-muted">Dados (primeiras 12 linhas)</h4>
+        <div className="ed-focus-tbl"><table><thead><tr>{cols.map((f) => <th key={f.name}>{f.label}</th>)}</tr></thead>
+          <tbody>{rows.slice(0, 12).map((r, i) => <tr key={i}>{cols.map((f) => <td key={f.name}>{fmt(r[f.name], f.format)}</td>)}</tr>)}</tbody></table></div>
+      </section>
+    </aside>
   );
 }
 
@@ -47,7 +72,8 @@ export function FocusOverlay() {
                 <IconButton icon="close" label="Fechar foco" onPress={close} />
               </div>
               <div className={`ed-focus-body dash-theme-${dash}`}>
-                <CompFrame comp={{ ...comp, style: { ...comp.style, showTitle: false } }} interactive editing={false} mode="focus" />
+                <div className="ed-focus-main"><CompFrame comp={{ ...comp, style: { ...comp.style, showTitle: false } }} interactive editing={false} mode="focus" /></div>
+                <FocusSide comp={comp} />
               </div>
             </>
           )}

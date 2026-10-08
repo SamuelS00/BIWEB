@@ -37,9 +37,10 @@ const MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'jul
 /** Full label for tooltips: "Fevereiro de 2026", "12 de fevereiro de 2026"… */
 export function longLabel(key: number, grain: Grain): string {
   const d = new Date(key), y = d.getUTCFullYear(), m = MONTHS[d.getUTCMonth()]!;
+  if (grain === 'minute' || grain === 'hour') return `${d.getUTCDate()} de ${m} · ${d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}`;
   return grain === 'month' ? `${m[0]!.toUpperCase()}${m.slice(1)} de ${y}` : grain === 'quarter' ? `${Math.floor(d.getUTCMonth() / 3) + 1}º trimestre de ${y}` : grain === 'year' ? String(y) : grain === 'week' ? `Semana de ${d.getUTCDate()} de ${m}` : `${d.getUTCDate()} de ${m} de ${y}`;
 }
-const bucketEnd = (key: number, grain: Grain) => { const d = new Date(key); return grain === 'month' ? Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0) : grain === 'quarter' ? Date.UTC(d.getUTCFullYear(), Math.floor(d.getUTCMonth() / 3) * 3 + 3, 0) : grain === 'year' ? Date.UTC(d.getUTCFullYear(), 11, 31) : key; };
+const bucketEnd = (key: number, grain: Grain) => { if (grain === 'minute' || grain === 'hour') return key; const d = new Date(key); return grain === 'month' ? Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0) : grain === 'quarter' ? Date.UTC(d.getUTCFullYear(), Math.floor(d.getUTCMonth() / 3) * 3 + 3, 0) : grain === 'year' ? Date.UTC(d.getUTCFullYear(), 11, 31) : key; };
 
 export interface BuildInput { ds: string; table: string; rows: Row[]; prevRows?: Row[]; x: string; props: ChartProps }
 const aggOf = (p: ChartProps): Agg => p.agg;
@@ -80,9 +81,9 @@ export function buildModel({ ds, table, rows, prevRows, x, props: p }: BuildInpu
   if (p.y2 && p.kind === 'combo') attach(aggregate(rows, { ds, table, groupBy: x, measure: p.y2, agg: getField(ds, table, p.y2)?.calc ? 'sum' : agg, sort: 'none', grain }), (pt, v) => { pt.y2 = v; });
   for (const name of p.tooltipFields ?? []) attach(aggregate(rows, { ds, table, groupBy: x, measure: name, agg: getField(ds, table, name)?.format === 'pct' && !getField(ds, table, name)?.calc ? 'avg' : 'sum', sort: 'none', grain }), (pt, v) => { pt.extra[name] = v; });
   let pts = orderKeys([...byKey.values()], p, isTime, x);
-  if (isTime && (grain === 'month' || grain === 'quarter' || grain === 'year' || grain === 'week' || grain === 'day')) {
+  if (isTime) {
     let last = 0; for (const r of rows) { const v = Number(r[x]); if (v > last) last = v; }
-    for (const pt of pts) { pt.long = longLabel(Number(pt.key), grain); const e = bucketEnd(Number(pt.key), grain); if (grain !== 'day' && last && last < e && Number(pt.key) <= last) pt.partial = Math.max(1, Math.round((last - Number(pt.key)) / 86_400_000) + 1); }
+    for (const pt of pts) { pt.long = longLabel(Number(pt.key), grain); const e = bucketEnd(Number(pt.key), grain); if (grain !== 'day' && grain !== 'minute' && grain !== 'hour' && last && last < e && Number(pt.key) <= last) pt.partial = Math.max(1, Math.round((last - Number(pt.key)) / 86_400_000) + 1); }
   }
   if (!isTime && p.limit && !p.series && p.kind !== 'waterfall' && p.kind !== 'funnel') pts = pts.slice(0, p.limit);
   const seriesKeys = [...new Set(main.map((s) => s.series).filter((s): s is string => !!s))];

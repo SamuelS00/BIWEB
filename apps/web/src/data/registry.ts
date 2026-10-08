@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { generateNetwork, historyOf, NOW, type Network } from '../net/generate';
 import { buildVendasDataset } from './vendas';
+import { liveTick, telemetry } from './live';
 import type { Dataset, Field, Table } from './types';
 
 let net: Network | null = null;
@@ -38,6 +39,12 @@ export function buildNetworkDataset(id = 'ds_rede_sp', name = 'Rede Metropolitan
       fields: [F('dia', 'Dia', 'date', 'date'), F('enlace', 'Enlace', 'dimension'), F('regiao', 'Região', 'geo'), F('camada', 'Camada', 'dimension'), F('tecnologia', 'Tecnologia', 'dimension'),
         F('utilizacao', 'Utilização', 'measure', 'pct'), F('atenuacao_dB', 'Atenuação', 'measure', 'db'), F('disponibilidade', 'Disponibilidade', 'measure', 'pct')] },
   ];
+  // Streaming table: its rows are regenerated for the current tick, so live widgets read a window that keeps moving.
+  const tele: Table = { id: 'telemetria', name: 'Telemetria ao vivo', description: 'Tráfego, latência e perda por POP, minuto a minuto (janela de 40 min)', key: 'id', rows: [],
+    fields: [F('id', 'ID', 'dimension', 'text', { hidden: true }), F('ts', 'Horário', 'date', 'datetime'), F('pop', 'POP', 'dimension'), F('trafego_gbps', 'Tráfego', 'measure', 'gbps'), F('latencia_ms', 'Latência', 'measure', 'ms'), F('perda_pct', 'Perda de pacotes', 'measure', 'pct')] };
+  let cacheTick = -1, cacheRows: Table['rows'] = [];
+  Object.defineProperty(tele, 'rows', { get: () => { const t = liveTick(); if (t !== cacheTick) { cacheTick = t; cacheRows = telemetry(t); } return cacheRows; }, enumerable: true });
+  tables.push(tele);
   return {
     id, name, imported, owner: 'Paula Teixeira', certified: !imported,
     description: imported ? 'Importado de rede_sp.kmz — nós, enlaces, regiões e rotas da rede metropolitana.' : 'Inventário e operação da rede metropolitana: nós, enlaces, regiões, rotas, eventos e histórico.',
