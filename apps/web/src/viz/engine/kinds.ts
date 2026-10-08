@@ -36,3 +36,46 @@ export const KINDS: KindDef[] = [
 ];
 export const KIND_BY_ID = Object.fromEntries(KINDS.map((k) => [k.id, k])) as Record<ChartKind, KindDef>;
 export const KIND_LABEL = Object.fromEntries(KINDS.map((k) => [k.id, k.label])) as Record<ChartKind, string>;
+
+import type { IconName } from '@biweb/ui';
+/** Icon for each kind in the picker (only icons the design system already has). */
+export const KIND_ICON: Record<ChartKind, IconName> = {
+  bar: 'chart', hbar: 'alignLeft', line: 'timeline', area: 'timeline', step: 'timeline', sparkbars: 'chart', grouped: 'chart', stacked: 'chart', stacked100: 'chart', combo: 'chart', bullet: 'alignLeft', waterfall: 'distV',
+  funnel: 'filter', sankey: 'share', histogram: 'chart', box: 'alignVCenter', scatter: 'grid', bubble: 'grid', pie: 'status', treemap: 'matrix', gauge: 'kpi', heat: 'matrix', calendar: 'calendar',
+};
+
+import type { Field } from '../../data/types';
+import type { ChartProps } from '../../editor/doc';
+type F = Pick<Field, 'name' | 'label' | 'kind'>;
+const MEASURE_KINDS: ChartKind[] = ['scatter', 'bubble', 'histogram'];
+/** Switching type must not rebuild the chart: keep every compatible field and say what changed or what is missing. */
+export function adaptKind(p: ChartProps, to: ChartKind, fields: F[]): { patch: Partial<ChartProps>; notes: string[] } {
+  const patch: Partial<ChartProps> = { kind: to }, notes: string[] = [], def = KIND_BY_ID[to], by = (n?: string) => fields.find((f) => f.name === n);
+  const measures = fields.filter((f) => f.kind === 'measure'), dims = fields.filter((f) => f.kind !== 'measure' && f.kind !== 'date'), dates = fields.filter((f) => f.kind === 'date');
+  if (MEASURE_KINDS.includes(to)) {
+    if (by(p.x)?.kind !== 'measure') { const m = measures.find((f) => f.name !== p.y) ?? measures[0]; if (m) { patch.x = m.name; notes.push(`Eixo X passou a ${m.label}: ${def.label.toLowerCase()} compara medidas.`); } }
+    if (to !== 'histogram' && by(p.y)?.kind !== 'measure') { const m = measures.find((f) => f.name !== (patch.x ?? p.x)) ?? measures[0]; if (m) { patch.y = m.name; notes.push(`Eixo Y passou a ${m.label}.`); } }
+    if (to === 'histogram') patch.y = patch.x ?? p.x;
+    patch.agg = 'avg';
+  } else if (MEASURE_KINDS.includes(p.kind) && by(p.x)?.kind === 'measure') {
+    const d = dims[0] ?? dates[0]; if (d) { patch.x = d.name; notes.push(`Eixo X passou a ${d.label}: este gráfico agrupa por categoria ou data.`); }
+    const y = by(p.y)?.kind === 'measure' ? p.y : measures[0]?.name; if (y) patch.y = y; patch.agg = 'sum';
+  }
+  if (def.time && by(patch.x ?? p.x)?.kind !== 'date' && dates[0]) notes.push(`${def.label} funciona melhor com uma data no eixo X (ex.: ${dates[0].label}).`);
+  if (def.time) patch.sort = 'none';
+  if (def.supportsZoom && p.zoom === undefined) patch.zoom = true;
+  if (!def.needsSeries && p.series && ['gauge', 'bullet', 'waterfall', 'funnel', 'pie', 'histogram'].includes(to)) notes.push('O campo de série não é usado neste tipo; ele foi mantido caso você volte.');
+  if (def.needsSeries && !p.series) { const d = dims.find((f) => f.name !== (patch.x ?? p.x)); notes.push(`${def.label} precisa de um campo em «${def.labels.series ?? 'Série'}»${d ? ` (sugestão: ${d.label})` : ''}.`); }
+  return { patch, notes };
+}
+/** What is still missing for the chart to answer its question. Shown as guidance, never as a blocker. */
+export function guidance(p: ChartProps, fields: F[]): string[] {
+  const def = KIND_BY_ID[p.kind], out: string[] = [], by = (n?: string) => fields.find((f) => f.name === n);
+  if (def.needsSeries && !p.series) out.push(`Falta um campo em «${def.labels.series ?? 'Série'}».`);
+  if (p.kind === 'combo' && !p.y2) out.push('Escolha a medida da linha (eixo secundário).');
+  if (p.kind === 'bullet' && !p.target && !p.refs?.some((r) => r.kind === 'target')) out.push('Informe a meta: um campo de meta ou uma linha de referência «Meta».');
+  if (def.time && by(p.x)?.kind !== 'date') out.push('Este tipo mostra evolução: use uma data no eixo X.');
+  if ((p.compare === 'prev' || p.compare === 'both') && !fields.some((f) => f.kind === 'date')) out.push('Comparar com o ano anterior exige um campo de data na tabela.');
+  if (MEASURE_KINDS.includes(p.kind) && by(p.x)?.kind !== 'measure') out.push('O eixo X deste tipo precisa ser uma medida.');
+  return out;
+}

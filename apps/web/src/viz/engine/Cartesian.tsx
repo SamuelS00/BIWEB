@@ -5,6 +5,7 @@ import { getField } from '../../data/registry';
 import { refValue, REF_LABEL, type Model, type Pt } from './model';
 import { cat, COLOR, fmtDelta, niceTicks, pctDelta, RichTip, statusColor, type TipData, type TipRow } from './ui';
 import { aggFormat } from '../../data/query';
+import { evalCf, TONE_VAR } from '../cf';
 
 export interface CartesianProps {
   comp: Comp; model: Model; p: ChartProps; W: number; H: number; hidden: Set<string>; active: unknown; x: string;
@@ -25,7 +26,9 @@ export function Cartesian({ comp, model, p, W, H, hidden, active, x, onSelect, o
   const keys = model.seriesKeys.filter((s) => !hidden.has(s));
   const stack = kind === 'stacked' || kind === 'stacked100', grouped = kind === 'grouped', line = kind === 'line' || kind === 'area' || kind === 'step';
   const band = kind !== 'line' && kind !== 'area' && kind !== 'step';
-  const colorOf = (s: string | undefined, i: number) => (p.colorBy === 'sign' && !s ? ((pts[i]?.value ?? 0) >= 0 ? COLOR.up : COLOR.down) : s ? statusColor(s) ?? cat(model.seriesKeys.indexOf(s), comp.style.accent) : x === 'status' || x === 'severidade' ? statusColor(pts[i]?.key) ?? cat(0, comp.style.accent) : cat(0, comp.style.accent));
+  const cfRange = useMemo(() => ({ min: Math.min(0, ...model.pts.map((q) => q.value)), max: Math.max(1, ...model.pts.map((q) => q.value)) }), [model.pts]);
+  const cfRule = p.cf?.find((x) => x.kind === 'rules' || x.kind === 'icons');
+  const colorOf = (s: string | undefined, i: number) => (cfRule && !s && pts[i] && evalCf(cfRule, pts[i]!.value, cfRange).tone ? TONE_VAR[evalCf(cfRule, pts[i]!.value, cfRange).tone!] : p.colorBy === 'sign' && !s ? ((pts[i]?.value ?? 0) >= 0 ? COLOR.up : COLOR.down) : s ? statusColor(s) ?? cat(model.seriesKeys.indexOf(s), comp.style.accent) : x === 'status' || x === 'severidade' ? statusColor(pts[i]?.key) ?? cat(0, comp.style.accent) : cat(0, comp.style.accent));
   const useTarget = model.hasTarget && p.compare !== 'prev', usePrev = model.hasPrev;
   const sumOf = (pt: Pt) => (p.series ? (stack ? keys.reduce((a, k) => a + (pt.series[k] ?? 0), 0) : Math.max(0, ...keys.map((k) => pt.series[k] ?? 0))) : pt.value);
 

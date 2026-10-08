@@ -3,7 +3,10 @@ import { Dialog as AriaDialog, Modal, ModalOverlay } from 'react-aria-components
 import { Button, Dialog, Icon, IconButton } from '@biweb/ui';
 import { CompFrame } from '../viz/Render';
 import { useDashTheme } from '../viz/common';
-import { COMP_META } from './doc';
+import { COMP_META, PALETTE } from './doc';
+import { getDataset } from '../data/registry';
+import { useData } from '../data/registry';
+import { CATEGORIES, KIND_ICON } from '../viz/engine/kinds';
 import { layoutIssues } from './copilot';
 import { useEditor } from './store';
 import { useLibrary } from './library';
@@ -66,7 +69,7 @@ export function PublishDialog({ isOpen, onOpenChange, onOpenReport }: { isOpen: 
     const emptyPages = doc.pages.filter((p) => p.comps.filter((c) => !c.hidden).length === 0);
     const badRules = doc.rules.filter((r) => r.enabled && (!r.conditions.length || !r.actions.length));
     return [
-      { ok: doc.name.trim() !== '' && doc.name !== 'Relatório sem título', block: true, text: 'Nome do relatório definido', fix: 'Dê um nome na aba Visual (sem seleção).' },
+      { ok: doc.name.trim() !== '' && doc.name !== 'Relatório sem título', block: true, text: 'Nome do relatório definido', fix: 'Dê um nome na aba Estilo (sem seleção).' },
       { ok: emptyPages.length === 0, block: true, text: 'Todas as páginas têm conteúdo', fix: emptyPages.length ? `Vazia: ${emptyPages.map((p) => p.name).join(', ')}` : '' },
       { ok: unbound.length === 0, block: true, text: 'Componentes de dados ligados a um dataset', fix: unbound.map((c) => c.name).join(', ') },
       { ok: badRules.length === 0, block: true, text: 'Regras ativas completas (condição e ação)', fix: badRules.map((r) => r.name).join(', ') },
@@ -103,6 +106,40 @@ export function PublishDialog({ isOpen, onOpenChange, onOpenReport }: { isOpen: 
           ))}
         </ul>
       )}
+    </Dialog>
+  );
+}
+
+/** Visualization Picker: choose the data first, then what question to answer. Everything it inserts is editable in the panels. */
+export function VizPicker() {
+  const open = useEditor((s) => s.pickerOpen), doc = useEditor((s) => s.doc), datasets = useData((s) => s.datasets);
+  const [q, setQ] = useState('');
+  if (!doc) return null;
+  const ds = getDataset(doc.datasets[0] ?? 'ds_rede_sp'), close = () => useEditor.getState().set({ pickerOpen: false });
+  const groups = ['Dados', ...CATEGORIES, ...(ds.id === 'ds_rede_sp' ? ['Geo e 3D'] : []), 'Layout'] as const;
+  const choose = (id: string) => { const d = datasets.find((x) => x.id === id); if (d && d.id !== doc.datasets[0]) useEditor.getState().commit(`Usar dataset ${d.name}`, (x) => { x.datasets = [d.id]; }); };
+  return (
+    <Dialog title="Adicionar visualização" isOpen={open} onOpenChange={(o) => { if (!o) { close(); setQ(''); } }} footer={<Button onPress={close}>Fechar</Button>}>
+      <div className="ed-picker">
+        <div className="ed-picker-top">
+          <label className="ed-picker-ds"><span>Dados</span><select aria-label="Dataset" value={ds.id} onChange={(e) => choose(e.target.value)}>{datasets.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></label>
+          <input className="ed-palette-q" placeholder="Buscar visualização ou pergunta" aria-label="Buscar visualização" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />
+        </div>
+        <p className="ed-picker-note">{ds.tables.map((t) => t.name).join(' · ')}</p>
+        <div className="ed-picker-body">
+          {groups.map((g) => {
+            const items = PALETTE.filter((p) => p.group === g && (!q || `${p.label} ${p.hint ?? ''}`.toLowerCase().includes(q.toLowerCase())));
+            return items.length ? (
+              <section key={g}><h4>{g}</h4>
+                <div className="ed-picker-grid">{items.map((it) => (
+                  <button key={it.id} type="button" title={it.hint} onClick={() => { useEditor.getState().insert(it.type, undefined, it.preset, { label: `Inserir ${it.label}` }); close(); }}>
+                    <Icon name={it.type === 'chart' ? KIND_ICON[it.id as keyof typeof KIND_ICON] ?? 'chart' : it.type === 'map' ? 'pin' : it.type === 'kpi' ? 'kpi' : it.type === 'table' ? 'table' : it.type === 'matrix' ? 'matrix' : it.type === 'filter' || it.type === 'slicer' ? 'filter' : it.type === 'text' ? 'text' : it.type === 'image' ? 'image' : it.type === 'scene3d' ? 'cube' : 'card'} size={16} />
+                    <b>{it.label}</b>{it.hint && <small>{it.hint}</small>}
+                  </button>))}</div>
+              </section>) : null;
+          })}
+        </div>
+      </div>
     </Dialog>
   );
 }

@@ -160,45 +160,8 @@ export const TimelineView = memo(function TimelineView({ comp }: { comp: Comp })
 });
 
 /* ---------------- Filtro e segmentação ---------------- */
-function useOptions(comp: Comp, field: string) {
-  const values = useMemo(() => distinct(comp.data!.dataset, comp.data!.table, field), [comp.data, field]);
-  const rows = useRows(comp, undefined, field);
-  const counts = useMemo(() => { const m = new Map<unknown, number>(); for (const r of rows) m.set(r[field], (m.get(r[field]) ?? 0) + 1); return m; }, [rows, field]);
-  return { values, counts };
-}
-export const FilterView = memo(function FilterView({ comp }: { comp: Comp }) {
-  const p = comp.props as unknown as FilterProps;
-  const sel = useEditor((s) => s.filterValues[comp.id]) ?? p.defaultValues ?? [];
-  const { values, counts } = useOptions(comp, p.field);
-  const [q, setQ] = useState('');
-  const f = fieldOf(comp, p.field);
-  const setSel = (v: unknown[]) => useEditor.getState().setFilter(comp.id, v);
-  const label = sel.length === 0 ? 'Todos' : sel.length === 1 ? labelOf(sel[0], f) : `${sel.length} selecionados`;
-  return (
-    <div className="vz-filter">
-      <DialogTrigger>
-        <AriaButton className="bw-select vz-filter-btn" aria-label={`${f?.label ?? p.field}: ${label}`}><span className={sel.length ? undefined : 'bw-muted'}>{label}</span><Icon name="chevronDown" size={12} /></AriaButton>
-        <Popover className="bw-menu vz-filter-pop" placement="bottom start" offset={4}>
-          <AriaDialog aria-label={`Filtrar ${f?.label}`} className="vz-filter-dialog">
-            <input className="vz-filter-q" placeholder={`Buscar ${f?.label?.toLowerCase() ?? ''}`} value={q} onChange={(e) => setQ(e.target.value)} autoFocus />
-            <div className="vz-filter-list">
-              {values.filter((v) => !q || labelOf(v, f).toLowerCase().includes(q.toLowerCase())).map((v) => {
-                const on = sel.includes(v);
-                return (
-                  <button key={String(v)} type="button" role="menuitemcheckbox" aria-checked={on} className="vz-filter-opt" onClick={() => setSel(p.multi ? (on ? sel.filter((x) => x !== v) : [...sel, v]) : on ? [] : [v])}>
-                    <span className="bw-checkbox" aria-hidden="true">{on && <svg viewBox="0 0 10 10"><path d="M1.5 5.2l2.3 2.3L8.5 2.8" /></svg>}</span>
-                    <span className="vz-filter-lbl">{labelOf(v, f)}</span><span className="bw-num bw-muted">{counts.get(v) ?? 0}</span>
-                  </button>
-                );
-              })}
-            </div>
-            {sel.length > 0 && <button type="button" className="vz-filter-clear" onClick={() => setSel([])}>Limpar seleção</button>}
-          </AriaDialog>
-        </Popover>
-      </DialogTrigger>
-    </div>
-  );
-});
+export { FilterView } from './FilterWidgets';
+import { useOptions } from './FilterWidgets';
 export const SlicerView = memo(function SlicerView({ comp }: { comp: Comp }) {
   const p = comp.props as unknown as SlicerProps;
   const sel = useEditor((s) => s.filterValues[comp.id]) ?? [];

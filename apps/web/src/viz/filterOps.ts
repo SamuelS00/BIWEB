@@ -26,6 +26,7 @@ export function filtersFromComp(c: Comp, vals: unknown[]): Filter[] {
       const w = c.data ? periodWindow(vals[0] as PeriodKey, endOf(c.data.dataset, c.data.table, field)) : null;
       return w ? [{ field, op: '>=', value: w[0] }, { field, op: '<=', value: w[1] + 86_399_999 }] : [];
     }
+    case 'hierarchy': return (p.hierarchy ?? []).flatMap((f, i) => (vals[i] != null && vals[i] !== '' ? [{ field: f, op: '=' as const, value: vals[i] }] : []));
     case 'search': return [{ field, op: 'contains', value: String(vals[0] ?? '') }];
     case 'toggle': return [{ field, op: '=', value: vals[0] === 'true' || vals[0] === true ? true : vals[0] }];
     default: return [{ field, op: 'in', value: vals }];

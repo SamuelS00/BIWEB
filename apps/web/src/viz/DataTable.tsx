@@ -32,8 +32,10 @@ function MiniTrend({ values }: { values: number[] }) {
 type SortKey = { field: string; dir: 1 | -1 };
 export const TableView = memo(function TableView({ comp }: { comp: Comp }) {
   const p = comp.props as unknown as TableProps;
-  const live = useLiveTick(p.live), rows = useRows(comp);
+  const live = useLiveTick(p.live), raw = useRows(comp);
   const t = getTable(comp.data!.dataset, comp.data!.table);
+  // calculated fields are evaluated per row so that sorting, formatting and totals see real values
+  const rows = useMemo(() => { const calcs = p.columns.map((c) => t.fields.find((f) => f.name === c)).filter((f): f is Field => !!f?.calc); return calcs.length ? raw.map((r) => { const o: Row = { ...r }; for (const f of calcs) o[f.name] = calcValue(f.calc!, Number(r[f.calc!.num] ?? 0), Number(r[f.calc!.den] ?? 0)); return o; }) : raw; }, [raw, p.columns, t]);
   const [sort, setSort] = useState<SortKey[]>(p.sortBy ? [{ field: p.sortBy, dir: p.sortDir === 'asc' ? 1 : -1 }] : []);
   useEffect(() => setSort(p.sortBy ? [{ field: p.sortBy, dir: p.sortDir === 'asc' ? 1 : -1 }] : []), [p.sortBy, p.sortDir]);
   const [q, setQ] = useState(''), [off, setOff] = useState<string[]>([]), [widths, setWidths] = useState<Record<string, number>>({}), [closed, setClosed] = useState<Set<string>>(new Set());

@@ -9,7 +9,7 @@ import { filtersFromComp } from '../viz/filterOps';
  * Store central do editor. O documento é imutável (immer): cada alteração gera um passo de histórico rotulado.
  * Estado transitório de arrastar/redimensionar NÃO passa por aqui até o drop (ver Canvas).
  */
-export type RightTab = 'build' | 'data' | 'visual' | 'interactions' | 'rules' | 'ai';
+export type RightTab = 'build' | 'data' | 'visual' | 'style' | 'interactions' | 'advanced' | 'rules' | 'ai';
 interface Step { doc: ReportDoc; label: string; tx?: string; pageId: string }
 export interface Cross { source: string; table: string; field: string; value: unknown; label: string; mode?: 'filter' | 'highlight' }
 /** Per-widget changes made while reading a report (filters, sort, table view). They never touch the saved document. */
@@ -24,7 +24,7 @@ interface EditorState {
   saveState: 'saved' | 'saving'; savedAt: number | null;
   flash: Record<string, number>; toasts: Toast[]; layoutAnim: number;
   // estado de execução (não entra no undo): filtros/slicers, cross-filter, drill, elemento selecionado em mapa/3D
-  filterValues: Record<string, unknown[]>; cross: Cross | null; drill: Record<string, unknown[]>; picked: { comp: string; kind: string; id: string } | null; view: Record<string, ViewOverride>; returnTo: { page: string; label: string } | null;
+  filterValues: Record<string, unknown[]>; cross: Cross | null; drill: Record<string, unknown[]>; picked: { comp: string; kind: string; id: string } | null; view: Record<string, ViewOverride>; pickerOpen: boolean; returnTo: { page: string; label: string } | null;
 
   load: (doc: ReportDoc) => void;
   commit: (label: string, fn: (d: Draft<ReportDoc>) => void, opts?: { tx?: string; select?: string[]; flash?: string[] }) => void;
@@ -62,7 +62,7 @@ export const useEditor = create<EditorState>((set, get) => {
   };
   return {
     doc: null, past: [], future: [], pageId: '', selection: [], mode: 'edit', zoom: 1, fit: true, clipboard: null, rightTab: 'build', interactive: null, focusComp: null,
-    saveState: 'saved', savedAt: null, flash: {}, toasts: [], layoutAnim: 0, filterValues: {}, cross: null, drill: {}, picked: null, view: {}, returnTo: null,
+    saveState: 'saved', savedAt: null, flash: {}, toasts: [], layoutAnim: 0, filterValues: {}, cross: null, drill: {}, picked: null, view: {}, pickerOpen: false, returnTo: null,
 
     load: (doc) => set({ doc, past: [], future: [], pageId: doc.pages[0]!.id, selection: [], interactive: null, focusComp: null, filterValues: {}, cross: null, drill: {}, picked: null, view: {}, returnTo: null, saveState: 'saved', savedAt: doc.updatedAt }),
     commit: (label, fn, opts) => {
@@ -102,8 +102,7 @@ export const useEditor = create<EditorState>((set, get) => {
       if (!p) return '';
       const z = Math.max(0, ...p.comps.map((c) => c.z)) + 1;
       const pos = at ?? freeSpot(p, type);
-      const c = makeComp(type, { x: snap(pos.x), y: snap(pos.y) }, preset, z);
-      if (c.data && get().doc!.datasets[0]) c.data.dataset = get().doc!.datasets[0]!;
+      const c = makeComp(type, { x: snap(pos.x), y: snap(pos.y) }, preset, z, get().doc!.datasets[0]);
       c.x = Math.max(0, Math.min(p.w - c.w, c.x)); c.y = Math.max(0, c.y);
       get().commit(opts?.label ?? `Inserir ${c.name}`, (d) => { pageOf(d).comps.push(c); }, { tx: opts?.tx, select: [c.id], flash: [c.id] });
       return c.id;

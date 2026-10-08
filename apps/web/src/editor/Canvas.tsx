@@ -3,6 +3,8 @@ import { Icon } from '@biweb/ui';
 import { CompFrame } from '../viz/Render';
 import { useDashTheme } from '../viz/common';
 import { COMP_META, PALETTE, type Comp, type Page } from './doc';
+import { useData } from '../data/registry';
+import { useUi } from '../state/ui-store';
 import { useEditor } from './store';
 
 type Rect = { x: number; y: number; w: number; h: number };
@@ -251,16 +253,20 @@ export function Canvas() {
 }
 
 function EmptyPage() {
-  const set = useEditor((s) => s.set);
+  const set = useEditor((s) => s.set), doc = useEditor((s) => s.doc)!, datasets = useData((s) => s.datasets), aiEnabled = useUi((s) => s.aiEnabled);
+  const ds = datasets.find((d) => d.id === doc.datasets[0]) ?? datasets[0]!;
   return (
     <div className="ed-emptypage">
-      <b>Página vazia</b>
-      <span>Arraste um componente da paleta, ou peça ao Copilot para montar a página.</span>
+      <Icon name="chart" size={20} />
+      <b>Comece a construir</b>
+      <span>Escolha os dados, adicione uma visualização e ligue os campos. Tudo o que o Copilot criar continua editável aqui.</span>
+      <label className="ed-empty-ds"><span>Dados</span><select aria-label="Dataset do relatório" value={ds.id} onChange={(e) => { const d = datasets.find((x) => x.id === e.target.value); if (d) useEditor.getState().commit(`Usar dataset ${d.name}`, (x) => { x.datasets = [d.id]; }); }}>{datasets.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></label>
       <div className="ed-emptypage-acts">
-        <button type="button" className="bw-btn" onClick={() => useEditor.getState().insert('kpi')}><Icon name="plus" size={12} />Inserir KPI</button>
-        <button type="button" className="bw-btn" onClick={() => set({ rightTab: 'data' })}><Icon name="data" size={12} />Escolher dados</button>
-        <button type="button" className="bw-btn bw-btn--primary" onClick={() => set({ rightTab: 'ai' })}><Icon name="copilot" size={12} />Criar com o Copilot</button>
+        <button type="button" className="bw-btn bw-btn--primary" onClick={() => set({ pickerOpen: true })}><Icon name="plus" size={12} />Adicionar visualização</button>
+        {aiEnabled && <button type="button" className="bw-btn" onClick={() => set({ rightTab: 'ai' })}><Icon name="copilot" size={12} />Perguntar ao Copilot</button>}
+        <button type="button" className="bw-btn" onClick={() => set({ rightTab: 'data' })}><Icon name="data" size={12} />Ver campos</button>
       </div>
+      <small className="ed-empty-hint">Ou arraste um componente da paleta à esquerda para o canvas.</small>
     </div>
   );
 }

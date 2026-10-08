@@ -1,6 +1,8 @@
 /** Documento do relatório (JSON). Canvas, propriedades, Copilot, undo/redo e salvar leem e escrevem este mesmo objeto. */
 import type { Agg, Filter, Rule } from '../data/types';
 import type { Grain } from '../data/query';
+import { chartPreset, vendasDefaults } from '../viz/engine/defaults';
+import { CATEGORIES, KINDS } from '../viz/engine/kinds';
 
 export type CompType = 'kpi' | 'chart' | 'table' | 'matrix' | 'text' | 'image' | 'filter' | 'slicer' | 'map' | 'scene3d' | 'card' | 'container' | 'timeline' | 'status';
 export type ChartKind = 'bar' | 'hbar' | 'line' | 'area' | 'pie' | 'scatter'
@@ -48,7 +50,7 @@ export interface KpiProps { measure: string; agg: Agg; format?: string; label: s
 export interface ChartProps { kind: ChartKind; x: string; y: string; agg: Agg; series?: string; sort: 'value' | 'asc' | 'label' | 'none'; limit: number; legend: boolean; labels: boolean; tooltip: boolean; grain: Grain; y2?: string /* scatter: medida do eixo Y; combo: medida da linha; bubble: tamanho */; responsive: 'fit' | 'scroll';
   /** Campo (medida) usado como meta, ex.: `meta`. */ target?: string; compare?: 'none' | 'prev' | 'target' | 'both';
   period?: PeriodKey; dateField?: string; refs?: RefLine[]; notes?: Annotation[]; zoom?: boolean; tooltipFields?: string[]; bins?: number;
-  /** Rótulos das barras que fecham total na cascata. */ totals?: string[]; movingAvg?: number; live?: boolean; state?: DemoState; colorBy?: string; thresholds?: [number, number] }
+  /** Rótulos das barras que fecham total na cascata. */ totals?: string[]; movingAvg?: number; live?: boolean; state?: DemoState; colorBy?: string; thresholds?: [number, number]; cf?: CondFormat[] }
 export type Tone3 = 'critical' | 'warning' | 'healthy';
 export interface CfRule { op: '<' | '<=' | '>' | '>=' | 'between'; v: number; v2?: number; tone: Tone3 }
 /** Conditional formatting for one column: a color scale, data bars, tone rules or status icons. */
@@ -90,12 +92,12 @@ export const COMP_META: Record<CompType, { label: string; icon: string; w: numbe
   status: { label: 'Indicador de status', icon: 'status', w: 320, h: 96, data: true, desc: 'Contagem por status ou estado de um elemento' },
 };
 /** Itens da paleta: alguns são variações pré-configuradas de um tipo (mapa de calor, mapa de rotas, tipos de gráfico). */
-export const PALETTE: { id: string; type: CompType; label: string; group: 'Dados' | 'Gráficos' | 'Geo e 3D' | 'Layout'; preset?: Record<string, unknown> }[] = [
-  { id: 'kpi', type: 'kpi', label: 'KPI', group: 'Dados' }, { id: 'table', type: 'table', label: 'Tabela', group: 'Dados' }, { id: 'matrix', type: 'matrix', label: 'Matriz', group: 'Dados' },
-  { id: 'status', type: 'status', label: 'Status', group: 'Dados' }, { id: 'filter', type: 'filter', label: 'Filtro', group: 'Dados' }, { id: 'slicer', type: 'slicer', label: 'Segmentação', group: 'Dados' },
-  { id: 'bar', type: 'chart', label: 'Barras', group: 'Gráficos', preset: { kind: 'bar' } }, { id: 'line', type: 'chart', label: 'Linha', group: 'Gráficos', preset: { kind: 'line' } },
-  { id: 'area', type: 'chart', label: 'Área', group: 'Gráficos', preset: { kind: 'area' } }, { id: 'pie', type: 'chart', label: 'Pizza', group: 'Gráficos', preset: { kind: 'pie' } },
-  { id: 'scatter', type: 'chart', label: 'Dispersão', group: 'Gráficos', preset: { kind: 'scatter' } }, { id: 'timeline', type: 'timeline', label: 'Linha do tempo', group: 'Gráficos' },
+export type PaletteGroup = 'Dados' | typeof CATEGORIES[number] | 'Geo e 3D' | 'Layout';
+export const PALETTE: { id: string; type: CompType; label: string; group: PaletteGroup; preset?: Record<string, unknown>; hint?: string }[] = [
+  { id: 'kpi', type: 'kpi', label: 'KPI', group: 'Dados', hint: 'Um número com comparação, meta e tendência' }, { id: 'table', type: 'table', label: 'Tabela', group: 'Dados', hint: 'Linhas com ordenação, busca, totais e formatação condicional' }, { id: 'matrix', type: 'matrix', label: 'Matriz', group: 'Dados', hint: 'Linhas × colunas com hierarquia expansível' },
+  { id: 'status', type: 'status', label: 'Status', group: 'Dados' }, { id: 'filter', type: 'filter', label: 'Filtro', group: 'Dados', hint: 'Lista, busca, intervalo, data ou janela relativa' }, { id: 'slicer', type: 'slicer', label: 'Segmentação', group: 'Dados' },
+  ...KINDS.map((k) => ({ id: k.id, type: 'chart' as const, label: k.label, group: k.category as PaletteGroup, preset: { kind: k.id }, hint: k.question })),
+  { id: 'timeline', type: 'timeline', label: 'Linha do tempo', group: 'Série temporal', hint: 'Eventos ao longo do período' },
   { id: 'map', type: 'map', label: 'Mapa', group: 'Geo e 3D' }, { id: 'heat', type: 'map', label: 'Mapa de calor', group: 'Geo e 3D', preset: { variant: 'heat' } },
   { id: 'routes', type: 'map', label: 'Mapa de rotas', group: 'Geo e 3D', preset: { variant: 'routes' } }, { id: 'topology', type: 'map', label: 'Topologia', group: 'Geo e 3D', preset: { variant: 'topology' } },
   { id: 'scene3d', type: 'scene3d', label: '3D', group: 'Geo e 3D' },
@@ -103,8 +105,11 @@ export const PALETTE: { id: string; type: CompType; label: string; group: 'Dados
 ];
 
 const LAYERS: MapLayers = { regioes: true, enlaces: true, nos: true, eventos: false, rotas: false, heat: false, cobertura: false, clusters: true, clientes: false };
-export function defaultProps(type: CompType, preset: Record<string, unknown> = {}): { props: Record<string, unknown>; data?: Binding; title: string; subtitle: string } {
-  const b = (table: string): Binding => ({ dataset: DS, table });
+export function defaultProps(type: CompType, preset: Record<string, unknown> = {}, ds: string = DS): { props: Record<string, unknown>; data?: Binding; title: string; subtitle: string } {
+  const b = (table: string): Binding => ({ dataset: ds, table });
+  const vd = ds === 'ds_vendas' ? vendasDefaults(type) : undefined;
+  if (vd) return { data: b(vd.table), title: vd.title, subtitle: vd.subtitle, props: vd.props };
+  if (type === 'chart') { const cp = chartPreset((preset.kind as ChartKind) ?? 'bar', ds); const legacy = ['bar', 'line', 'area', 'pie', 'scatter'].includes(String(preset.kind ?? 'bar')); if (cp && (ds !== DS || !legacy)) return { data: b(cp.table), title: cp.title, subtitle: cp.subtitle, props: cp.props }; }
   switch (type) {
     case 'kpi': return { data: b('enlaces'), title: 'Disponibilidade', subtitle: 'média dos enlaces', props: { measure: 'disponibilidade', agg: 'avg', label: 'Disponibilidade', target: 99.9, targetDir: 'above', spark: true, sparkMeasure: 'disponibilidade', compare: 'target' } satisfies KpiProps };
     case 'chart': {
@@ -134,8 +139,8 @@ export function defaultProps(type: CompType, preset: Record<string, unknown> = {
   }
 }
 
-export function makeComp(type: CompType, at: { x: number; y: number; w?: number; h?: number }, preset: Record<string, unknown> = {}, z = 1): Comp {
-  const m = COMP_META[type], d = defaultProps(type, preset);
+export function makeComp(type: CompType, at: { x: number; y: number; w?: number; h?: number }, preset: Record<string, unknown> = {}, z = 1, ds: string = DS): Comp {
+  const m = COMP_META[type], d = defaultProps(type, preset, ds);
   return {
     id: uid(type), type, name: d.title || m.label, x: at.x, y: at.y, w: at.w ?? m.w, h: at.h ?? m.h, z,
     style: { ...DEFAULT_STYLE, padding: type === 'text' || type === 'image' ? 4 : 12, title: d.title, subtitle: d.subtitle, showTitle: !['text', 'image', 'container'].includes(type), border: type !== 'text' && type !== 'image', background: type === 'text' || type === 'image' ? 'none' : type === 'container' ? 'subtle' : 'surface' },

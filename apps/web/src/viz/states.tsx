@@ -29,9 +29,9 @@ export function liveRows(rows: Row[], ds: string, table: string, t: number): Row
     const id = String(r.id ?? r.nome ?? ''), h = hash(id); let next: Row | null = null;
     for (const f of fields) {
       const v = Number(r[f.name]); if (!Number.isFinite(v)) continue;
-      const wave = Math.sin(t * 0.7 + h * 40) * 0.5 + (frac(t * 3.1 + h * 17) - 0.5), d = 1 + wave * (f.format === 'pct' ? 0.012 : 0.04), nv = f.format === 'pct' ? Math.min(100, Math.max(0, v * d)) : v * d;
+      const wave = Math.sin(t * 0.7 + h * 40) * 0.5 + (frac(t * 3.1 + h * 17) - 0.5), near100 = f.name === 'disponibilidade', d = 1 + wave * (near100 ? 0.0008 : f.format === 'pct' ? 0.012 : 0.04), nv = f.format === 'pct' ? Math.min(100, Math.max(0, v * d)) : v * d;
       (next ??= { ...r })[f.name] = nv;
-      if (Math.abs(d - 1) > 0.012) next._live = t;
+      if (Math.abs(d - 1) > (near100 ? 0.0004 : 0.012)) next._live = t;
     }
     return next ?? r;
   });

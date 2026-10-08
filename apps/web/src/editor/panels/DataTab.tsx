@@ -7,6 +7,8 @@ import type { ChartProps, Comp, KpiProps, MatrixProps, Scene3DProps, StatusProps
 import { COMP_META } from '../doc';
 import { useEditor } from '../store';
 import { fieldOpts, fieldsOf, kindOf, NoSelection, Row, Section, useProp, Well } from './shared';
+import { ChartWells } from './ChartPanels';
+import { KpiWells } from './KpiPanels';
 
 const AGGS: Agg[] = ['sum', 'avg', 'min', 'max', 'count', 'distinct'];
 const isMeasure = (f: { kind: string }) => f.kind === 'measure';
@@ -104,25 +106,8 @@ function Binding({ c }: { c: Comp }) {
   const agg = (k = 'agg') => <Row label="Agregação"><Select label="Agregação" hideLabel value={p[k] as Agg} onChange={(v: Agg) => set(k, v, `Agregação: ${AGG_LABEL[v]}`)} options={AGGS.map((a) => ({ id: a, label: AGG_LABEL[a] }))} /></Row>;
   let wells: React.ReactNode = null;
   switch (c.type) {
-    case 'kpi': { const k = p as unknown as KpiProps; wells = <><Well c={c} label="Valor" value={k.measure} onChange={(v) => set('measure', v, 'Trocar medida do KPI')} hint="Arraste uma medida" />{agg()}</>; break; }
-    case 'chart': {
-      const k = p as unknown as ChartProps;
-      wells = k.kind === 'scatter' ? (
-        <><Well c={c} label="Eixo X" value={k.x} accept={isMeasure} onChange={(v) => set('x', v, 'Trocar eixo X')} hint="Arraste uma medida" /><Well c={c} label="Eixo Y" value={k.y} accept={isMeasure} onChange={(v) => set('y', v, 'Trocar eixo Y')} hint="Arraste uma medida" /><Well c={c} label="Cor (legenda)" optional value={k.series} accept={isDim} onChange={(v) => set('series', v || undefined, 'Trocar legenda')} hint="Arraste uma dimensão" /></>
-      ) : (
-        <>
-          <Well c={c} label={k.kind === 'pie' ? 'Fatias' : 'Eixo X (categoria ou data)'} value={k.x} accept={isDim} onChange={(v) => set('x', v, 'Trocar eixo X')} hint="Arraste uma dimensão ou data" />
-          <Well c={c} label="Valores" value={k.y} onChange={(v) => { set('y', v, 'Trocar valores'); const f = fieldsOf(c).find((x) => x.name === v); if (f && f.kind !== 'measure' && k.agg !== 'count' && k.agg !== 'distinct') set('agg', 'count', 'Agregação: Contagem'); }} hint="Arraste uma medida" />
-          {agg()}
-          {k.kind !== 'pie' && <Well c={c} label="Legenda (séries)" optional value={k.series} accept={isDim} onChange={(v) => set('series', v || undefined, 'Trocar legenda')} hint="Arraste uma dimensão" />}
-          {fieldsOf(c).find((f) => f.name === k.x)?.kind === 'date'
-            ? <Row label="Grão"><SegmentedControl label="Grão de tempo" value={k.grain} onChange={(v) => set('grain', v, 'Trocar grão')} options={[{ id: 'day', label: 'Dia' }, { id: 'week', label: 'Semana' }]} /></Row>
-            : <><Row label="Ordenar"><Select label="Ordenar" hideLabel value={k.sort} onChange={(v: string) => set('sort', v, 'Trocar ordenação')} options={[{ id: 'value', label: 'Maiores primeiro' }, { id: 'asc', label: 'Menores primeiro' }, { id: 'label', label: 'Alfabética' }, { id: 'none', label: 'Original' }]} /></Row>
-              <Row label="Mostrar"><NumberField label="Limite de categorias" hideLabel quiet value={k.limit} minValue={1} maxValue={50} unit="itens" onChange={(v) => set('limit', v, 'Trocar limite')} /></Row></>}
-        </>
-      );
-      break;
-    }
+    case 'kpi': wells = <KpiWells c={c} agg={agg()} />; break;
+    case 'chart': wells = <ChartWells c={c} />; break;
     case 'table': {
       const k = p as unknown as TableProps;
       const fs = fieldsOf(c);

@@ -5,12 +5,14 @@ import type { CardProps, ChartKind, ChartProps, Comp, CompStyle, ImageProps, Kpi
 import { COMP_META } from '../doc';
 import { useEditor } from '../store';
 import { LAYER_LABEL } from '../../viz/map/MapView';
-import { NoSelection, Row, Section, useProp } from './shared';
+import { fieldOpts, NoSelection, Row, Section, useProp } from './shared';
+import { ChartVisual } from './ChartPanels';
+import { KpiVisual } from './KpiPanels';
 
 const KINDS: { id: ChartKind; label: string }[] = [{ id: 'bar', label: 'Barras' }, { id: 'hbar', label: 'Barras horizontais' }, { id: 'line', label: 'Linha' }, { id: 'area', label: 'Área' }, { id: 'pie', label: 'Pizza' }, { id: 'scatter', label: 'Dispersão' }];
 const IMAGES = [{ id: 'brand/logo-light.webp', label: 'Logo BIWEB (claro)' }, { id: 'brand/logo-dark.webp', label: 'Logo BIWEB (escuro)' }, { id: 'brand/mark.webp', label: 'Marca BIWEB' }, { id: 'brand/logo-stacked.webp', label: 'Logo empilhado' }];
 
-function StyleProps({ c }: { c: Comp }) {
+export function StyleProps({ c }: { c: Comp }) {
   const st = (k: keyof CompStyle, v: unknown, label: string) => useEditor.getState().update(c.id, (d) => { (d.style as unknown as Record<string, unknown>)[k] = v; if (k === 'title' && v) d.name = String(v); }, label);
   return (
     <>
@@ -32,7 +34,7 @@ function StyleProps({ c }: { c: Comp }) {
   );
 }
 
-function Geometry({ c }: { c: Comp }) {
+export function Geometry({ c }: { c: Comp }) {
   const set = (k: 'x' | 'y' | 'w' | 'h', v: number) => useEditor.getState().update(c.id, (d) => { d[k] = Math.max(k === 'w' ? 48 : k === 'h' ? 32 : 0, Math.round(v)); }, 'Ajustar posição e tamanho');
   return (
     <Section title="Posição e tamanho">
@@ -46,41 +48,26 @@ function TypeProps({ c }: { c: Comp }) {
   const set = useProp(c);
   const p = c.props;
   switch (c.type) {
-    case 'chart': {
-      const k = p as unknown as ChartProps;
-      return (
-        <Section title="Gráfico">
-          <Row label="Tipo"><Select label="Tipo de gráfico" hideLabel value={k.kind} onChange={(v: ChartKind) => { set('kind', v, `Trocar para ${KINDS.find((x) => x.id === v)?.label}`); }} options={KINDS} /></Row>
-          <Row label="Legenda"><Switch isSelected={k.legend} onChange={(v) => set('legend', v, v ? 'Mostrar legenda' : 'Ocultar legenda')} aria-label="Legenda">{null}</Switch></Row>
-          <Row label="Rótulos de dados"><Switch isSelected={k.labels} onChange={(v) => set('labels', v, v ? 'Mostrar rótulos' : 'Ocultar rótulos')} aria-label="Rótulos de dados">{null}</Switch></Row>
-          <Row label="Tooltip"><Switch isSelected={k.tooltip} onChange={(v) => set('tooltip', v, v ? 'Ligar tooltip' : 'Desligar tooltip')} aria-label="Tooltip">{null}</Switch></Row>
-        </Section>
-      );
-    }
-    case 'kpi': {
-      const k = p as unknown as KpiProps;
-      return (
-        <Section title="KPI">
-          <Row label="Comparar"><SegmentedControl label="Comparar" value={k.compare} onChange={(v) => set('compare', v, v === 'target' ? 'Comparar com meta' : 'Sem comparação')} options={[{ id: 'none', label: 'Nada' }, { id: 'target', label: 'Meta' }]} /></Row>
-          {k.compare === 'target' && <>
-            <Row label="Meta"><NumberField label="Meta" hideLabel quiet value={k.target ?? 0} step={0.1} onChange={(v) => set('target', v, 'Alterar meta')} /></Row>
-            <Row label="Bom quando"><SegmentedControl label="Bom quando" value={k.targetDir} onChange={(v) => set('targetDir', v, 'Direção da meta')} options={[{ id: 'above', label: 'Acima' }, { id: 'below', label: 'Abaixo' }]} /></Row>
-          </>}
-          <Row label="Tendência"><Switch isSelected={k.spark} onChange={(v) => set('spark', v, v ? 'Mostrar tendência' : 'Ocultar tendência')} aria-label="Tendência de 30 dias">{null}</Switch></Row>
-          {k.spark && <Row label="Série"><Select label="Série da tendência" hideLabel value={k.sparkMeasure} onChange={(v: string) => set('sparkMeasure', v, 'Trocar série da tendência')} options={[{ id: 'disponibilidade', label: 'Disponibilidade' }, { id: 'utilizacao', label: 'Utilização' }, { id: 'atenuacao_dB', label: 'Atenuação' }]} /></Row>}
-        </Section>
-      );
-    }
+    case 'chart': return <ChartVisual c={c} />;
+    case 'kpi': return <KpiVisual c={c} />;
     case 'table': { const k = p as unknown as TableProps; return (
       <Section title="Tabela">
         <Row label="Densidade"><SegmentedControl label="Densidade" value={k.density} onChange={(v) => set('density', v, 'Densidade da tabela')} options={[{ id: 'compact', label: 'Compacta' }, { id: 'default', label: 'Padrão' }]} /></Row>
         <Row label="Cor de status"><Switch isSelected={k.statusColors} onChange={(v) => set('statusColors', v, 'Cor de status')} aria-label="Cor de status">{null}</Switch></Row>
         <Row label="Limite de linhas"><NumberField label="Limite de linhas" hideLabel quiet value={k.rowLimit} minValue={0} step={10} unit={k.rowLimit ? 'linhas' : 'todas'} onChange={(v) => set('rowLimit', v, 'Limite de linhas')} /></Row>
+        <Row label="Busca na tabela"><Switch isSelected={!!k.search} onChange={(v) => set('search', v, 'Busca na tabela')} aria-label="Busca">{null}</Switch></Row>
+        <Row label="Escolher colunas"><Switch isSelected={!!k.columnPicker} onChange={(v) => set('columnPicker', v, 'Seletor de colunas')} aria-label="Seletor de colunas">{null}</Switch></Row>
+        <Row label="Linha de totais"><Switch isSelected={!!k.totals} onChange={(v) => set('totals', v, 'Linha de totais')} aria-label="Totais">{null}</Switch></Row>
+        <Row label="Exportar CSV"><Switch isSelected={!!k.exportable} onChange={(v) => set('exportable', v, 'Exportação')} aria-label="Exportar">{null}</Switch></Row>
+        <Row label="Agrupar por"><Select label="Agrupar por" hideLabel value={k.groupBy ?? ''} onChange={(v: string) => set('groupBy', v || undefined, 'Agrupar linhas')} options={fieldOpts(c, (f) => f.kind !== 'measure' && f.kind !== 'date', 'Sem grupos')} /></Row>
+        {c.data?.table === 'enlaces' && <Row label="Tendência em linha"><Switch isSelected={!!k.trend} onChange={(v) => set('trend', v ? { measure: 'utilizacao', label: '30 dias' } : undefined, 'Tendência em linha')} aria-label="Tendência">{null}</Switch></Row>}
+        <Row label="Ao vivo"><Switch isSelected={!!k.live} onChange={(v) => set('live', v, v ? 'Ligar tempo real' : 'Desligar tempo real')} aria-label="Ao vivo">{null}</Switch></Row>
       </Section>); }
     case 'matrix': { const k = p as unknown as MatrixProps; return (
       <Section title="Matriz">
         <Row label="Mapa de calor"><Switch isSelected={k.heat} onChange={(v) => set('heat', v, 'Mapa de calor')} aria-label="Mapa de calor">{null}</Switch></Row>
         <Row label="Totais"><Switch isSelected={k.totals} onChange={(v) => set('totals', v, 'Totais')} aria-label="Totais">{null}</Switch></Row>
+        <Row label="Expandir para"><Select label="Segundo nível da linha" hideLabel value={k.rowHier?.[1] ?? ''} onChange={(v: string) => set('rowHier', v ? [k.rows, v] : undefined, 'Hierarquia da matriz')} options={fieldOpts(c, (f) => f.kind !== 'measure' && f.kind !== 'date' && f.name !== k.rows, 'Sem hierarquia')} /></Row>
       </Section>); }
     case 'text': { const k = p as unknown as TextProps; return (
       <Section title="Texto">
@@ -131,7 +118,7 @@ function TypeProps({ c }: { c: Comp }) {
   }
 }
 
-function PageProps() {
+export function PageProps() {
   const doc = useEditor((s) => s.doc)!;
   const page = useEditor((s) => s.page())!;
   const dash = useUi((s) => s.dashTheme), setUi = useUi((s) => s.set);
@@ -179,8 +166,6 @@ export function VisualTab() {
     <div className="ed-tab">
       <div className="ed-tab-title">{COMP_META[c.type].label} · {c.name}</div>
       <TypeProps c={c} />
-      {c.type !== 'text' && c.type !== 'image' && <StyleProps c={c} />}
-      <Geometry c={c} />
     </div>
   );
 }

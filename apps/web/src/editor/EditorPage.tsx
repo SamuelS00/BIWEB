@@ -2,27 +2,29 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { Button, Icon, IconButton, Menu, SegmentedControl } from '@biweb/ui';
 import { Canvas } from './Canvas';
-import { FocusOverlay, PublishDialog, Toasts } from './chrome';
+import { FocusOverlay, PublishDialog, Toasts, VizPicker } from './chrome';
 import { PALETTE } from './doc';
+import { CATEGORIES, KIND_ICON } from '../viz/engine/kinds';
 import { useLibrary } from './library';
 import { useEditor, type RightTab } from './store';
 import { AiTab } from './panels/AiTab';
 import { BuildTab, compIcon } from './panels/BuildTab';
 import { DataTab } from './panels/DataTab';
 import { InteractionsTab } from './panels/InteractionsTab';
-import { RulesTab } from './panels/RulesTab';
+import { AdvancedTab } from './panels/AdvancedTab';
+import { StyleTab } from './panels/StyleTab';
 import { VisualTab } from './panels/VisualTab';
 import { useUi } from '../state/ui-store';
 import './editor.css';
 
 const TABS: { id: RightTab; label: string; icon: Parameters<typeof Icon>[0]['name'] }[] = [
-  { id: 'build', label: 'Estrutura', icon: 'layers' }, { id: 'data', label: 'Dados', icon: 'data' }, { id: 'visual', label: 'Visual', icon: 'brush' },
-  { id: 'interactions', label: 'Interações', icon: 'target' }, { id: 'rules', label: 'Regras', icon: 'bolt' }, { id: 'ai', label: 'IA', icon: 'copilot' },
+  { id: 'build', label: 'Estrutura', icon: 'layers' }, { id: 'data', label: 'Dados', icon: 'data' }, { id: 'visual', label: 'Visual', icon: 'chart' }, { id: 'style', label: 'Estilo', icon: 'brush' },
+  { id: 'interactions', label: 'Interação', icon: 'target' }, { id: 'advanced', label: 'Avançado', icon: 'sliders' }, { id: 'ai', label: 'IA', icon: 'copilot' },
 ];
 
 function Palette() {
   const [q, setQ] = useState('');
-  const groups = ['Dados', 'Gráficos', 'Geo e 3D', 'Layout'] as const;
+  const groups = ['Dados', ...CATEGORIES, 'Geo e 3D', 'Layout'] as const;
   return (
     <aside className="ed-palette" aria-label="Inserir componentes">
       <div className="ed-palette-head"><span className="bw-panel-title">Inserir</span><span className="bw-cap bw-muted">arraste ou clique</span></div>
@@ -36,11 +38,11 @@ function Palette() {
               <span className="bw-label">{g}</span>
               <div className="ed-pal-grid">
                 {items.map((it) => (
-                  <button key={it.id} type="button" className="ed-pal-item" draggable title={`${it.label} · arraste para o canvas ou clique para inserir`}
+                  <button key={it.id} type="button" className="ed-pal-item" draggable title={`${it.label}${it.hint ? ` — ${it.hint}` : ''} · arraste para o canvas ou clique para inserir`}
                     onDragStart={(e) => { (window as unknown as { __bwDrag?: string }).__bwDrag = it.id; e.dataTransfer.setData('application/x-biweb', it.id); e.dataTransfer.effectAllowed = 'copy'; }}
                     onDragEnd={() => { (window as unknown as { __bwDrag?: string }).__bwDrag = undefined; }}
                     onClick={() => useEditor.getState().insert(it.type, undefined, it.preset, { label: `Inserir ${it.label}` })}>
-                    <Icon name={it.type === 'chart' ? (it.id === 'line' || it.id === 'area' ? 'timeline' : it.id === 'pie' ? 'status' : it.id === 'scatter' ? 'grid' : 'chart') : it.id === 'heat' ? 'layers' : it.id === 'routes' ? 'share' : it.id === 'topology' ? 'model' : compIcon(it.type)} size={16} />
+                    <Icon name={it.type === 'chart' ? KIND_ICON[it.id as keyof typeof KIND_ICON] ?? 'chart' : it.id === 'heat' ? 'layers' : it.id === 'routes' ? 'share' : it.id === 'topology' ? 'model' : compIcon(it.type)} size={16} />
                     <span>{it.label}</span>
                   </button>
                 ))}
@@ -199,7 +201,7 @@ export function EditorPage() {
             {panelsOpen && (
               <div className="ed-panel" role="tabpanel" key={tab}>
                 {tab === 'build' && <BuildTab />}{tab === 'data' && <DataTab />}{tab === 'visual' && <VisualTab />}
-                {tab === 'interactions' && <InteractionsTab />}{tab === 'rules' && <RulesTab />}{tab === 'ai' && aiEnabled && <AiTab />}
+                {tab === 'style' && <StyleTab />}{tab === 'interactions' && <InteractionsTab />}{(tab === 'advanced' || tab === 'rules') && <AdvancedTab />}{tab === 'ai' && aiEnabled && <AiTab />}
               </div>
             )}
           </aside>
@@ -208,6 +210,7 @@ export function EditorPage() {
       <StatusLine />
       <Toasts />
       <FocusOverlay />
+      <VizPicker />
       <PublishDialog isOpen={pub} onOpenChange={setPub} onOpenReport={() => { setPub(false); navigate({ to: '/reports/$reportId', params: { reportId: doc.id } }); }} />
     </div>
   );
