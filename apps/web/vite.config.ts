@@ -16,14 +16,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         ...(single ? { inlineDynamicImports: true } : {}),
-        manualChunks: single ? undefined : (id) => {
-          if (!id.includes('node_modules')) return undefined;
-          if (/[\\/](react-aria|@react-aria|@react-stately|@react-types|@internationalized)/.test(id)) return 'aria';
-          if (/[\\/](react|react-dom|scheduler)[\\/]/.test(id)) return 'react';
-          if (id.includes('@tanstack')) return 'router';
-          if (/[\\/](react-intl|@formatjs|intl-messageformat)/.test(id)) return 'intl';
-          return 'vendor';
-        },
+        // Sem manualChunks: o agrupamento manual (aria/react/vendor) gerava dependência circular
+        // entre chunks e quebrava o build de produção ("Cannot access 'm' before initialization").
       },
     },
   },

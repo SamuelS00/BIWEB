@@ -8,7 +8,6 @@ import { ModelPage } from './routes/model';
 import { CopilotPage } from './routes/copilot';
 import { MapRoute } from './routes/map-route';
 import { MapsGallery } from './routes/maps-gallery';
-import { WorkflowsPage } from './routes/workflows';
 import { useLibrary } from './editor/library';
 import { blankReport } from './editor/templates';
 
@@ -31,11 +30,13 @@ const legacyMap = (path: string, mapId: string) => createRoute({ getParentRoute:
 const mapWorkspace = legacyMap('/maps/network-intelligence', 'network');
 const incidentWorkspace = legacyMap('/maps/incident-intelligence', 'incidents');
 const streetWorkspace = legacyMap('/maps/street-intelligence', 'lights');
-const workflows = createRoute({ getParentRoute: () => root, path: '/workflows', component: WorkflowsPage });
+// Workflow Builder carregado só ao abrir Fluxos (canvas, simulação e Copilot ficam fora do shell inicial).
+const workflows = createRoute({ getParentRoute: () => root, path: '/workflows', component: lazyRouteComponent(() => import('./routes/workflows'), 'WorkflowsGallery') });
+const workflowDetail = createRoute({ getParentRoute: () => root, path: '/workflows/$workflowId', component: lazyRouteComponent(() => import('./routes/workflows'), 'WorkflowsPage') });
 // Rotas antigas de dashboards continuam funcionando.
 const legacy = createRoute({ getParentRoute: () => root, path: '/dashboards/$id', beforeLoad: () => { throw redirect({ to: '/reports/$reportId', params: { reportId: 'net_executiva' } }); } });
 
 // VITE_HASH_HISTORY=1 gera um build estático (rotas com #) para hospedar sem servidor, ex.: prévias.
 const history = import.meta.env.VITE_HASH_HISTORY ? createHashHistory() : undefined;
-export const router = createRouter({ routeTree: root.addChildren([home, reportsRoute, report, builder, connections, model, copilot, mapsGallery, mapRoute, mapWorkspace, incidentWorkspace, streetWorkspace, workflows, legacy]), ...(history ? { history } : {}), defaultPreload: 'intent' });
+export const router = createRouter({ routeTree: root.addChildren([home, reportsRoute, report, builder, connections, model, copilot, mapsGallery, mapRoute, mapWorkspace, incidentWorkspace, streetWorkspace, workflows, workflowDetail, legacy]), ...(history ? { history } : {}), defaultPreload: 'intent' });
 declare module '@tanstack/react-router' { interface Register { router: typeof router } }

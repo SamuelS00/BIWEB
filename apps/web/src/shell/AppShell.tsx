@@ -135,7 +135,7 @@ function Crumbs({ path, reportName }: { path: string; reportName?: string }) {
   if (path.startsWith('/connections')) parts.push({ label: 'Dados e conexões' });
   if (path.startsWith('/copilot')) parts.push({ label: 'Copilot' });
   if (path.startsWith('/maps')) { const map = REPORTS.find((r) => path === `/maps/${r.id}`); parts.push({ label: 'Mapas', to: '/maps' }, ...(map ? [{ label: map.name }] : [])); }
-  if (path.startsWith('/workflows')) parts.push({ label: 'Fluxos' });
+  if (path.startsWith('/workflows')) parts.push(path === '/workflows' ? { label: 'Fluxos' } : { label: 'Fluxos', to: '/workflows' }, ...(path === '/workflows' ? [] : [{ label: 'Editor de fluxo' }]));
   if (path === '/') parts.push({ label: 'Início' });
   return (
     <nav className="bw-crumbs" aria-label="Você está em">
