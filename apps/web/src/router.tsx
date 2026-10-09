@@ -1,4 +1,4 @@
-import { createHashHistory, createRootRoute, createRoute, createRouter, lazyRouteComponent, redirect } from '@tanstack/react-router';
+import { createHashHistory, createRootRoute, createRoute, createRouter, lazyRouteComponent, Outlet, redirect, useRouterState } from '@tanstack/react-router';
 import { AppShell } from './shell/AppShell';
 import { HomePage } from './routes/home';
 import { ReportsPage } from './routes/reports';
@@ -8,10 +8,20 @@ import { ModelPage } from './routes/model';
 import { CopilotPage } from './routes/copilot';
 import { MapRoute } from './routes/map-route';
 import { MapsGallery } from './routes/maps-gallery';
+import { useAuth } from './state/auth';
 import { useLibrary } from './editor/library';
 import { blankReport } from './editor/templates';
 
-const root = createRootRoute({ component: AppShell });
+// A tela de login fica fora do shell (sem rail, topbar nem Copilot).
+function Root() { return useRouterState({ select: (st) => st.location.pathname === '/login' }) ? <Outlet /> : <AppShell />; }
+// Sem sessão, toda rota leva ao login (a tela inicial do app); depois de entrar, /login volta ao Início.
+const root = createRootRoute({ component: Root,
+  beforeLoad: ({ location }) => {
+    const signedIn = useAuth.getState().signedIn;
+    if (!signedIn && location.pathname !== '/login') throw redirect({ to: '/login', replace: true });
+    if (signedIn && location.pathname === '/login') throw redirect({ to: '/', replace: true });
+  } });
+const login = createRoute({ getParentRoute: () => root, path: '/login', component: lazyRouteComponent(() => import('./routes/login'), 'LoginPage') });
 const home = createRoute({ getParentRoute: () => root, path: '/', component: HomePage });
 const reportsRoute = createRoute({ getParentRoute: () => root, path: '/reports', component: ReportsPage });
 const report = createRoute({ getParentRoute: () => root, path: '/reports/$reportId', component: ReportRoute });
@@ -38,5 +48,5 @@ const legacy = createRoute({ getParentRoute: () => root, path: '/dashboards/$id'
 
 // VITE_HASH_HISTORY=1 gera um build estático (rotas com #) para hospedar sem servidor, ex.: prévias.
 const history = import.meta.env.VITE_HASH_HISTORY ? createHashHistory() : undefined;
-export const router = createRouter({ routeTree: root.addChildren([home, reportsRoute, report, builder, connections, model, copilot, mapsGallery, mapRoute, mapWorkspace, incidentWorkspace, streetWorkspace, workflows, workflowDetail, legacy]), ...(history ? { history } : {}), defaultPreload: 'intent' });
+export const router = createRouter({ routeTree: root.addChildren([login, home, reportsRoute, report, builder, connections, model, copilot, mapsGallery, mapRoute, mapWorkspace, incidentWorkspace, streetWorkspace, workflows, workflowDetail, legacy]), ...(history ? { history } : {}), defaultPreload: 'intent' });
 declare module '@tanstack/react-router' { interface Register { router: typeof router } }
