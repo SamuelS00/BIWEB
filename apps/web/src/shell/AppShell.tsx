@@ -13,14 +13,15 @@ import { WORKSPACES } from '../routes/gallery';
 import { REPORTS } from '../routes/maps/model';
 import { CommandPalette } from './CommandPalette';
 
-type Area = 'home' | 'reports' | 'data' | 'models' | 'copilot' | 'maps' | 'workflows';
+type Area = 'home' | 'reports' | 'data' | 'models' | 'copilot' | 'maps' | 'workflows' | 'migration';
 function area(path: string): Area {
   if (path.startsWith('/reports')) return 'reports';
-  if (path.startsWith('/connections')) return 'data';
+  if (path.startsWith('/connections') || path.startsWith('/data')) return 'data';
   if (path.startsWith('/models')) return 'models';
   if (path.startsWith('/copilot')) return 'copilot';
   if (path.startsWith('/maps')) return 'maps';
   if (path.startsWith('/workflows')) return 'workflows';
+  if (path.startsWith('/migration')) return 'migration';
   return 'home';
 }
 
@@ -46,6 +47,7 @@ const NAV: { id: Area; label: string; icon: IconName; to: string }[] = [
   { id: 'copilot', label: 'Copilot', icon: 'copilot', to: '/copilot' },
   { id: 'maps', label: 'Mapas', icon: 'pin', to: '/maps' },
   { id: 'workflows', label: 'Fluxos', icon: 'share', to: '/workflows' },
+  { id: 'migration', label: 'Migração', icon: 'migrate', to: '/migration' },
 ];
 
 export function AppShell() {
@@ -64,7 +66,7 @@ export function AppShell() {
   const inEditor = path.endsWith('/edit');
   const engine = ui.workspace === 'rede' ? networkCopilot : mockCopilot;
   const context = report ? { label: `Relatório: ${report.name}`, reportId: report.id } : { label: `Workspace ${WORKSPACES[ui.workspace].label}` };
-  const showDock = ui.aiEnabled && ui.copilotOpen && cur !== 'copilot' && !inEditor;
+  const showDock = ui.aiEnabled && ui.copilotOpen && cur !== 'copilot' && cur !== 'migration' && cur !== 'data' && !inEditor;
 
   return (
     <div className="app">
@@ -92,7 +94,7 @@ export function AppShell() {
             <Icon name="search" size={12} />Buscar relatórios, métricas e ações<kbd>⌘K</kbd>
           </button>
           {ui.aiEnabled && (
-            <button type="button" className="app-copilot-btn" aria-pressed={inEditor ? undefined : ui.copilotOpen} onClick={() => { if (inEditor) { useEditor.getState().set({ rightTab: 'ai' }); return; } ui.set({ copilotOpen: !ui.copilotOpen }); }}>
+            <button type="button" className="app-copilot-btn" aria-pressed={inEditor || cur === 'migration' || cur === 'data' ? undefined : ui.copilotOpen} onClick={() => { if (inEditor) { useEditor.getState().set({ rightTab: 'ai' }); return; } if (cur === 'migration') { dispatchEvent(new Event('biweb:migration-copilot')); return; } if (cur === 'data') { dispatchEvent(new Event('biweb:data-copilot')); return; } ui.set({ copilotOpen: !ui.copilotOpen }); }}>
               <Icon name="copilot" size={16} />Copilot
             </button>
           )}
@@ -132,10 +134,18 @@ function Crumbs({ path, reportName }: { path: string; reportName?: string }) {
   if (reportName) parts.push({ label: reportName });
   if (path.endsWith('/edit')) parts.push({ label: 'Editar' });
   if (path.startsWith('/models')) parts.push({ label: 'Modelos' }, { label: 'Vendas Varejo' });
-  if (path.startsWith('/connections')) parts.push({ label: 'Dados e conexões' });
+  if (path.startsWith('/connections')) parts.push({ label: 'Dados', to: '/data' }, { label: 'Visão geral' });
+  if (path.startsWith('/data')) {
+    const [, , sec, item] = path.split('/');
+    const L: Record<string, string> = { sources: 'Fontes', catalog: 'Catálogo', model: 'Modelo', quality: 'Qualidade', published: 'Publicados', transformations: 'Transformações', lineage: 'Linhagem', enrichment: 'Enriquecimento', changes: 'Mudanças', runs: 'Execuções' };
+    parts.push(sec ? { label: 'Dados', to: '/data' } : { label: 'Dados' });
+    if (sec) parts.push(item ? { label: L[sec] ?? sec, to: `/data/${sec}` } : { label: L[sec] ?? sec });
+    if (item) parts.push({ label: decodeURIComponent(item) });
+  }
   if (path.startsWith('/copilot')) parts.push({ label: 'Copilot' });
   if (path.startsWith('/maps')) { const map = REPORTS.find((r) => path === `/maps/${r.id}`); parts.push({ label: 'Mapas', to: '/maps' }, ...(map ? [{ label: map.name }] : [])); }
   if (path.startsWith('/workflows')) parts.push(path === '/workflows' ? { label: 'Fluxos' } : { label: 'Fluxos', to: '/workflows' }, ...(path === '/workflows' ? [] : [{ label: 'Editor de fluxo' }]));
+  if (path.startsWith('/migration')) parts.push(path === '/migration' ? { label: 'Migration Studio' } : { label: 'Migration Studio', to: '/migration' }, ...(path === '/migration' ? [] : [{ label: 'Projeto de migração' }]));
   if (path === '/') parts.push({ label: 'Início' });
   return (
     <nav className="bw-crumbs" aria-label="Você está em">

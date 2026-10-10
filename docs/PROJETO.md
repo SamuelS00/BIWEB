@@ -2,11 +2,11 @@
 
 > Documento vivo. É o ponto de entrada para quem vai evoluir o código. O **porquê** de longo prazo está no blueprint ([`architecture/`](architecture/), ADRs); aqui está o **como o projeto é hoje** e **como mexer nele**.
 > Histórico do que já foi resolvido: [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md).
-> Última revisão: 2026-10-09 (commit `074f8c8`).
+> Última revisão: 2026-10-10 (Data Workspace). Apresentação para clientes: [apresentacao/data-workspace.html](apresentacao/data-workspace.html).
 
 ## 1. O que é
 
-Plataforma web de Business Intelligence: relatórios e dashboards editáveis, mapas operacionais (GIS), gêmeo digital 3D, workflows de dados e um Copilot de IA. Hoje existe **apenas o front-end** (`apps/web`), rodando 100% no browser com dados demonstrativos determinísticos. O blueprint prevê control plane TS + data plane Rust, mas esses módulos são esqueletos.
+Plataforma web de Business Intelligence: relatórios e dashboards editáveis, mapas operacionais (GIS), gêmeo digital 3D, workflows de dados, migração de plataformas de BI externas e um Copilot de IA. Hoje existe **apenas o front-end** (`apps/web`), rodando 100% no browser com dados demonstrativos determinísticos. O blueprint prevê control plane TS + data plane Rust, mas esses módulos são esqueletos.
 
 ## 2. Mapa do repositório
 
@@ -59,7 +59,9 @@ Se 5173 estiver ocupada o Vite sobe em outra porta: leia o log. Após editar uma
 | `/reports/$id/edit` | Editor (lazy) | `editor/EditorPage.tsx` |
 | `/maps`, `/maps/$mapId` | Galeria e workspace de mapas | `routes/maps-gallery.tsx`, `map-workspace.tsx`, `routes/maps/` |
 | `/workflows`, `/workflows/$id` | Galeria e Workflow Builder (lazy) | `routes/workflows/` |
-| `/connections` | Dados: fontes, importação, linhagem | `datasources/` |
+| `/migration`, `/migration/$projectId` | Migration Studio: projetos e workspace de migração (lazy) | `routes/migration/` |
+| `/data`, `/connections` | **Data Workspace** (Living Data Engine): visão geral | `dataworkspace/` |
+| `/data/$section`, `/data/$section/$itemId` | Seções `sources`, `catalog`, `model`, `quality`, `published`, `transformations`, `lineage`, `enrichment`, `changes`, `runs`; `$itemId` = fonte, ativo, modelo, dataset, ChangeSet ou run | `dataworkspace/` |
 | `/models/$id` | Modelo semântico | `routes/model.tsx` |
 | `/copilot` | Copilot em tela cheia | `routes/copilot.tsx` |
 
@@ -113,7 +115,27 @@ Hoje a consulta roda no cliente. O alvo do blueprint é QDL → semantic layer �
 ### 5.7 Workflows (`routes/workflows/`)
 `model.ts` (nós/arestas), `engine.ts` (simulação de execução, testada), `store.ts`, `Canvas`, `Inspector`, `Library`, `RunPanel`, `copilot.ts`, `seeds.ts`.
 
-### 5.8 Copilot
+### 5.8 Migration Studio (`routes/migration/`)
+Módulo que conecta uma plataforma de BI externa (Power BI, Tableau, Qlik, Looker, ThoughtSpot, Domo), inventaria, interpreta, avalia compatibilidade, reconstrói nos Builders existentes, valida e publica. **Só protótipo de front-end**: nada fala com backend. Regra de ouro: ele *coordena*, nunca recria editor — reconstruir/editar abre Report Builder, Map Builder, Workflow Builder ou Data Workspace (`OpenIn` em `ui.tsx`, caminhos em `analysis.ts › BUILDER_PATH`).
+- `model.ts` tipos, plataformas, estratégias (Fidelity/Native/Modernize), compatibilidade e o estado do projeto (`ProjState`, `Msg`, `Op`).
+- `data.ts` inventário determinístico do projeto demo *Commercial & Operations Migration* (12 relatórios, 48 páginas, 284 visuais, 37 medidas, 9 datasets, 41 tabelas, 3 mapas, 2 processos), árvore, grafo de dependências (`EDGES`, `relatives`, `impactOf`) e categorias de compatibilidade. `analysis.ts` guarda o resto da análise: projetos, descobertas, fila de revisão, validação, mapeamentos, blueprint, modelo ER, tradução semântica, reconstrução e Bridge.
+- `store.ts` (zustand) estado por projeto (`ps[projectId]`): estratégias com herança visual → página → relatório → projeto, decisões de revisão, reconstrução, escopo parcial (`excluded`), publicação e chat. `derive.ts` tem os cálculos puros (`effectiveStrategy`, `readiness`, `pendingReview`). `copilot.ts` responde com proposta → prévia → aplicar (`respond`); só `applyProposal` altera estado.
+- Telas: `MigrationList` (lista rica + filtros) → `NewMigration` (5 etapas) → `Workspace` (cabeçalho, trilha de fluxo, abas e painel de item redimensionável com Inspetor, Dependências e Copilot) → `tabs/*` (Visão geral, Inventário, Blueprint, Modelo de dados, Semântica, Compatibilidade, Mapeamentos, Reconstrução, Validação, Publicação, Bridge). `Processing` é a análise em andamento.
+- Projetos `detail: 'summary'` (Tableau, Qlik, Looker, Domo, ThoughtSpot) têm Visão geral, Inventário e Compatibilidade resumidos; as demais abas apontam para o projeto demo. Um projeto novo de Power BI reaproveita o inventário completo do demo.
+- Animações em SVG só com `opacity` (animar `transform` em elemento SVG sobrescreve o atributo `transform` de posição e empilha tudo na origem). Reaproveita estilos do Copilot dos Fluxos (`workflows.css`).
+- Testes: `data.test.ts` (totais do escopo, mistura 73/18/7/2, referências cruzadas) e `store.test.ts` (publicação parcial, herança de estratégia, Copilot).
+
+### 5.8.1 Data Workspace (`dataworkspace/`)
+Protótipo navegável do Living Data Engine (LDE): conectar → descobrir → entender → relacionar → modelar → mapear → normalizar → enriquecer → validar → aprovar → publicar → rastrear → monitorar → evoluir. **Só front-end**: todos os dados são mock determinístico e centralizado; o carregamento é sob demanda (seções `lazy`).
+- Dados mock: `registry.ts` (fontes, ativos, colunas via mini-DSL `col('NOME:gen:PK')`, relacionamentos), `ops.ts` (modelos/ERD, mapeamentos, qualidade, ChangeSets, runs, datasets publicados, linhagem, enriquecimento, revisão), `connectors.ts` (118 conectores com disponibilidade AVAILABLE/PREPARED/PLANNED, formulários por tipo e descoberta simulada), `sample.ts` (linhas e perfis calculados de uma amostra semeada, por isso perfil e grade batem).
+- Estado: `store.ts` (zustand): seleção do inspetor, decisões (aceitar/rejeitar), fontes criadas pelo wizard, status de ChangeSet/enriquecimento, execução ativa, chat do Copilot, privacidade de IA, "Detalhes técnicos". A URL guarda só seção + item; abas e filtros ficam no estado.
+- Layout (`DataWorkspace.tsx`): navegação + árvore contextual · centro · painel direito (Inspetor, Copilot, Revisão), recolhível. Em telas de canvas, abrir o inspetor recolhe a navegação.
+- Reuso: `Canvas.tsx` (pan, zoom, minimapa, arrasto) serve ao Modelo e à Linhagem; `DataGrid.tsx` (rolagem virtual, ordenar, filtrar, redimensionar, fixar, ocultar) serve ao Catálogo e aos Publicados; `ConnectWizard.tsx` tem 8 etapas; `CopilotPanel.tsx`/`copilot.ts` respondem por contexto (propõem; não aplicam).
+- Convenções: classes `dw-*` em `dataworkspace.css`, só tokens; a IA pode estar desligada e tudo continua funcionando; zonas (RAW → STAGING → QUARANTINE → CURATED → SERVING) e ids técnicos só aparecem em Linhagem, Execuções e "Detalhes técnicos".
+- A tela anterior de Dados (`datasources/DataPage.tsx`) foi preservada como aba "Datasets de relatório" em Publicados.
+- Não commite arquivos com nomes que diferem só por caixa (`catalog.ts` × `Catalog.tsx` quebra o `tsc` no macOS): os dados ficam em `registry.ts`.
+
+### 5.9 Copilot
 UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `aiEnabled`: a plataforma tem que funcionar com a IA desligada (ADR-0033, imposto pelo dependency-cruiser).
 
 ## 6. Convenções
@@ -150,6 +172,8 @@ UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `
 
 **Novo relatório demo:** dados em `routes/demo/data.ts` + teste → tela em `routes/demo-reports.tsx` → entrada em `routes/gallery.ts`.
 
+**Nova plataforma ou projeto de migração:** `PLATFORMS` em `routes/migration/model.ts` → projeto em `analysis.ts › PROJECTS` (+ `SUMMARY_TREES`/`SUMMARY_DIALECT` se for resumido).
+
 **Nova rota:** `createRoute` em `router.tsx` (lazy se pesada) → item no `AppShell` e na paleta ⌘K → atualizar a tabela da seção 4.
 
 **Novo workflow seed:** `routes/workflows/seeds.ts`; nova regra de execução em `engine.ts` + teste.
@@ -158,7 +182,7 @@ UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `
 
 | Camada | Comando | Cobre |
 |---|---|---|
-| Unit (Vitest) | `pnpm test` | tokens (contraste), ui, motor de gráficos, `cf`, dados de vendas, Copilot do editor, mapas, workflows, relatórios demo |
+| Unit (Vitest) | `pnpm test` | tokens (contraste), ui, motor de gráficos, `cf`, dados de vendas, Copilot do editor, mapas, workflows, relatórios demo, Migration Studio |
 | E2E (Playwright + axe) | `pnpm e2e` | shell inicial (8 testes) |
 | Fronteiras | `pnpm check:boundaries` | regras de dependência |
 | CI | `.github/workflows/ci.yml` | lint + typecheck + testes |
@@ -197,7 +221,8 @@ Produção: Cloudflare Pages em `app.biwebstudio.com.br` (domínio no Registro.b
 3. Camada de consulta: `data/query.ts` → QDL + semantic layer (ADR-0005/0006), mantendo a API do front.
 4. Extrair do `apps/web` para os pacotes: `dashboard-core` (documento + migrations), `viz-sdk` (contrato de plugin), `layout-engine`.
 5. Copilot real via Model Gateway com principal delegado e ChangeSets (ADR-0033–0041).
-6. Ampliar E2E e adicionar testes visuais; documentar deploy em `docs/runbooks/`.
+6. Ampliar E2E (Data Workspace incluso) e adicionar testes visuais; documentar deploy em `docs/runbooks/`.
+   Data Workspace: testes unitários de `sample.ts`/`store.ts`, ligação real ao LDE e persistência de decisões.
 7. Grãos de data por minuto/hora para relatórios em tempo real.
 
 ## 12. Como manter esta documentação

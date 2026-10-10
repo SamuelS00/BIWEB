@@ -1,6 +1,6 @@
 # BIWEB Studio — Problemas resolvidos até o momento
 
-> Documento objetivo: **problema → solução → onde está**. Cobre o que foi entregue no `apps/web` (13 commits, de 2026-10-06 a 2026-10-08), as decisões tomadas e o que ainda está em aberto.
+> Documento objetivo: **problema → solução → onde está**. Cobre o que foi entregue no `apps/web` (de 2026-10-06 a 2026-10-10), as decisões tomadas e o que ainda está em aberto.
 > O blueprint de arquitetura (ADRs 0001–0041) continua em [`architecture/`](architecture/); aqui está só o que foi **implementado e decidido na prática**.
 
 ## 1. Estado atual
@@ -124,6 +124,18 @@ Pacote `packages/assistant-ui` + motor de exemplo no app (`copilot/engine.ts`): 
 | Artifact bloqueava scripts/CSS externos | `build:artifact` gera **uma única página** com JS/CSS/imagens embutidos (`tools/artifact/inline.mjs`) |
 | Passos manuais e `pnpm` fora do PATH | `tools/deploy.sh` roda `tsc` + testes + builds via `node vite.js` (ainda **não commitado**) |
 | Publicar com domínio próprio | Domínio no Registro.br, e-mail no Fastmail, app em Cloudflare Pages em `app.biwebstudio.com.br` (conta pessoal do usuário) |
+
+### 2.x Data Workspace (Living Data Engine) — 2026-10-10
+| Problema | Solução | Onde |
+|---|---|---|
+| A tela de Dados era uma lista de fontes e datasets, sem mostrar o ciclo do dado | Workspace com 11 seções (visão geral, fontes, catálogo, modelo, qualidade, publicados, transformações, linhagem, enriquecimento, mudanças, execuções), inspetor contextual e Copilot | `apps/web/src/dataworkspace/` |
+| Conectar dados era um formulário único | Wizard de 8 etapas com 118 conectores (disponível/preparado/planejado) e formulário por tipo (banco, CSV, REST, MQTT, SFTP, PDF…) | `ConnectWizard.tsx`, `connectors.ts` |
+| Perfil e grade de dados poderiam divergir | Linhas semeadas geram o perfil (nulos, distintos, padrões, histograma); mesmo motor para grade e perfil | `sample.ts` |
+| Mudança estrutural sem controle | PROPOR → APROVAR → APLICAR com diff classificado (aditivo/compatível/breaking), impacto clicável e histórico | `Changes.tsx`, `ops.ts` |
+| Diagrama pequeno demais ao abrir | `fit` só roda depois de medir o container; inspetor aberto recolhe a navegação | `Canvas.tsx`, `DataWorkspace.tsx` |
+| `tsc` falhava por `catalog.ts` × `Catalog.tsx` (caixa) | Dados renomeados para `registry.ts` | `dataworkspace/` |
+| IA como requisito | Operação determinística completa com IA desligada; privacidade por metadados/amostras mascaradas | `DataWorkspace.tsx › PrivacyBlock`, `store.ts` |
+
 
 ## 3. Decisões que valem daqui para frente
 1. **Não apagar o que existe**: cada nova rodada incorpora ao estado atual e preserva o design system aprovado.
