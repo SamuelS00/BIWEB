@@ -36,6 +36,12 @@
 .ed-page { position: absolute; transform-origin: 0 0; background: var(--dash-background); box-shadow: 0 0 0 1px var(--border-default); border-radius: var(--radius-sm); }
 .is-preview .ed-page { box-shadow: none; }
 .ed-grid { position: absolute; inset: 0; background-image: radial-gradient(var(--canvas-dot) 1px, transparent 1px); background-size: 16px 16px; opacity: .55; pointer-events: none; border-radius: inherit; }
+.ed-page { transition: left var(--duration-spatial) var(--easing-standard), top var(--duration-spatial) var(--easing-standard), box-shadow var(--duration-panel) var(--easing-standard); }
+.is-edit .ed-grid { animation: ed-grid-emerge var(--duration-spatial) var(--easing-standard) both; }
+.is-edit .ed-selbox { animation: ed-controls-emerge var(--duration-panel) var(--easing-standard) both; }
+@keyframes ed-grid-emerge { from { opacity: 0; } to { opacity: .55; } }
+@keyframes ed-controls-emerge { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ed-page, .ed-grid, .ed-selbox { animation: none !important; transition: none !important; } }
 .ed-comp { position: absolute; box-sizing: border-box; }
 .is-edit .ed-comp { cursor: default; }
 .is-edit .ed-comp:not(.is-live):hover { outline: 1px solid color-mix(in srgb, var(--selection) 55%, transparent); outline-offset: 1px; }
@@ -275,3 +281,17 @@
 .ed-hier { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 11px; }
 .bw-dialog:has(.ed-picker) { width: min(780px, 92vw); }
 .ed-picker { width: 100%; }
+
+/* Builder: hierarquia de ferramenta desktop e estados de seleção consistentes. */
+.ed-toolbar { gap: var(--space-1); }
+.ed-canvas { background-color: var(--surface-canvas); }
+.ed-palette, .ed-right { box-shadow: none; }
+.ed-tabbtn { transition: background-color var(--duration-fast) var(--easing-standard), color var(--duration-fast) var(--easing-standard); }
+.ed-mini { border-color: var(--border-subtle); box-shadow: var(--shadow-toolbar); }
+.ed-emptypage { border-color: var(--border-subtle); background: var(--surface-panel); box-shadow: var(--shadow-card); }
+.ed-kindcur:hover, .ed-kindgrid button:hover, .ed-picker-grid button:hover { border-color: var(--border-default); background: var(--surface-hover); }
+.ed-kindgrid button.is-on { border-color: var(--selection); color: var(--text-primary); box-shadow: inset 2px 0 0 var(--selection); }
+.ed-picker-grid button { background: var(--surface-panel); }
+.ed-picker-grid button:hover { background: var(--surface-hover); }
+.ed-picker-body h4, .ed-lvl h5 { font-weight: 600; }
+.ai-context-chip.is-active { border-color: var(--selection); color: var(--text-primary); }

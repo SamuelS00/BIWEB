@@ -13,3 +13,18 @@
 .mb-workspace.mb-fullscreen{position:fixed;inset:0;z-index:60;height:100dvh;min-height:0}.mb-inspector .bw-field{max-width:100%}
 .mb-route-draw{stroke-dasharray:1;animation:mb-route-draw .7s cubic-bezier(.2,.75,.25,1) both}@keyframes mb-route-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 @media(max-width:640px){.mb-header>.bw-btn:last-child{display:inline-flex;margin-left:auto}}
+
+/* Camadas cartográficas e controles flutuantes no mesmo sistema do Builder. */
+.mb-geo { background: #e6edf0; }
+.mb-geo-dark { background: #101c29; }
+.mb-reports > button[aria-current=page] { background: var(--surface-hover); border-bottom-color: var(--selection); }
+.mb-panel, .mb-inspector { border-color: var(--border-subtle); box-shadow: var(--shadow-toolbar); animation: mb-enter var(--duration-panel) var(--easing-standard); }
+.mb-layer.is-active { box-shadow: inset 2px 0 0 var(--selection); }
+.mb-preview-map { box-shadow: inset 0 0 0 2px var(--selection); }
+.mb-legend, .mb-metrics { box-shadow: var(--shadow-toolbar); }
+.mb-analysis { border-left-color: var(--selection); }
+.mb-proposal { border-color: var(--ghost-border); background: var(--ghost-bg); }
+.mb-marker-hint { border-color: var(--border-default); }
+.mb-geo-dark svg image { filter: grayscale(1) invert(1) sepia(.22) hue-rotate(160deg) saturate(.75) brightness(.72) contrast(.9); }
+.mb-route-draw.is-focused { animation-duration: 760ms; animation-delay: 180ms; }
+.mb-feature-layer { transition: opacity var(--duration-spatial) var(--easing-standard); }

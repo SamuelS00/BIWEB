@@ -345,3 +345,29 @@ body { margin: 0; background: var(--surface-panel); color: var(--text-primary); 
 .bw-dz-target { border: 1px dashed var(--drop-target); background: var(--drop-target-bg); border-radius: var(--radius-sm); display: grid; place-items: center; color: var(--accent); font: 500 11px/16px var(--font-sans); }
 .bw-dz-insert { height: 2px; background: var(--drop-target); }
 .bw-dz-label { font: 600 11px/16px var(--font-sans); color: var(--text-secondary); margin-bottom: var(--space-1); }
+
+/* Quiet premium: uma só linguagem para controles, dados e camadas flutuantes. */
+:where(button, input, textarea, select, [role="button"]) { font-family: var(--font-sans); }
+::selection { background: var(--accent-subtle); color: var(--text-primary); }
+* { scrollbar-color: var(--border-default) transparent; scrollbar-width: thin; }
+.bw-btn { font-weight: 500; transition: background-color var(--duration-fast) var(--easing-standard), border-color var(--duration-fast) var(--easing-standard), color var(--duration-fast) var(--easing-standard), transform var(--duration-fast) var(--easing-standard); }
+.bw-btn:active { transform: translateY(1px); }
+.bw-btn--primary { font-weight: 600; }
+.bw-btn--ghost:hover { background: var(--surface-hover); }
+.bw-iconbtn { transition: background-color var(--duration-fast) var(--easing-standard), color var(--duration-fast) var(--easing-standard); }
+.bw-menu, .bw-popover { border: 1px solid var(--border-subtle); }
+.bw-tooltip { box-shadow: var(--shadow-toolbar); }
+.bw-badge { height: 18px; font-weight: 500; }
+.bw-panel-head { border-bottom-color: var(--border-subtle); }
+.bw-section { padding-top: var(--space-2); }
+.bw-section-head .bw-label { font-weight: 600; }
+.bw-tree-item[aria-selected="true"], .bw-layer[aria-selected="true"] { box-shadow: inset 2px 0 0 var(--selection); }
+.bw-matrix tbody tr:hover { background: color-mix(in srgb, var(--surface-hover) 65%, transparent); }
+.bw-matrix tbody tr[aria-selected="true"] { background: var(--accent-subtle); box-shadow: inset 2px 0 0 var(--selection); }
+.bw-matrix th { font-weight: 500; }
+.bw-kpi-value { letter-spacing: -.025em; }
+.bw-w-title b { font-weight: 500; }
+.bw-widget { transition: border-color var(--duration-fast) var(--easing-standard), box-shadow var(--duration-base) var(--easing-standard); }
+.bw-widget[data-selected] { border-color: var(--selection); box-shadow: 0 0 0 1px var(--selection); }
+.bw-ghost { opacity: .82; }
+.bw-ghost-tag { background: var(--surface-elevated); color: var(--accent); border: 1px solid var(--ghost-border); }

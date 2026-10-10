@@ -35,9 +35,9 @@ export function WorkflowsGallery() {
   return <main className="pg mg">
     <header className="mg-head">
       <div><div className="mg-eyebrow"><Icon name="bolt" size={12} /> Fluxos de trabalho</div><h1 className="pg-title">Escolha um fluxo para operar ou editar</h1><p className="pg-sub">{wfs.length} fluxos no mesmo motor visual: dados, sistemas, IA, regras, pessoas e operações. Abra um para monitorar a execução, depurar, editar e publicar.</p></div>
-      <div className="wg-actions"><div className="mg-search"><TextField label="Buscar fluxos" hideLabel icon="search" placeholder="Buscar por nome ou tema" value={query} onChange={setQuery} /></div><Button variant="primary" icon="plus" onPress={() => setCreating(true)}>Novo fluxo</Button></div>
+      <div className="wg-actions"><Button variant="primary" icon="plus" onPress={() => setCreating(true)}>Novo fluxo</Button></div>
     </header>
-    <div className="mg-chips" role="tablist" aria-label="Categorias">{tags.map((c) => <button key={c} role="tab" aria-selected={tag === c} onClick={() => setTag(c)}>{c}<span>{c === 'Todos' ? wfs.length : wfs.filter((w) => w.tag === c).length}</span></button>)}</div>
+    <div className="wg-toolbar"><div className="mg-chips" role="tablist" aria-label="Categorias">{tags.map((c) => <button key={c} role="tab" aria-selected={tag === c} onClick={() => setTag(c)}>{c}<span>{c === 'Todos' ? wfs.length : wfs.filter((w) => w.tag === c).length}</span></button>)}</div><div className="mg-search"><TextField label="Buscar fluxos" hideLabel icon="search" placeholder="Buscar por nome ou tema" value={query} onChange={setQuery} /></div></div>
     {shown.length ? <div className="mg-grid">{shown.map((w) => {
       const last = runs[w.id]?.[0], published = w.versions.find((v) => v.state === 'published');
       return <Link key={w.id} to="/workflows/$workflowId" params={{ workflowId: w.id }} onClick={() => open(w.id)} className="mg-card" style={{ ['--card-accent' as string]: ACCENT[w.tag] ?? '#4f8cff' }} aria-label={`${w.name}. ${w.description}`}>

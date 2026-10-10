@@ -2,12 +2,12 @@
   "surface": {
     "app": {
       "$type": "color",
-      "$value": "#f3f4f6",
+      "$value": "#f6f8fa",
       "$description": "Fundo do shell: rail, barra superior, área atrás dos painéis."
     },
     "canvas": {
       "$type": "color",
-      "$value": "#e9ebee",
+      "$value": "#edf1f4",
       "$description": "Fundo do canvas do Builder (atrás do dashboard), com a grade pontilhada `canvas-dot`."
     },
     "panel": {
@@ -22,51 +22,51 @@
     },
     "hover": {
       "$type": "color",
-      "$value": "#eef0f2",
+      "$value": "#f0f4f5",
       "$description": "Hover de linha de árvore, item de menu, PropertyRow."
     },
     "pressed": {
       "$type": "color",
-      "$value": "#e3e6ea",
+      "$value": "#e6ebed",
       "$description": "Pressionado; segmento ativo do SegmentedControl em repouso."
     }
   },
   "text": {
     "primary": {
       "$type": "color",
-      "$value": "#16181c",
+      "$value": "#12202d",
       "$description": "Texto principal e valores em `surface-panel`, `surface-app`, `surface-elevated` e `surface-hover`."
     },
     "secondary": {
       "$type": "color",
-      "$value": "#454b54",
+      "$value": "#43515e",
       "$description": "Rótulos de PropertyRow, metadados e cabeçalhos de seção nas mesmas superfícies de `text-primary`."
     },
     "muted": {
       "$type": "color",
-      "$value": "#5f6670",
+      "$value": "#61717e",
       "$description": "Placeholder, contadores, dicas, resumo inline de seção recolhida. ≥4,5:1 em `surface-panel` e `surface-app` nos dois temas."
     },
     "disabled": {
       "$type": "color",
-      "$value": "#8a9099",
+      "$value": "#89949e",
       "$description": "Rótulo de controle desabilitado (isento de contraste pela WCAG); sempre com motivo em tooltip."
     }
   },
   "border": {
     "subtle": {
       "$type": "color",
-      "$value": "#e3e5e8",
+      "$value": "#e8edf0",
       "$description": "Filete de 1 px entre seções do Inspector, linhas de tabela, divisões de painel. Decorativo: não delimita controle."
     },
     "default": {
       "$type": "color",
-      "$value": "#c9cdd3",
+      "$value": "#d8e0e5",
       "$description": "Borda de widget no canvas de edição, separadores de toolbar."
     },
     "control": {
       "$type": "color",
-      "$value": "#878d96",
+      "$value": "#84919d",
       "$description": "Borda de input, select, checkbox e switch desligado. ≥3:1 em `surface-panel` nos dois temas."
     },
     "focus": {
@@ -78,17 +78,17 @@
   "accent": {
     "DEFAULT": {
       "$type": "color",
-      "$value": "#1d4f91",
-      "$description": "Ação primária, link, switch ligado, aba ativa. Derivado do azul-marinho da marca."
+      "$value": "#0c766f",
+      "$description": "Ação primária e interação ativa. Teal reservado a ações e estados significativos."
     },
     "hover": {
       "$type": "color",
-      "$value": "#153263",
+      "$value": "#095e59",
       "$description": "Hover de `accent`."
     },
     "subtle": {
       "$type": "color",
-      "$value": "#e6eef8",
+      "$value": "#e6f4f1",
       "$description": "Fundo de item selecionado em árvore e lista; chip de contexto da IA."
     }
   },
@@ -107,15 +107,15 @@
   "focus": {
     "ring": {
       "$type": "color",
-      "$value": "#1d4f91",
+      "$value": "#0c766f",
       "$description": "Anel de foco: 2 px sólido com 1 px de folga na cor da superfície. ≥3:1 em todas as superfícies do chrome."
     }
   },
   "selection": {
     "DEFAULT": {
       "$type": "color",
-      "$value": "#1677a8",
-      "$description": "Contorno e handles do widget selecionado; azul da marca escurecido para 3:1 no canvas."
+      "$value": "#0c8279",
+      "$description": "Contorno e handles de seleção em canvas, árvores e tabelas."
     },
     "handle-fill": {
       "$type": "color",
@@ -138,12 +138,12 @@
   "drop": {
     "target": {
       "$type": "color",
-      "$value": "#1677a8",
+      "$value": "#0c8279",
       "$description": "Borda tracejada de zona de drop ativa (FieldWell, container)."
     },
     "target-bg": {
       "$type": "color",
-      "$value": "#e3f1f8",
+      "$value": "#e6f4f1",
       "$description": "Fundo da zona de drop ativa."
     }
   },
@@ -220,19 +220,19 @@
   "canvas": {
     "dot": {
       "$type": "color",
-      "$value": "#c4c8ce",
+      "$value": "#cbd5db",
       "$description": "Pontos da grade do canvas (a cada `space-2`)."
     }
   },
   "ghost": {
     "border": {
       "$type": "color",
-      "$value": "#1677a8",
+      "$value": "#0c8279",
       "$description": "Contorno tracejado do widget fantasma (adição proposta pela IA)."
     },
     "bg": {
       "$type": "color",
-      "$value": "#eef6fb",
+      "$value": "#f1f8f6",
       "$description": "Fundo do widget fantasma."
     }
   },
@@ -246,23 +246,23 @@
   "shadow": {
     "popover": {
       "$type": "shadow",
-      "$value": "0 4px 12px rgba(16,18,22,0.12), 0 0 0 1px rgba(16,18,22,0.08)",
+      "$value": "0 12px 32px rgba(12, 28, 42, 0.13), 0 2px 8px rgba(12, 28, 42, 0.06), 0 0 0 1px rgba(12, 28, 42, 0.05)",
       "$description": "Popover, menu, tooltip rico, dialog, toast."
     },
     "toolbar": {
       "$type": "shadow",
-      "$value": "0 1px 3px rgba(16,18,22,0.14), 0 0 0 1px rgba(16,18,22,0.08)",
+      "$value": "0 3px 10px rgba(12, 28, 42, 0.10), 0 0 0 1px rgba(12, 28, 42, 0.06)",
       "$description": "Mini-toolbar e WidgetFloatingActions sobre o canvas. Painéis nunca têm sombra."
     },
     "card": {
       "$type": "shadow",
-      "$value": "0 1px 2px rgba(16,24,40,0.06), 0 0 0 1px rgba(16,24,40,0.06)",
+      "$value": "0 1px 2px rgba(12, 28, 42, 0.035), 0 0 0 1px rgba(12, 28, 42, 0.045)",
       "$description": "Cards de conteúdo (relatórios, Início) em repouso. Painéis continuam planos."
     },
     "card-hover": {
       "$type": "shadow",
-      "$value": "0 12px 28px rgba(16,24,40,0.14), 0 0 0 1px rgba(16,24,40,0.08)",
-      "$description": "Card em hover/foco: sobe 2 px com esta sombra."
+      "$value": "0 5px 14px rgba(12, 28, 42, 0.09), 0 0 0 1px rgba(12, 28, 42, 0.065)",
+      "$description": "Elevação curta para conteúdo interativo em hover e foco."
     }
   },
   "brand": {
@@ -295,6 +295,56 @@
       "$type": "color",
       "$value": "#e2eef6",
       "$description": "Marca · tom claro para texto e traços sobre fundos de marca."
+    }
+  },
+  "neutral": {
+    "25": {
+      "$type": "color",
+      "$value": "#fcfdfd"
+    },
+    "50": {
+      "$type": "color",
+      "$value": "#f6f8fa"
+    },
+    "100": {
+      "$type": "color",
+      "$value": "#eef2f4"
+    },
+    "200": {
+      "$type": "color",
+      "$value": "#e3e9ed"
+    },
+    "300": {
+      "$type": "color",
+      "$value": "#cbd5db"
+    },
+    "400": {
+      "$type": "color",
+      "$value": "#9dabb5"
+    },
+    "500": {
+      "$type": "color",
+      "$value": "#70818d"
+    },
+    "600": {
+      "$type": "color",
+      "$value": "#536472"
+    },
+    "700": {
+      "$type": "color",
+      "$value": "#394b59"
+    },
+    "800": {
+      "$type": "color",
+      "$value": "#253541"
+    },
+    "900": {
+      "$type": "color",
+      "$value": "#121f2b"
+    },
+    "950": {
+      "$type": "color",
+      "$value": "#0b1119"
     }
   }
 }

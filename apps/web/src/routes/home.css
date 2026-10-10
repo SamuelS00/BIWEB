@@ -196,3 +196,24 @@
   .pz-wall ul { grid-template-columns: 1fr; } .pz-activity--wide ol { columns: 1; }
   .pz-status { display: none; }
 }
+
+/* O preview continua como foco; o restante da página compõe uma superfície operacional. */
+.pz { gap: var(--space-6); }
+.pz-top, .pz-ops { gap: var(--space-6); }
+.pz-hero { box-shadow: var(--shadow-card); }
+.pz-media { height: 300px; }
+.pz-hero-body { padding: var(--space-4) var(--space-5, 20px); }
+.pz-hero h1 { font-weight: 600; letter-spacing: -.025em; }
+.pz-hero:hover { box-shadow: var(--shadow-card-hover); }
+.pz-thumb { box-shadow: 0 0 0 1px var(--border-subtle); }
+.pz-item-link:hover .pz-thumb { transform: translateY(-1px); box-shadow: var(--shadow-card-hover); }
+.pz-wall a { padding: var(--space-2); background: transparent; box-shadow: none; }
+.pz-wall a:hover, .pz-wall a:focus-visible { background: var(--surface-hover); }
+.pz-resume { box-shadow: 0 0 0 1px var(--border-subtle); }
+.pz-resume > svg, .pz-running li a > svg { color: var(--text-secondary); }
+.pz-dock-bar { border-radius: var(--radius-md); border-color: var(--border-subtle); box-shadow: var(--shadow-toolbar); }
+.pz-dock-bar > svg { color: var(--text-secondary); }
+.pz-dock:focus-within .pz-dock-bar { border-color: var(--focus-ring); box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus-ring) 22%, transparent), var(--shadow-toolbar); }
+.pz-create button { border-radius: var(--radius-sm); }
+.pz-create button svg, .pz-dock-pop li button svg:first-child { color: var(--text-secondary); }
+@media (max-width: 1100px) { .pz-media { height: 280px; } }

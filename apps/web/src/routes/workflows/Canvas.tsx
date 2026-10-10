@@ -73,6 +73,20 @@ export function Canvas({ wf, run, mode, editable, ghost, filters, follow, onFilt
   const [marquee, setMarquee] = useState<null | { x1: number; y1: number; x2: number; y2: number }>(null);
   const [wire, setWire] = useState<null | { from: string; port?: string; x: number; y: number; sx: number; sy: number }>(null);
   const [space, setSpace] = useState(false);
+  const lastGhost = useRef<GhostInfo | null>(null);
+  const [activated, setActivated] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (ghost) { lastGhost.current = ghost; return; }
+    const previous = lastGhost.current;
+    if (!previous) return;
+    lastGhost.current = null;
+    const baseIds = new Set(previous.base.nodes.map((n) => n.id));
+    const ids = new Set(previous.doc.nodes.filter((n) => !baseIds.has(n.id) && wf.nodes.some((w) => w.id === n.id)).map((n) => n.id));
+    if (!ids.size) return;
+    setActivated(ids);
+    const timer = window.setTimeout(() => setActivated(new Set()), 850);
+    return () => window.clearTimeout(timer);
+  }, [ghost, wf]);
   const viewRef = useRef(view); viewRef.current = view;
   const doc: Doc & { id?: string } = ghost?.doc ?? wf;
   const issues = useMemo(() => (mode === 'edit' ? validate(wf) : []), [wf, mode]);
@@ -323,7 +337,7 @@ export function Canvas({ wf, run, mode, editable, ghost, filters, follow, onFilt
             }
             const pointerEvents = n.ghost === 'new' ? 'none' : undefined;
             return <div key={n.id} data-node={n.id} style={{ transform: `translate(${n.x}px,${n.y}px)`, width: NODE_W, height: NODE_H, '--cat': cat.color, pointerEvents } as React.CSSProperties}
-              className={`wf-node ${n.members ? 'is-sub' : ''} ${isSel ? 'is-sel' : ''} ${state ? `st-${state}` : ''} ${n.ghost ? `is-ghost-${n.ghost}` : ''} ${dim && !matches(n) ? 'is-dim' : ''} ${focus.includes(n.id) || (n.members && n.members.some((m) => focus.includes(m))) ? 'is-focus' : ''}`}
+              className={`wf-node ${n.members ? 'is-sub' : ''} ${isSel ? 'is-sel' : ''} ${state ? `st-${state}` : ''} ${n.ghost ? `is-ghost-${n.ghost}` : ''} ${activated.has(n.id) ? 'is-activated' : ''} ${dim && !matches(n) ? 'is-dim' : ''} ${focus.includes(n.id) || (n.members && n.members.some((m) => focus.includes(m))) ? 'is-focus' : ''}`}
               title={`${n.name}${issue ? ` · ${issue}` : ''}`}>
               <i className="wf-port wf-port--in" data-port-in={n.id} />
               {ports.map((p, i) => <i key={p.id} className={`wf-port wf-port--out ${multi ? 'has-label' : ''}`} data-port-out={`${n.id}|${k?.ports ? p.id : ''}`} style={{ top: portY(n, i, ports.length) - 6 }}>{multi && <b>{p.label}</b>}</i>)}

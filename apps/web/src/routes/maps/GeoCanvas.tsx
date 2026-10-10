@@ -22,7 +22,7 @@ const NICE = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000];
 
 interface Props {
   doc: MapDocument; layers: Layer[]; camera: Camera; onCamera: (c: Camera) => void; selected: Pick | null; onPick: (p: Pick) => void;
-  marker: boolean; onMarker: (lon: number, lat: number) => void; radius: number; preview: boolean;
+  marker: boolean; onMarker: (lon: number, lat: number) => void; radius: number; preview: boolean; routeFocus?: string;
   time: number; lightsMode?: LightsMode; fullscreen: boolean; onFullscreen: () => void; onReset: () => void;
   /** Rendered inside the map's coordinate space (live fleets, annotations). */
   overlay?: ReactNode;
@@ -30,7 +30,7 @@ interface Props {
   children?: ReactNode;
 }
 
-export function GeoCanvas({ doc, layers, camera, onCamera, selected, onPick, marker, onMarker, radius, preview, time, lightsMode = 'night', fullscreen, onFullscreen, onReset, overlay, children }: Props) {
+export function GeoCanvas({ doc, layers, camera, onCamera, selected, onPick, marker, onMarker, radius, preview, routeFocus, time, lightsMode = 'night', fullscreen, onFullscreen, onReset, overlay, children }: Props) {
   const ref = useRef<HTMLDivElement>(null), coordRef = useRef<HTMLSpanElement>(null), tipRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 1000, h: 650 });
   const [failed, setFailed] = useState(false);
@@ -164,10 +164,10 @@ export function GeoCanvas({ doc, layers, camera, onCamera, selected, onPick, mar
               {l.features.filter((f) => f.geometry.type !== 'Point').map((f) => {
                 const pts = f.geometry.coordinates.map(p), d = f.geometry.type === 'Polygon' ? `M${pts.map((q) => `${q.x.toFixed(1)},${q.y.toFixed(1)}`).join('L')}Z` : roundedPath(pts, 11);
                 const color = featureColor(l, f, doc.bands), chosen = selected?.layerId === l.id && selected.featureId === f.id, line = f.geometry.type === 'LineString', sev = severity(f, doc.bands), w = l.size / 2 + sev;
-                return <g key={f.id} {...pickHandlers(l, f)} className="mb-feature">
+                return <g key={`${f.id}:${routeFocus === f.properties.rota ? routeFocus : ''}`} {...pickHandlers(l, f)} className="mb-feature">
                   {chosen && <path d={d} fill="none" stroke="var(--accent)" strokeWidth={l.size + 9} opacity=".26" />}
                   {line && <path d={d} fill="none" stroke="#070b11" strokeOpacity=".5" strokeWidth={w + 3} strokeLinejoin="round" strokeLinecap="round" />}
-                  <path className={line ? 'mb-route-draw' : undefined} pathLength={line ? 1 : undefined} d={d} fill={f.geometry.type === 'Polygon' ? l.color : 'none'} fillOpacity={f.geometry.type === 'Polygon' ? .16 : undefined} stroke={color} strokeWidth={f.geometry.type === 'Polygon' ? 1.6 : w} strokeLinejoin="round" strokeLinecap="round" strokeDasharray={f.properties.tipo === 'Patrulha' ? '9 7' : undefined} />
+                  <path className={line ? `mb-route-draw${routeFocus && routeFocus === f.properties.rota ? ' is-focused' : ''}` : undefined} pathLength={line ? 1 : undefined} d={d} fill={f.geometry.type === 'Polygon' ? l.color : 'none'} fillOpacity={f.geometry.type === 'Polygon' ? .16 : undefined} stroke={color} strokeWidth={f.geometry.type === 'Polygon' ? 1.6 : w} strokeLinejoin="round" strokeLinecap="round" strokeDasharray={f.properties.tipo === 'Patrulha' ? '9 7' : undefined} />
                   {line && <><path d={d} fill="none" stroke="transparent" strokeWidth="16" />{(doc.id === 'network' || f.properties.tipo === 'Patrulha') && <path className="mb-signal" d={d} fill="none" stroke="#fff" strokeOpacity=".75" strokeWidth="1.6" strokeDasharray="2 26" strokeLinecap="round" />}</>}
                   {l.tooltip && <title>{`${f.id} · ${String(f.properties[l.label] ?? '')} · ${String(f.properties.status ?? '')}`}</title>}
                 </g>;

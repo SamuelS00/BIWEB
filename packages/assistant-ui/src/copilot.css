@@ -44,3 +44,15 @@
 .cp-context-toggle { display:inline-flex; align-items:center; gap:5px; min-height:24px; max-width:max-content; padding:2px 7px; border:1px solid var(--border-default); border-radius:var(--radius-sm); background:var(--surface-panel); color:var(--text-secondary); font:11px/14px var(--font-sans); cursor:pointer; }.cp-context-toggle.is-active { border-color:var(--accent); background:var(--accent-subtle); color:var(--accent); }
 .cp-history { display:flex; flex-direction:column; gap:4px; padding:8px; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); background:var(--surface-app); }.cp-history>b { font-size:11px; }.cp-history>small { color:var(--text-muted); font-size:10px; }.cp-history button { display:flex; flex-direction:column; gap:1px; min-height:36px; padding:5px 7px; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); background:var(--surface-panel); color:var(--text-primary); text-align:left; cursor:pointer; }.cp-history button:hover { border-color:var(--accent); }.cp-history button span { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; }.cp-history button small { color:var(--text-muted); font-size:9px; }.cp-tool-status { color:var(--text-secondary); font-size:11px; }.cp-context-row { display:flex; justify-content:flex-end; }.cp-msg--assistant .bw-btn { min-height:24px; }
 .cp-page-tools { display:flex; align-items:center; gap:6px; min-height:28px; padding-bottom:6px; border-bottom:1px solid var(--border-subtle); }
+
+/* Copilot usa o mesmo vocabulário de listas, propostas e foco do workspace. */
+.cp-welcome { padding-top: var(--space-4); }
+.cp-suggest button { box-shadow: none; border-color: var(--border-subtle); }
+.cp-suggest button svg { color: var(--text-secondary); }
+.cp-suggest button:hover { border-color: var(--border-default); background: var(--surface-hover); transform: none; }
+.cp-mark { border-radius: var(--radius-sm); background: var(--surface-app); }
+.cp-evidence { border-color: var(--border-subtle); }
+.cp-link:hover { border-color: var(--border-default); }
+.cp-context-toggle.is-active { border-color: var(--selection); color: var(--text-primary); }
+.cp-history button:hover { border-color: var(--border-default); background: var(--surface-hover); }
+.cp-box:focus-within { border-color: var(--focus-ring); box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus-ring) 22%, transparent); }

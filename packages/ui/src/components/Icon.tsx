@@ -1,6 +1,6 @@
 /** Ícones de linha próprios: traço 1,5 px em grade de 16 px, desenhados em currentColor (docs/design/README.md · Iconografia). */
 const PATHS = {
-  chevronRight: 'M6 4l4 4-4 4', chevronDown: 'M4 6l4 4 4-4', plus: 'M8 3v10M3 8h10', minus: 'M3 8h10', close: 'M4 4l8 8M12 4l-8 8',
+  chevronRight: 'M6 4l4 4-4 4', migrate: 'M2.5 5.5h9M9 3l2.5 2.5L9 8M13.5 10.5h-9M7 8l-2.5 2.5L7 13', chevronDown: 'M4 6l4 4 4-4', plus: 'M8 3v10M3 8h10', minus: 'M3 8h10', close: 'M4 4l8 8M12 4l-8 8',
   more: 'M3 8h.01M8 8h.01M13 8h.01', search: 'M7 3a4 4 0 100 8 4 4 0 000-8zM10 10l3.5 3.5', check: 'M3 8.5l3 3 7-7',
   filter: 'M2.5 3.5h11l-4.2 5v4l-2.6 1.2V8.5z', table: 'M2.5 3h11v10h-11zM2.5 6.5h11M2.5 10h11M6.5 3v10',
   expand: 'M9.5 2.5h4v4M6.5 13.5h-4v-4M13.5 2.5L9 7M2.5 13.5L7 9', undo: 'M5 3.5L2.5 6 5 8.5M2.5 6h7a3.5 3.5 0 010 7H7',

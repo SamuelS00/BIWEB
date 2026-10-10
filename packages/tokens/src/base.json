@@ -289,6 +289,14 @@
     "page": {
       "$type": "duration",
       "$value": "200ms"
+    },
+    "panel": {
+      "$type": "duration",
+      "$value": "220ms"
+    },
+    "spatial": {
+      "$type": "duration",
+      "$value": "480ms"
     }
   },
   "easing": {
@@ -307,6 +315,15 @@
         0,
         0,
         0,
+        1
+      ]
+    },
+    "spatial": {
+      "$type": "cubicBezier",
+      "$value": [
+        0.22,
+        1,
+        0.36,
         1
       ]
     }
