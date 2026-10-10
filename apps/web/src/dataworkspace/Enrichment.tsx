@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Badge, Button, Icon } from '@biweb/ui';
 import { enrichList, useDw } from './store';
 import type { Enrich, EnrichType } from './ops';
-import { PrivacyBlock } from './DataWorkspace';
+import { PrivacyBlock } from './Privacy';
 import { Chip, Empty, Meter, Tabs2, ViewHead, pct } from './ui';
 
 const TYPES: EnrichType[] = ['Derivado', 'Dados de referência', 'Entre fontes', 'Externo', 'Assistido por IA'];

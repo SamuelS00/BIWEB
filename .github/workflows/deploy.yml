@@ -15,6 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @biweb/tokens build
       - run: pnpm --filter @biweb/web exec tsc -p tsconfig.json --noEmit
       - run: pnpm --filter @biweb/web exec vitest run
       - run: pnpm --filter @biweb/web exec vite build
