@@ -7,6 +7,10 @@
 
 ---
 
+> **Implementando ou evoluindo o código?** Comece por [PROJETO.md](PROJETO.md) (documentação viva do projeto) e veja o histórico em [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md).
+
+---
+
 ## Sumário executivo (2 minutos)
 
 **A arquitetura em uma frase:** dois monolitos modulares — **control plane em TypeScript** (isomórfico com o browser) e **data plane em Rust** (Arrow/DataFusion, com o compilador semântico também em WASM) — organizados em **cells multi-tenant**, com uma **semantic layer obrigatória** como única porta para os dados, um **Dashboard Engine declarativo e headless**, visualizações intercambiáveis por **contrato de plugin**, storage em **Parquet (verdade) + ClickHouse (serving) + warehouses do cliente (live)**, e um **copiloto de IA opcional** que orquestra essas mesmas capacidades com o principal do usuário, propondo mudanças como ChangeSets e narrando resultados determinísticos com evidências.
@@ -190,6 +194,8 @@ flowchart LR
 ```text
 docs/
 ├── README.md                     ← você está aqui
+├── PROJETO.md                    ← documentação viva do projeto (como é hoje e como evoluir)
+├── PROBLEMAS-RESOLVIDOS.md       ← histórico de problemas resolvidos
 └── architecture/
     ├── 00 … 32-*.md              ← blueprint por área (31 = IA nativa, 32 = épicos e prompts)
     ├── adr/                      ← 41 ADRs + índice
