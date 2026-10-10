@@ -23,7 +23,6 @@ Plataforma web de Business Intelligence: relatórios e dashboards editáveis, ma
 | `docs/` | Blueprint, ADRs, design system, esta doc | — |
 | `tools/` | `brand/` (capas e logos), `artifact/inline.mjs`, `deploy.sh` | Funcional |
 | `design-handoff/`, `REFERENCE_PACK_*.md`, `SCREEN_CATALOG_BI.md`, `SKILLS_STACK.md` | Material de entrada de design | Referência |
-| `design-output/` | Saída antiga do Claude Design | **Desatualizada — ignorar** |
 
 > Trabalhe em `apps/web` e use os pacotes `tokens`, `ui` e `assistant-ui`. Não preencha os esqueletos sem um épico em [`architecture/32-epics-and-implementation-prompts.md`](architecture/32-epics-and-implementation-prompts.md).
 

@@ -30,7 +30,7 @@
 | Design sem base em produtos maduros | `REFERENCE_PACK_BI.md` (Power BI, Figma, Superset, Grafana…) com o que extrair e **o que não copiar** |
 | Gargalos de complexidade (GIS, workflow, IA, modelagem) | `REFERENCE_PACK_COMPLEX_WORKFLOWS.md` (fichas REF-A/X, 3D urbano, replay, realtime) |
 | Dependência de ferramentas de design | `SKILLS_STACK.md` + `SCREEN_CATALOG_BI.md` (catálogo de telas) para guiar o Claude Design |
-| `design-output/` desatualizado | **Decisão do usuário:** ignorar o design antigo; preservar só o Complex Workflows pack e referenciá-lo na aplicação |
+| `design-output/` desatualizado | **Decisão do usuário:** ignorar o design antigo; preservar só o Complex Workflows pack e referenciá-lo na aplicação. A pasta e o `design-handoff.zip` (cópia antiga dos `.md`) foram removidos em 2026-10-10 |
 | Home/Login com cara de "produto gerado por IA" | Prompts proibiram o padrão (sidebar + boas-vindas + KPIs + cards; card central sobre gradiente/glass/glow). Resultado: Home **Workspace Pulse** e login **Product Pulse** |
 
 ### 2.3 Arquitetura (blueprint)
