@@ -57,7 +57,7 @@ export function LineageView({ id }: { id?: string }) {
       </div>
       <div className="dw-canvas-wrap">
         {nodes.length === 0 ? <Empty icon="share" title="A linhagem aparecerá após o processamento" text="Execute uma sincronização para ver a origem de cada campo." /> : (
-          <Canvas label="Diagrama de linhagem" nodes={cn} edges={edges} fitKey={`${focus}${dir}${depth}${[...off].join()}${trace}`} onBackground={() => st.select(null, false)} focusId={focus}
+          <Canvas label="Diagrama de linhagem" nodes={cn} edges={edges} fitKey={`${focus}${dir}${depth}${[...off].join()}${trace}`} onBackground={() => st.select(null, false)} 
             nodeClass={(nid) => `${sel === nid ? 'is-sel' : ''}`}
             renderNode={(nid) => {
               const n = byId.get(nid)!, k = KIND[n.kind];

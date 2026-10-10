@@ -2,7 +2,7 @@
 
 > Documento vivo. É o ponto de entrada para quem vai evoluir o código. O **porquê** de longo prazo está no blueprint ([`architecture/`](architecture/), ADRs); aqui está o **como o projeto é hoje** e **como mexer nele**.
 > Histórico do que já foi resolvido: [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md). Regras para humanos e agentes manterem esta doc em dia: [`AGENTS.md`](../AGENTS.md).
-> Última revisão: 2026-10-10 (Data Workspace, CI/deploy automático, ciclos corrigidos). Apresentação para clientes: [apresentacao/data-workspace.html](apresentacao/data-workspace.html).
+> Última revisão: 2026-10-10 (Data Workspace, CI/deploy automático, apresentação para clientes). Apresentação para clientes: [apresentacao/biweb.html](apresentacao/biweb.html) (ver seção 13).
 
 ## 1. O que é
 
@@ -191,7 +191,7 @@ UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `
 | Fronteiras | `pnpm check:boundaries` | regras de dependência |
 | CI | `.github/workflows/ci.yml` | lint, typecheck, testes, build, fronteiras, docs (job `ts`) e clippy/testes Rust (job `rust`) |
 
-Hoje: 78 testes unitários em `apps/web` (11 arquivos), mais tokens e ui. Lacunas: testes do Data Workspace (`sample.ts`, `store.ts`, `copilot.ts`), E2E do editor, mapas, workflows, migração e login; teste visual; carga e correção de queries (aguardam backend).
+Hoje: 78 testes unitários em `apps/web` (10 arquivos), mais tokens e ui. Lacunas: testes do Data Workspace (`sample.ts`, `store.ts`, `copilot.ts`), E2E do editor, mapas, workflows, migração e login; teste visual; carga e correção de queries (aguardam backend).
 
 ## 9. Build e deploy
 
@@ -242,3 +242,11 @@ Hoje: 78 testes unitários em `apps/web` (11 arquivos), mais tokens e ui. Lacuna
 - Terminou algo relevante ou resolveu um problema? Acrescente em [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md) (problema → solução → onde).
 - Decisão arquitetural nova ou que contraria o blueprint? Escreva um ADR em `architecture/adr/` e cite aqui.
 - Atualize a data de revisão no topo.
+
+## 13. Material de apresentação (`docs/apresentacao/`)
+
+- `biweb.html`: página única, em PT-BR com títulos em inglês, no design do app (tokens claro/escuro, botão **Tema**). Conta a história **Why → Plataforma → Fundação de dados → Builders → Migração → Inteligência → Caso → Diferenciais → Visão** em 26 blocos numerados. Abra o arquivo direto no navegador; para enviar a clientes, mande a pasta `apresentacao/` inteira (o HTML carrega `img/`).
+- `img/*.jpg`: **capturas reais** do protótipo, em claro (`-l`) e escuro (`-d`). Não são mockups. Gerar de novo: suba o dev server e rode `BIWEB_URL=http://127.0.0.1:5173 node tools/capture-presentation.mjs [nome…]` (roteiro em `tools/presentation-shots.mjs`; usa o Google Chrome instalado via playwright). Sempre regenere as capturas quando a UI mudar de forma visível.
+- Cada trecho leva um selo de honestidade: **Na demonstração** (existe no protótipo), **Arquitetura proposta** (desenho, ex.: Composition Engine e contratos canônicos) ou **Roadmap** (ex.: visuais customizados, temas por organização). Não afirmar integração com provedores de IA nem benchmarks.
+- Números do material (18 fontes, 104 ativos, 118 conectores: 38 disponíveis, 55 preparados, 25 planejados; 23 tipos de gráfico) vêm do app: confira antes de editar.
+- Os marcadores numerados das capturas (`.pin`) ficam por coordenadas em % da imagem 1440×880; se refizer uma captura, confira se os marcadores ainda apontam para o lugar certo.

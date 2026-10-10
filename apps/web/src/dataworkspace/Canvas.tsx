@@ -21,6 +21,7 @@ export function Canvas({ nodes, edges, renderNode, selectedEdge, onEdge, onBackg
   const [v, setV] = useState<V>({ x: 20, y: 20, k: 1 });
   const [size, setSize] = useState({ w: 800, h: 520 });
   const [measured, setMeasured] = useState(false);
+  const touched = useRef(false);
   const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
   const bounds = useMemo(() => {
     if (!nodes.length) return { x0: 0, y0: 0, x1: 100, y1: 100 };
@@ -36,9 +37,10 @@ export function Canvas({ nodes, edges, renderNode, selectedEdge, onEdge, onBackg
   const fit = useCallback(() => {
     const bw = bounds.x1 - bounds.x0, bh = bounds.y1 - bounds.y0, pad = 40;
     const k = Math.min(1.2, Math.max(0.25, Math.min((size.w - pad * 2) / bw, (size.h - pad * 2) / bh)));
-    setV({ k, x: (size.w - bw * k) / 2 - bounds.x0 * k, y: (size.h - bh * k) / 2 - bounds.y0 * k });
+    setV({ k, x: (size.w - bw * k) / 2 - bounds.x0 * k, y: bh * k < size.h * 0.55 ? pad + 24 - bounds.y0 * k : (size.h - bh * k) / 2 - bounds.y0 * k });
   }, [bounds, size]);
-  useEffect(() => { if (measured) fit(); }, [fitKey, measured]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { touched.current = false; if (measured) fit(); }, [fitKey, measured]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (measured && !touched.current) fit(); }, [size.w, size.h]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { // focar um nó: centraliza sem alterar o zoom
     if (!focusId) return; const n = byId.get(focusId); if (!n) return;
     setV((s) => ({ ...s, x: size.w / 2 - (n.x + n.w / 2) * s.k, y: size.h / 2 - (n.y + n.h / 2) * s.k }));
@@ -49,15 +51,16 @@ export function Canvas({ nodes, edges, renderNode, selectedEdge, onEdge, onBackg
     const f = (e: WheelEvent) => {
       e.preventDefault();
       const r = el.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+      touched.current = true;
       setV((s) => { const k = Math.min(2, Math.max(0.25, s.k * (e.deltaY < 0 ? 1.1 : 0.9))); return { k, x: mx - ((mx - s.x) / s.k) * k, y: my - ((my - s.y) / s.k) * k }; });
     };
     el.addEventListener('wheel', f, { passive: false }); return () => el.removeEventListener('wheel', f);
   }, []);
-  const zoom = (d: number) => setV((s) => { const k = Math.min(2, Math.max(0.25, s.k * d)); return { k, x: size.w / 2 - ((size.w / 2 - s.x) / s.k) * k, y: size.h / 2 - ((size.h / 2 - s.y) / s.k) * k }; });
+  const zoom = (d: number) => { touched.current = true; setV((s) => { const k = Math.min(2, Math.max(0.25, s.k * d)); return { k, x: size.w / 2 - ((size.w / 2 - s.x) / s.k) * k, y: size.h / 2 - ((size.h / 2 - s.y) / s.k) * k }; }); };
 
   const pan = (e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest('[data-node],[data-edge],button,input,select')) return;
-    onBackground?.();
+    onBackground?.(); touched.current = true;
     const x0 = e.clientX, y0 = e.clientY, v0 = v;
     const mv = (ev: PointerEvent) => setV({ ...v0, x: v0.x + ev.clientX - x0, y: v0.y + ev.clientY - y0 });
     const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); };

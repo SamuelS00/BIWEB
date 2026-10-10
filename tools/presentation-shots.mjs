@@ -1,0 +1,27 @@
+// Roteiro das capturas da apresentação: [nome, url, passos(page, {T}), {clip}].
+const click = (page, role, name, o = {}) => page.getByRole(role, { name, ...o }).first().click();
+export default [
+  ['home', '/', null],
+  ['dw-sources', '/data/sources', null],
+  ['dw-catalog', '/data/catalog/crm.customers', async (page) => { await page.locator('.dw-gh-main', { hasText: 'customer_document' }).first().click(); await page.waitForTimeout(500); }],
+  ['dw-model', '/data/model', async (page) => { await click(page, 'radio', 'Modelo proposto').catch(() => page.getByText('Modelo proposto').first().click()); await page.waitForTimeout(1500); }],
+  ['dw-lineage', '/data/lineage', async (page) => { await page.locator('.dw-ln-node', { hasText: 'Revenue KPI' }).first().dispatchEvent('click'); await page.waitForTimeout(600); await page.getByRole('button', { name: 'Rastrear até a fonte' }).dispatchEvent('click'); await page.waitForTimeout(600); await page.getByRole('button', { name: 'Fechar painel' }).dispatchEvent('click'); await page.waitForTimeout(1200); }],
+  ['dw-quality', '/data/quality/orders', async (page) => { await page.evaluate(() => document.querySelector('.dw-center').scrollBy(0, 230)); }],
+  ['dw-docs', '/data/sources/invoices', async (page) => { await page.evaluate(() => { const c = document.querySelector('.dw-center'); const d = document.querySelector('.dw-doc'); c.scrollTop = d.getBoundingClientRect().top - c.getBoundingClientRect().top + c.scrollTop - 270; }); }],
+  ['dw-wizard', '/data/sources', async (page) => { await page.getByRole('button', { name: 'Conectar dados' }).first().click(); await page.locator('.dw-conn').first().click(); await page.waitForTimeout(500); }],
+  ['dw-overview', '/data', null],
+  ['dw-impact', '/data/changes/CS-184', async (page) => { await page.getByRole('tab', { name: 'Impacto' }).click(); await page.waitForTimeout(600); }],
+  ['dw-enrich', '/data/enrichment', async (page) => { await page.locator('.dw-enr-h').first().click(); await page.waitForTimeout(500); }],
+  ['rb-editor', '/reports/net_executiva/edit', async (page) => { await page.mouse.click(560, 380); await page.waitForTimeout(500); await page.getByRole('tab', { name: 'Dados' }).first().click().catch(() => {}); }],
+  ['rb-copilot', '/reports/net_executiva/edit', async (page) => { await page.getByRole('tab', { name: 'IA' }).first().click().catch(async () => { await page.getByText('IA', { exact: true }).first().click(); }); await page.waitForTimeout(600); const inp = page.locator('textarea, input[type="text"]').last(); await inp.fill('Crie uma página para acompanhar rompimentos de fibra.'); await inp.press('Enter'); await page.waitForTimeout(2500); }],
+  ['rb-final', '/reports/net_executiva', null],
+  ['map-network', '/maps/network', null],
+  ['map-field', '/maps/field', null],
+  ['map-lights', '/maps/lights', null],
+  ['wf-main', '/workflows/ingestao', null],
+  ['wf-alerts', '/workflows/incidente-rede', null],
+  ['mig-overview', '/migration/mp_commercial_ops', null],
+  ['mig-validation', '/migration/mp_commercial_ops', async (page) => { await page.getByRole('tab', { name: /Validação/ }).first().click().catch(() => page.getByText('Validação').first().click()); await page.waitForTimeout(800); }],
+  ['mig-blueprint', '/migration/mp_commercial_ops', async (page) => { await page.getByRole('tab', { name: 'Blueprint' }).first().click().catch(() => page.getByText('Blueprint').first().click()); await page.waitForTimeout(800); }],
+  ['copilot-home', '/', async (page) => { await page.getByRole('button', { name: 'Copilot' }).first().click(); await page.waitForTimeout(800); }],
+];

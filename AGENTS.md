@@ -28,7 +28,7 @@ A documentação é parte da entrega. **No mesmo commit** da mudança de código
 | criou **convenção**, armadilha ou receita nova | seções 6 e 7 de `docs/PROJETO.md` |
 | resolveu um **problema relevante** ou tomou decisão | `docs/PROBLEMAS-RESOLVIDOS.md` (problema → solução → onde), e ADR em `docs/architecture/adr/` se contrariar o blueprint |
 | mudou **testes** (novos, removidos, cobertura) | seção 8 de `docs/PROJETO.md` |
-| mudou algo que **clientes veem** (módulo novo, número exibido) | `docs/apresentacao/` (confira os números contra o app) |
+| mudou algo que **clientes veem** (módulo novo, número exibido, UI visível) | `docs/apresentacao/biweb.html` e regenere as capturas (`tools/capture-presentation.mjs`); seção 13 de `docs/PROJETO.md` |
 | removeu arquivo ou pasta referenciados | procure menções com `grep -rn` e ajuste os links |
 
 Sempre atualize a **data de revisão** no topo de `docs/PROJETO.md`. Antes de dar a tarefa como pronta, rode `node tools/check-docs.mjs` e confira se a doc descreve o que o código faz agora, não o que fazia antes.
