@@ -1,0 +1,26 @@
+name: deploy
+# Publica o front-end (apps/web) no Cloudflare Pages a cada push em main.
+# Requer os secrets CLOUDFLARE_API_TOKEN (permissão Cloudflare Pages: Edit) e CLOUDFLARE_ACCOUNT_ID.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency: { group: deploy, cancel-in-progress: true }
+jobs:
+  pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @biweb/web exec tsc -p tsconfig.json --noEmit
+      - run: pnpm --filter @biweb/web exec vitest run
+      - run: pnpm --filter @biweb/web exec vite build
+        env: { VITE_HASH_HISTORY: '1' }
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/web/dist --project-name=biweb --branch=main
