@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { coverFor } from '../editor/covers';
 import { useLibrary } from '../editor/library';
-import { ago } from '../editor/ReportView';
+import { ago } from '../editor/time';
 import { coverUrl, reports as legacy } from '../fixtures/lume-varejo';
 import { useUi } from '../state/ui-store';
 

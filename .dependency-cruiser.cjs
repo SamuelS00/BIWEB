@@ -21,7 +21,8 @@ module.exports = {
   ],
   options: {
     doNotFollow: { path: 'node_modules' },
-    tsPreCompilationDeps: true,
+    // false: imports só de tipos (apagados na compilação) não contam como dependência nem como ciclo.
+    tsPreCompilationDeps: false,
     tsConfig: { fileName: 'tsconfig.base.json' },
     exclude: { path: '(dist|node_modules|\\.turbo)/' },
   },

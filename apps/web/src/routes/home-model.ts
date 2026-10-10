@@ -3,7 +3,7 @@ import type { IconName } from '@biweb/ui';
 import { aggregate, fmt } from '../data/query';
 import { getTable, network, useData } from '../data/registry';
 import { connections as lumeConnections, kpis } from '../fixtures/lume-varejo';
-import { ago } from '../editor/ReportView';
+import { ago } from '../editor/time';
 import type { CoverKind } from './maps/MapCover';
 
 /** Modelo de dados da Home "Workspace Pulse": o que retomar, o que mudou, o que exige decisão e o que está em execução. */

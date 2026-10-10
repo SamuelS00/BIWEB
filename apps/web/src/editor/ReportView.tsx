@@ -13,9 +13,9 @@ import { coverFor } from './covers';
 import { useLibrary } from './library';
 import { affected } from './panels/RulesTab';
 import { useEditor } from './store';
+import { ago } from './time';
 import './editor.css';
 
-export const ago = (ts: number) => { const m = Math.round(((ts <= NOW ? NOW : Date.now()) - ts) / 60_000); return m < 1 ? 'agora' : m < 60 ? `há ${m} min` : m < 1440 ? `há ${Math.round(m / 60)} h` : m < 2880 ? 'ontem' : new Date(ts).toLocaleDateString('pt-BR'); };
 
 /** Relatório publicado (modo leitura): o mesmo documento e o mesmo renderer do editor, com todas as interações ativas. */
 export function ReportView({ id }: { id: string }) {
