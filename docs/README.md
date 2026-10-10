@@ -7,6 +7,8 @@
 
 ---
 
+> **Agentes e contribuidores:** regras de manutenção desta documentação em [`../AGENTS.md`](../AGENTS.md).
+>
 > **Implementando ou evoluindo o código?** Comece por [PROJETO.md](PROJETO.md) (documentação viva do projeto) e veja o histórico em [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md). Material para clientes: [apresentacao/data-workspace.html](apresentacao/data-workspace.html).
 
 ---

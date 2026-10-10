@@ -11,7 +11,7 @@
 | Dados | 100% demonstrativos e determinísticos no browser: `ds_rede_sp` (Rede Metropolitana SP) e `ds_vendas` (Lume Varejo). Não há backend ligado; `control-plane`, `crates/` e demais `packages/*` são esqueletos |
 | Rota inicial | `/login` (Product Pulse + SSO progressivo), depois Home, Relatórios, Mapas, Workflows, Dados, Conexões, Modelo, Copilot |
 | Testes | Vitest em tokens, ui, viz, dados, editor/copilot, mapas e workflows; E2E Playwright + axe em `testing/e2e` |
-| Deploy | Cloudflare Pages em `app.biwebstudio.com.br` (domínio no Registro.br; e-mail no Fastmail) |
+| Deploy | Cloudflare Pages, projeto `biweb`, em `app.biwebstudio.com.br` (domínio no Registro.br; e-mail no Fastmail); automático por GitHub Actions a cada push em `main` |
 
 ## 2. Problemas resolvidos por área
 
@@ -137,6 +137,17 @@ Pacote `packages/assistant-ui` + motor de exemplo no app (`copilot/engine.ts`): 
 | IA como requisito | Operação determinística completa com IA desligada; privacidade por metadados/amostras mascaradas | `DataWorkspace.tsx › PrivacyBlock`, `store.ts` |
 
 
+### 2.y CI, deploy e documentação — 2026-10-10
+| Problema | Solução | Onde |
+|---|---|---|
+| Deploy manual e sem registro | GitHub Actions publica no Cloudflare Pages (projeto `biweb`) a cada push em `main`; gera os tokens antes do build | `.github/workflows/deploy.yml`, `docs/runbooks/README.md` |
+| `wrangler-action` falhava no workspace pnpm | Workflow chama `npx wrangler@4 pages deploy` direto | `deploy.yml` |
+| Token do `wrangler login` não servia no CI | Token de API (Pages: Edit) + `CLOUDFLARE_ACCOUNT_ID` como Actions secrets; o OAuth do login expira em ~1 h | `docs/PROJETO.md` §9 |
+| CI vermelho por ciclos de dependência | `ago()` movida para `editor/time.ts`; imports só de tipos deixam de contar como ciclo | `editor/time.ts`, `.dependency-cruiser.cjs` |
+| Documentação desatualizada em relação às rotas | `tools/check-docs.mjs` roda no CI e falha se uma rota não estiver na doc; regras para agentes em `AGENTS.md` | `tools/check-docs.mjs`, `AGENTS.md`, `CLAUDE.md` |
+| Arquivos obsoletos na raiz | Removidos `design-output/` e `design-handoff.zip` | commit `6fe824a` |
+
+
 ## 3. Decisões que valem daqui para frente
 1. **Não apagar o que existe**: cada nova rodada incorpora ao estado atual e preserva o design system aprovado.
 2. **Tokens, nunca cores literais**; contraste testado.
@@ -144,12 +155,13 @@ Pacote `packages/assistant-ui` + motor de exemplo no app (`copilot/engine.ts`): 
 4. **IA propõe, humano aplica**: Pedido → Prévia → Aplicar, com undo e resultado editável à mão.
 5. **Sem padrões genéricos de IA** na UI (card sobre gradiente, glow, partículas, slogans gigantes).
 6. **Dados determinísticos e semeados** nas demos, para testes estáveis.
-7. Commit/push **somente quando o usuário pedir**; `.pnpm-store/` fica fora do git.
+7. Commit/push **somente quando o usuário pedir**; `.pnpm-store/` e `.wrangler/` ficam fora do git.
+8. **Documentação no mesmo commit** da mudança; o CI confere as rotas (`AGENTS.md`).
 
 ## 4. Pontos em aberto
 - Nenhum backend real: dados, auth, Copilot e SSO são simulados no cliente; `apps/control-plane`, `crates/*` e `packages/*` (dashboard-core, runtime, data-runtime…) são esqueletos. O editor ainda não usa o QDL/semantic layer do blueprint.
 - Grãos de data de minuto/hora estavam planejados; hoje: dia, semana, mês, trimestre e ano.
-- `tools/deploy.sh` e a doc `docs/runbooks/` ainda não documentam o fluxo de deploy no Cloudflare.
+- O runbook cobre o deploy, mas ainda não DNS/e-mail do domínio.
 - Cobertura de testes concentrada em motores de dados; E2E cobre o shell inicial (8 testes) e precisa ser ampliado para editor, mapas, workflows e login.
 - Domínio/e-mail: configuração feita via navegador; vale registrar DNS (MX/SPF/DKIM) no runbook.
 

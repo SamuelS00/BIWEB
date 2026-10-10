@@ -1,8 +1,8 @@
 # BIWEB Studio — Documentação do projeto
 
 > Documento vivo. É o ponto de entrada para quem vai evoluir o código. O **porquê** de longo prazo está no blueprint ([`architecture/`](architecture/), ADRs); aqui está o **como o projeto é hoje** e **como mexer nele**.
-> Histórico do que já foi resolvido: [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md).
-> Última revisão: 2026-10-10 (Data Workspace). Apresentação para clientes: [apresentacao/data-workspace.html](apresentacao/data-workspace.html).
+> Histórico do que já foi resolvido: [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md). Regras para humanos e agentes manterem esta doc em dia: [`AGENTS.md`](../AGENTS.md).
+> Última revisão: 2026-10-10 (Data Workspace, CI/deploy automático, ciclos corrigidos). Apresentação para clientes: [apresentacao/data-workspace.html](apresentacao/data-workspace.html).
 
 ## 1. O que é
 
@@ -20,8 +20,9 @@ Plataforma web de Business Intelligence: relatórios e dashboards editáveis, ma
 | `apps/control-plane`, `jdbc-bridge`, `render-service` | Backends | Esqueleto |
 | `crates/` | Data plane Rust (Cargo workspace) | Esqueleto |
 | `testing/` | `e2e` (Playwright + axe), `load`, `query-correctness`, `corpus`, `ai-evals` | Só `e2e` |
-| `docs/` | Blueprint, ADRs, design system, esta doc | — |
-| `tools/` | `brand/` (capas e logos), `artifact/inline.mjs`, `deploy.sh` | Funcional |
+| `docs/` | Blueprint, ADRs, design system, runbooks, esta doc e `apresentacao/` (material para clientes) | — |
+| `.github/workflows/` | `ci.yml` (TS + Rust), `deploy.yml` (Cloudflare Pages a cada push em `main`) | Funcional |
+| `tools/` | `brand/` (capas e logos), `artifact/inline.mjs`, `deploy.sh`, `check-docs.mjs` (confere rotas × doc) | Funcional |
 | `design-handoff/`, `REFERENCE_PACK_*.md`, `SCREEN_CATALOG_BI.md`, `SKILLS_STACK.md` | Material de entrada de design | Referência |
 
 > Trabalhe em `apps/web` e use os pacotes `tokens`, `ui` e `assistant-ui`. Não preencha os esqueletos sem um épico em [`architecture/32-epics-and-implementation-prompts.md`](architecture/32-epics-and-implementation-prompts.md).
@@ -75,9 +76,10 @@ src/
   data/         datasets, tipos, consulta e tempo real
   editor/       documento do relatório, store, canvas, painéis, Copilot de BI
   viz/          motor de gráficos, tabelas, filtros, toolbar, estados, mapa e 3D
-  routes/       telas (home, reports, maps, workflows, login, demo…)
+  routes/       telas (home, reports, maps, workflows, migration, login, demo…)
   copilot/      motor de exemplo do Copilot (simulado)
-  datasources/  Dados, importação, linhagem
+  datasources/  Tela antiga de Dados (DataPage, importação, linhagem); hoje aba "Datasets de relatório" em Publicados
+  dataworkspace/ Data Workspace (LDE): ver 5.8.1
   net/          grafo da Rede SP (geração, layout, line-of-sight)
   fixtures/     Lume Varejo
   i18n/         pt-BR.ts
@@ -151,13 +153,15 @@ UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `
 - Textos de UI em pt-BR (`i18n/pt-BR.ts`).
 - Dados demo **determinísticos** (semeados); sem `Math.random` solto em dados que testes usam.
 - Armazenamento do browser sempre protegido por `try/catch`.
-- Fronteiras entre pacotes: `.dependency-cruiser.cjs` (core sem React, plugins só via SDK, IA fora do core, sem ciclos).
+- Fronteiras entre pacotes: `.dependency-cruiser.cjs` (core sem React, plugins só via SDK, IA fora do core, sem ciclos). Imports só de tipos (`import type`) não contam como ciclo (`tsPreCompilationDeps: false`); ciclos em runtime quebram o CI. Utilitários compartilhados vão para arquivos próprios (ex.: `editor/time.ts`), não para componentes.
 - Build: **não** usar `manualChunks` no Vite (gerou dependência circular e quebrou produção).
 - Mapa em tela cheia: não deixar `transform` em ancestral de `position: fixed` (a animação de entrada prendia o elemento).
 
 **Git**
 - Commits em pt-BR no formato `tipo(escopo): resumo` (`feat`, `fix`, `build`, `chore`…), corpo com bullets do que mudou.
-- `.pnpm-store/` não entra no git.
+- `.pnpm-store/` e `.wrangler/` não entram no git.
+- Nada de arquivos que diferem só por caixa (`catalog.ts` × `Catalog.tsx` quebra o `tsc` no macOS).
+- **Documentação é parte da entrega**: mudou rota, pasta, comando, convenção ou deploy? Atualize `docs/` no mesmo commit (regras em [`AGENTS.md`](../AGENTS.md)).
 
 ## 7. Receitas para evoluir
 
@@ -182,11 +186,12 @@ UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `
 | Camada | Comando | Cobre |
 |---|---|---|
 | Unit (Vitest) | `pnpm test` | tokens (contraste), ui, motor de gráficos, `cf`, dados de vendas, Copilot do editor, mapas, workflows, relatórios demo, Migration Studio |
-| E2E (Playwright + axe) | `pnpm e2e` | shell inicial (8 testes) |
+| E2E (Playwright + axe) | `pnpm e2e` | shell inicial (`testing/e2e/tests/shell.spec.ts`, 8 testes) |
+| Documentação | `node tools/check-docs.mjs` | toda rota de `router.tsx` aparece na tabela da seção 4 |
 | Fronteiras | `pnpm check:boundaries` | regras de dependência |
-| CI | `.github/workflows/ci.yml` | lint + typecheck + testes |
+| CI | `.github/workflows/ci.yml` | lint, typecheck, testes, build, fronteiras, docs (job `ts`) e clippy/testes Rust (job `rust`) |
 
-Lacunas: E2E do editor, mapas, workflows e login; teste visual; carga e correção de queries (aguardam backend).
+Hoje: 78 testes unitários em `apps/web` (11 arquivos), mais tokens e ui. Lacunas: testes do Data Workspace (`sample.ts`, `store.ts`, `copilot.ts`), E2E do editor, mapas, workflows, migração e login; teste visual; carga e correção de queries (aguardam backend).
 
 ## 9. Build e deploy
 
@@ -196,7 +201,13 @@ Lacunas: E2E do editor, mapas, workflows e login; teste visual; carga e correç�
 | Estático (rotas por hash) | `pnpm --filter @biweb/web build:static` | `dist-static` |
 | Página única (artifact) | `tools/deploy.sh` ou `build:artifact` | `dist-artifact/page.html` |
 
-Produção: Cloudflare Pages em `app.biwebstudio.com.br` (domínio no Registro.br; e-mail no Fastmail). `tools/deploy.sh` roda tipos + testes antes do build; `--skip-checks` pula, `static` gera também o estático.
+`tools/deploy.sh` roda tipos + testes antes do build; `--skip-checks` pula, `static` gera também o estático.
+
+**Produção:** Cloudflare Pages, projeto **`biweb`** (`biweb.pages.dev` e `app.biwebstudio.com.br`; domínio no Registro.br, e-mail no Fastmail).
+
+**Deploy automático:** `.github/workflows/deploy.yml` roda a cada push em `main` (ou manualmente em Actions → deploy → Run workflow): gera os tokens (`@biweb/tokens build`, porque `packages/tokens/dist` não vai para o git), roda `tsc` e `vitest`, faz `vite build` com `VITE_HASH_HISTORY=1` (rotas por hash) e publica `apps/web/dist` com `npx wrangler@4 pages deploy`. Exige os **Actions secrets** `CLOUDFLARE_API_TOKEN` (token de API com *Account → Cloudflare Pages → Edit*; o token do `wrangler login` é OAuth de ~1 h e **não** serve) e `CLOUDFLARE_ACCOUNT_ID`. A action oficial `wrangler-action` falha no workspace pnpm; por isso o workflow chama o `wrangler` direto.
+
+**Deploy manual:** `wrangler login`, depois `npx wrangler pages deploy apps/web/dist-static --project-name biweb --branch main`. Passo a passo e verificação em [`runbooks/`](runbooks/README.md).
 
 ## 10. Glossário
 
@@ -221,7 +232,8 @@ Produção: Cloudflare Pages em `app.biwebstudio.com.br` (domínio no Registro.b
 4. Extrair do `apps/web` para os pacotes: `dashboard-core` (documento + migrations), `viz-sdk` (contrato de plugin), `layout-engine`.
 5. Copilot real via Model Gateway com principal delegado e ChangeSets (ADR-0033–0041).
 6. Ampliar E2E (Data Workspace incluso) e adicionar testes visuais; documentar deploy em `docs/runbooks/`.
-   Data Workspace: testes unitários de `sample.ts`/`store.ts`, ligação real ao LDE e persistência de decisões.
+   Data Workspace: testes unitários de `sample.ts`/`store.ts`/`copilot.ts`, ligação real ao LDE e persistência de decisões.
+8. Material de apresentação para os demais módulos (relatórios, mapas, fluxos, migração), com capturas reais, segurança e governança.
 7. Grãos de data por minuto/hora para relatórios em tempo real.
 
 ## 12. Como manter esta documentação

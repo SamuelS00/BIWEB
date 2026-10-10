@@ -12,6 +12,7 @@
     "lint": "turbo run lint && pnpm check:boundaries",
     "test": "turbo run test",
     "check:boundaries": "depcruise apps packages --config .dependency-cruiser.cjs",
+    "check:docs": "node tools/check-docs.mjs",
     "tokens": "turbo run build --filter=@biweb/tokens",
     "e2e": "pnpm --filter @biweb/e2e e2e"
   },

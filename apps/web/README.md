@@ -6,23 +6,20 @@ Application Shell (SPA) do BIWEB Studio: Vite + React 19 + TanStack Router + rea
 pnpm install
 pnpm dev                 # http://localhost:5173
 pnpm --filter @biweb/web build:static   # build estático com rotas por # (prévias)
+../../tools/deploy.sh                    # tipos + testes + página única do artifact
 ```
 
-| Rota | Tela | Conteúdo |
+Tabela completa de rotas e mapa da arquitetura: [`docs/PROJETO.md`](../../docs/PROJETO.md) (seções 4 e 5). Em resumo:
+
+| Área | Rotas | Pasta |
 |---|---|---|
-| `/` | Início | Saudação, pulso do negócio (KPIs com sparkline), continue de onde parou, favoritos, Copilot, atividade e saúde dos dados |
-| `/reports` | Relatórios | Catálogo com capas em grade ou lista; filtros por categoria, status e tipo; busca; ordenação; favoritos |
-| `/reports/:id` | Relatório aberto | Cabeçalho com capa e metadados, barra de contexto, páginas, KPIs e gráficos de exemplo, filtro cruzado, ver como tabela, perguntar ao Copilot |
-| `/reports/:id/edit` | Editor | Painéis Dados e Inspector; canvas via E2.4/E2.6. Carregado sob demanda |
-| `/copilot` | Copilot | Conversa em tela cheia (a mesma do painel lateral) |
-| `/connections` | Dados | Conexões e datasets |
-| `/models/:id` | Modelo | Métricas e entidades do modelo semântico |
-| `/maps/network-intelligence` | Network Intelligence | Workspace cartográfico contínuo, camadas por domínio, tabela, detalhe de entidades e replay demonstrativo |
-| `/maps/incident-intelligence` | Incident Intelligence | Eventos, agregação, filtro temporal e detalhe com evidências demonstrativas |
-| `/maps/street-intelligence` | Street Intelligence 3D | Edificações vetoriais por medida com alternância 2D/3D |
-| `/reports/geo_dependency` | Dependency & Impact | Realce de enlaces, vizinhos e serviços dependentes do ativo selecionado |
-| `/reports/geo_replay` | Historical Replay | Workspace compartilhado com navegação temporal, playback, velocidade e retorno a live |
-| `/workflows` | Intelligent Workflow | Grafo/grade/Gantt, logs, retry, agenda e propostas separadas da execução |
+| Início, relatórios e editor | `/`, `/reports`, `/reports/:id`, `/reports/:id/edit` | `src/routes/`, `src/editor/` |
+| Dados (Data Workspace) | `/data`, `/data/:section/:itemId`, `/connections` | `src/dataworkspace/` |
+| Modelo semântico | `/models/:id` | `src/routes/model.tsx` |
+| Mapas | `/maps`, `/maps/:mapId` | `src/routes/maps/` |
+| Fluxos | `/workflows`, `/workflows/:id` | `src/routes/workflows/` |
+| Migração | `/migration`, `/migration/:projectId` | `src/routes/migration/` |
+| Copilot e login | `/copilot`, `/login` | `src/routes/copilot.tsx`, `src/routes/login/` |
 
 O workspace usa tiles do OpenStreetMap como contexto cartográfico, com atribuição visível. Ativos, telemetria, fluxos e incidentes são simulados no cliente; o protótipo não requer backend.
 
