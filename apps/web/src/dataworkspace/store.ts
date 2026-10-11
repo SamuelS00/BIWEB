@@ -10,6 +10,8 @@ export interface Msg { id: string; role: 'user' | 'ai'; text: string; kicker?: s
 export type Card =
   | { t: 'normalize' } | { t: 'relationship'; relId: string; label: string } | { t: 'explain'; lines: string[]; cta?: { label: string; to: string } }
   | { t: 'lineage'; col: string } | { t: 'enrich' } | { t: 'list'; items: string[] };
+/** Proposta de enriquecimento vinda do BDE (Discovery). O LDE só valida e aplica depois da revisão; o BDE nunca altera o modelo. */
+export interface ExternalProposal { id: string; internalEntity: string; match: number; current: { field: string; value: string }[]; proposed: { field: string; value: string; source: string; confidence: number; observed: string; policy: string }[]; status: 'received' | 'applied' | 'rejected' }
 export interface Toast { id: number; text: string }
 export type AiMode = 'off' | 'metadata' | 'masked';
 export interface ActEv { t: string; text: string; sub: string; to: string; fresh?: boolean }
@@ -34,6 +36,7 @@ interface S {
   mapApplied: Record<string, boolean>; setMapApplied: (id: string) => void;
   provenance: { open: boolean; kind?: string; label?: string }; showOrigin: (kind: string, label: string) => void; hideOrigin: () => void;
   mv: { mode: 'physical' | 'logical' | 'curated' | 'dimensional'; ver: 'source' | 'proposed' }; setMv: (p: Partial<S['mv']>) => void;
+  externalProposals: ExternalProposal[]; receiveExternal: (p: ExternalProposal) => void; setExternal: (id: string, st: ExternalProposal['status']) => void;
   toggleTech: () => void; setPane: (p: Partial<Pick<S, 'leftOpen' | 'rightOpen' | 'rTab'>>) => void;
 }
 const stored = <T,>(k: string, d: T): T => { try { const v = localStorage.getItem(k); return v ? (JSON.parse(v) as T) : d; } catch { return d; } };
@@ -64,6 +67,7 @@ export const useDw = create<S>((set, get) => ({
   mapApplied: {}, setMapApplied: (id) => set((s) => ({ mapApplied: { ...s.mapApplied, [id]: true } })),
   provenance: { open: false }, showOrigin: (kind, label) => set({ provenance: { open: true, kind, label } }), hideOrigin: () => set({ provenance: { open: false } }),
   mv: { mode: 'logical', ver: 'source' }, setMv: (p) => set((s) => ({ mv: { ...s.mv, ...p } })),
+  externalProposals: [], receiveExternal: (p) => set((s) => ({ externalProposals: [p, ...s.externalProposals.filter((x) => x.id !== p.id)] })), setExternal: (id, st) => set((s) => ({ externalProposals: s.externalProposals.map((p) => (p.id === id ? { ...p, status: st } : p)) })),
   toggleTech: () => { const v = !get().technical; persist('biweb.dw.technical', v); set({ technical: v }); },
   setPane: (p) => set(p),
 }));

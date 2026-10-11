@@ -50,10 +50,15 @@ const workflowDetail = createRoute({ getParentRoute: () => root, path: '/workflo
 // Migration Studio: lista de projetos e workspace de migração (carregados sob demanda).
 const migration = createRoute({ getParentRoute: () => root, path: '/migration', component: lazyRouteComponent(() => import('./routes/migration'), 'MigrationList') });
 const migrationProject = createRoute({ getParentRoute: () => root, path: '/migration/$projectId', component: lazyRouteComponent(() => import('./routes/migration'), 'MigrationWorkspace') });
+// Discovery Studio (BDE): inteligência externa guiada por evidências (carregado sob demanda).
+const discoveryWs = () => lazyRouteComponent(() => import('./discovery'), 'DiscoveryStudio');
+const discoveryHome = createRoute({ getParentRoute: () => root, path: '/discovery', component: discoveryWs() });
+const discoverySection = createRoute({ getParentRoute: () => root, path: '/discovery/$section', component: discoveryWs() });
+const discoveryItem = createRoute({ getParentRoute: () => root, path: '/discovery/$section/$itemId', component: discoveryWs() });
 // Rotas antigas de dashboards continuam funcionando.
 const legacy = createRoute({ getParentRoute: () => root, path: '/dashboards/$id', beforeLoad: () => { throw redirect({ to: '/reports/$reportId', params: { reportId: 'net_executiva' } }); } });
 
 // VITE_HASH_HISTORY=1 gera um build estático (rotas com #) para hospedar sem servidor, ex.: prévias.
 const history = import.meta.env.VITE_HASH_HISTORY ? createHashHistory() : undefined;
-export const router = createRouter({ routeTree: root.addChildren([login, home, reportsRoute, report, builder, connections, dataHome, dataSection, dataItem, model, copilot, mapsGallery, mapRoute, mapWorkspace, incidentWorkspace, streetWorkspace, workflows, workflowDetail, migration, migrationProject, legacy]), ...(history ? { history } : {}), defaultPreload: 'intent' });
+export const router = createRouter({ routeTree: root.addChildren([login, home, reportsRoute, report, builder, connections, dataHome, dataSection, dataItem, model, copilot, mapsGallery, mapRoute, mapWorkspace, incidentWorkspace, streetWorkspace, workflows, workflowDetail, migration, migrationProject, discoveryHome, discoverySection, discoveryItem, legacy]), ...(history ? { history } : {}), defaultPreload: 'intent' });
 declare module '@tanstack/react-router' { interface Register { router: typeof router } }

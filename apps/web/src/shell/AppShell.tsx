@@ -7,6 +7,8 @@ import { applyRootPrefs, asset, useUi } from '../state/ui-store';
 import { reports, user } from '../fixtures/lume-varejo';
 import { mockCopilot } from '../copilot/engine';
 import { networkCopilot } from '../copilot/network';
+import { discoveryCopilot, discoveryPath } from '../discovery/copilot-lite';
+import { useDs } from '../discovery/store';
 import { useLibrary } from '../editor/library';
 import { useEditor } from '../editor/store';
 import { WORKSPACES } from '../routes/gallery';
@@ -17,7 +19,7 @@ import { LOCALES, LOCALE_NAMES, type Locale } from '../i18n/locales';
 import { glossaryTerm } from '../i18n/glossary';
 import type { MessageId } from '../i18n/catalog';
 
-type Area = 'home' | 'reports' | 'data' | 'models' | 'copilot' | 'maps' | 'workflows' | 'migration';
+type Area = 'home' | 'reports' | 'data' | 'models' | 'copilot' | 'maps' | 'workflows' | 'migration' | 'discovery';
 function area(path: string): Area {
   if (path.startsWith('/reports')) return 'reports';
   if (path.startsWith('/connections') || path.startsWith('/data')) return 'data';
@@ -26,6 +28,7 @@ function area(path: string): Area {
   if (path.startsWith('/maps')) return 'maps';
   if (path.startsWith('/workflows')) return 'workflows';
   if (path.startsWith('/migration')) return 'migration';
+  if (path.startsWith('/discovery')) return 'discovery';
   return 'home';
 }
 
@@ -55,6 +58,7 @@ const NAV: { id: Area; labelId: MessageId; icon: IconName; to: string }[] = [
   { id: 'maps', labelId: 'navigation.maps', icon: 'pin', to: '/maps' },
   { id: 'workflows', labelId: 'navigation.workflows', icon: 'share', to: '/workflows' },
   { id: 'migration', labelId: 'navigation.migration', icon: 'migrate', to: '/migration' },
+  { id: 'discovery', labelId: 'navigation.discovery', icon: 'discovery', to: '/discovery' },
 ];
 
 export function AppShell() {
@@ -72,8 +76,9 @@ export function AppShell() {
   const doc = useLibrary((s) => (reportMatch ? s.docs.find((d) => d.id === reportMatch[1]) : undefined));
   const report = reportMatch ? (doc ?? reports.find((r) => r.id === reportMatch[1])) : undefined;
   const inEditor = path.endsWith('/edit');
-  const engine = ui.workspace === 'rede' ? networkCopilot : mockCopilot;
-  const context = report ? { label: `Relatório: ${report.name}`, reportId: report.id } : { label: `Workspace ${WORKSPACES[ui.workspace].label}` };
+  const engine = cur === 'discovery' ? discoveryCopilot : ui.workspace === 'rede' ? networkCopilot : mockCopilot;
+  const dsContext = useDs((d) => d.context);
+  const context = cur === 'discovery' ? { label: dsContext } : report ? { label: `Relatório: ${report.name}`, reportId: report.id } : { label: `Workspace ${WORKSPACES[ui.workspace].label}` };
   const showDock = ui.aiEnabled && ui.copilotOpen && cur !== 'copilot' && cur !== 'migration' && cur !== 'data' && !inEditor;
 
   return (
@@ -117,8 +122,8 @@ export function AppShell() {
             <Copilot variant="dock" engine={engine} context={context} userName={user.name} brandMark={asset('brand/mark.webp')} dashTheme={ui.dashTheme}
               messages={ui.copilotMessages} setMessages={ui.setCopilotMessages} prompt={ui.copilotPrompt}
               onClose={() => ui.set({ copilotOpen: false })}
-              onOpenReport={(id) => navigate({ to: '/reports/$reportId', params: { reportId: id } })}
-              onAction={(id) => { if (id === 'create-analysis') navigate({ to: '/reports/$reportId', params: { reportId: 'rpt_analise_queda' } }); if (id === 'open-model') navigate({ to: '/models/$modelId', params: { modelId: 'sem_vendas_varejo' } }); }} />
+              onOpenReport={(id) => { const dp = cur === 'discovery' ? discoveryPath(id) : null; if (dp) navigate({ to: dp as '/' }); else navigate({ to: '/reports/$reportId', params: { reportId: id } }); }}
+              onAction={(id) => { const dp = cur === 'discovery' ? discoveryPath(id) : null; if (dp) { navigate({ to: dp as '/' }); return; } if (id === 'create-analysis') navigate({ to: '/reports/$reportId', params: { reportId: 'rpt_analise_queda' } }); if (id === 'open-model') navigate({ to: '/models/$modelId', params: { modelId: 'sem_vendas_varejo' } }); }} />
           )}
         </div>
       </div>

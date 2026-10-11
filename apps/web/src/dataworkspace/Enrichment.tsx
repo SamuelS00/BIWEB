@@ -33,6 +33,7 @@ export function EnrichView() {
           <PrivacyBlock />
         </aside>
       </div>
+      {st.externalProposals.length > 0 && <ExternalBlock />}
       {shown.length === 0 ? <Empty icon="bolt" title={tab === 'suggested' ? 'Nenhuma sugestão no momento' : 'Nada por aqui'} text={aiOff ? 'Ligue a IA para ver sugestões assistidas, ou explore os enriquecimentos disponíveis.' : 'Quando o BIWEB detectar um campo enriquecível, ele aparece aqui.'} action={tab !== 'available' ? <Button size="sm" onPress={() => setTab('available')}>Ver disponíveis</Button> : undefined} /> : (
         <ul className="dw-enr-list">{shown.map((e) => <EnrichCard key={e.id} e={e} open={open === e.id} onOpen={() => { setOpen(open === e.id ? null : e.id); st.select({ kind: 'enrich', id: e.id }); }} />)}</ul>
       )}
@@ -66,5 +67,28 @@ function EnrichCard({ e, open, onOpen }: { e: Enrich; open: boolean; onOpen: () 
         </div>
       )}
     </li>
+  );
+}
+
+/** Propostas do BDE (Discovery Studio): Match → Validate → Normalize → Relate → Review → Applied. */
+function ExternalBlock() {
+  const st = useDw();
+  return (
+    <section className="dw-sec" aria-label="Propostas externas (BDE)">
+      <header className="dw-sec-h"><h3>Externo · BDE</h3><span className="dw-muted">Chegam como proposta. O LDE valida; nada é aplicado sem revisão.</span></header>
+      <ul className="dw-enr-list">
+        {st.externalProposals.map((p) => (
+          <li key={p.id} className="dw-enr is-open">
+            <div className="dw-enr-h"><span className="dw-enr-t"><Badge tone="warning">Externo</Badge><b>{p.internalEntity}</b></span><span className="dw-enr-m"><span>Match <b>{p.match}%</b></span><span>+{p.proposed.length} atributos</span></span><span className="dw-enr-c">{p.status === 'applied' ? <Badge tone="success" icon="check">Aplicado</Badge> : p.status === 'rejected' ? <Badge tone="danger">Rejeitado</Badge> : <Badge tone="accent">Em revisão</Badge>}</span></div>
+            <div className="dw-enr-b">
+              <p className="dw-note"><Icon name="info" size={12} />LDE: Match {p.match}% · Validate ✓ · Normalize ✓ · Relate ✓. Fonte e confiança preservadas por campo.</p>
+              <div className="dw-ba"><b>Atual</b>{p.current.map((c) => <span key={c.field} className="bw-mono">{c.field}: {c.value}</span>)}</div>
+              <div className="dw-prev">{p.proposed.map((f) => <div key={f.field} className="dw-ba"><span className="bw-mono">+ {f.field}</span><Icon name="arrowRight" size={12} /><span>{f.value} <small className="dw-muted">· {f.source} · {f.confidence}% · {f.observed} · {f.policy}</small></span></div>)}</div>
+              {p.status === 'received' && <div className="dw-hyp-a"><Button size="sm" variant="primary" icon="check" onPress={() => { st.setExternal(p.id, 'applied'); st.toast(`Aplicado: ${p.internalEntity}`); }}>Aprovar e aplicar</Button><Button size="sm" variant="ghost" onPress={() => st.setExternal(p.id, 'rejected')}>Rejeitar</Button></div>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

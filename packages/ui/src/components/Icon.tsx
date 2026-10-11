@@ -27,6 +27,7 @@ const PATHS = {
   report: 'M3.5 2h6l3 3v9h-9zM9.5 2v3h3M5.5 8h5M5.5 10.5h5M5.5 13h3', list: 'M5.5 4h8M5.5 8h8M5.5 12h8M2.5 4h.01M2.5 8h.01M2.5 12h.01',
   star: 'M8 2l1.8 3.8 4.2.5-3.1 2.9.8 4.1L8 11.3 4.3 13.3l.8-4.1L2 6.3l4.2-.5z', send: 'M2.5 8l11-5.5-3.5 11-2.5-4.5zM7.5 9l6-6.5',
   clock: 'M8 2a6 6 0 100 12A6 6 0 008 2zM8 4.5V8l2.5 1.5', user: 'M8 2.5a2.75 2.75 0 100 5.5 2.75 2.75 0 000-5.5zM3 13.5c.6-2.5 2.6-4 5-4s4.4 1.5 5 4',
+  discovery: 'M8 2a6 6 0 100 12A6 6 0 008 2zM10.8 5.2L9.2 9.2 5.2 10.8 6.8 6.8zM8 8h.01',
   arrowRight: 'M3 8h10M9 4l4 4-4 4', arrowLeft: 'M13 8H3M7 4L3 8l4 4', download: 'M8 2.5v8M4.5 7L8 10.5 11.5 7M3 13.5h10', copilot: 'M2.5 4.5h11v6.5h-5l-3 2.5V11h-3zM5.5 7.5h5M5.5 9h3', home: 'M2.5 7.5L8 3l5.5 4.5V13.5h-11zM6.5 13.5v-4h3v4',
 } as const;
 export type IconName = keyof typeof PATHS;

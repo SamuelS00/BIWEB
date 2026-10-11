@@ -14,8 +14,8 @@ import type { MessageId } from '../i18n/catalog';
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 /** Grupo é um id estável: a ordem e a lógica não dependem do rótulo traduzido. */
-type Group = 'reports' | 'actions' | 'editor' | 'copilot';
-const GROUP_ID: Record<Group, MessageId> = { reports: 'palette.group.reports', actions: 'palette.group.actions', editor: 'palette.group.editor', copilot: 'palette.group.copilot' };
+type Group = 'reports' | 'actions' | 'editor' | 'copilot' | 'discovery';
+const GROUP_ID: Record<Group, MessageId> = { reports: 'palette.group.reports', actions: 'palette.group.actions', editor: 'palette.group.editor', copilot: 'palette.group.copilot', discovery: 'palette.group.discovery' };
 interface Item { group: Group; label: string; hint: string; thumb?: string; run: () => void }
 
 /** ⌘K: ir para relatórios, executar ações e perguntar ao Copilot. */
@@ -41,6 +41,17 @@ export function CommandPalette() {
       { group: 'actions', label: t('palette.action.migrationProjects'), hint: t('navigation.migration'), run: () => navigate({ to: '/migration' }) },
       { group: 'actions', label: t('palette.action.newMigration'), hint: t('navigation.migration'), run: () => navigate({ to: '/migration' }) },
     ];
+    const dsGo = (p: string) => () => navigate({ to: p as '/' });
+    const discoveryItems: Item[] = [
+      { group: 'discovery', label: t('palette.discovery.newMission'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/missions/new') },
+      { group: 'discovery', label: t('palette.discovery.explore'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/explore') },
+      { group: 'discovery', label: t('palette.discovery.watchlist'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/watchlists/new') },
+      { group: 'discovery', label: t('palette.discovery.compare'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/entities/compare') },
+      { group: 'discovery', label: t('palette.discovery.changes'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/changes') },
+      { group: 'discovery', label: t('palette.discovery.evidence'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/evidence') },
+      { group: 'discovery', label: t('palette.discovery.sendLde'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/datasets/enrichment') },
+      { group: 'discovery', label: t('palette.discovery.report'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/datasets/ds1') },
+    ].filter((a) => !n || norm(a.label).includes(n) || norm('discovery').includes(n));
     const acts = actionItems.filter((a) => !n || norm(a.label).includes(n));
     const st = useEditor.getState();
     const editorItems: Item[] = [
@@ -53,7 +64,7 @@ export function CommandPalette() {
     ];
     const ed: Item[] = inEditor ? editorItems.filter((a) => !n || norm(a.label).includes(n)).slice(0, n ? 8 : 5) : [];
     const ai: Item[] = aiEnabled && q.trim() ? [{ group: 'copilot', label: t('palette.ask', { query: q.trim() }), hint: t('palette.hint.ask'), run: () => { if (inEditor) { useEditor.getState().set({ rightTab: 'ai' }); void askBuilder(q.trim()); } else askCopilot(q.trim()); } }] : [];
-    return [...ed, ...rep, ...acts, ...ai];
+    return [...ed, ...rep, ...acts, ...discoveryItems, ...ai];
   }, [q, aiEnabled, appTheme, navigate, set, askCopilot, reports, inEditor, t]);
   const close = () => { set({ paletteOpen: false }); setQ(''); setIdx(0); };
   const run = (i: number) => { const it = items[i]; if (!it) return; close(); it.run(); };
