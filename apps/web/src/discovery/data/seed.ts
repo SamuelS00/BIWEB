@@ -81,7 +81,7 @@ export const RELATIONSHIPS: Relationship[] = [
   { from: 'coa', to: 'br', kind: 'operates in' }, { from: 'coa', to: 'rad', kind: 'announced' }, { from: 'coa', to: 'cob', kind: 'competes with' }, { from: 'cob', to: 'br', kind: 'operates in' },
   { from: 'powerbi', to: 'tableau', kind: 'competes with' }, { from: 'tableau', to: 'qlik', kind: 'competes with' }, { from: 'qlik', to: 'looker', kind: 'competes with' },
   { from: 'tableau', to: 'snow', kind: 'integrates' }, { from: 'qlik', to: 'snow', kind: 'integrates' }, { from: 'powerbi', to: 'pg', kind: 'integrates' },
-  { from: 'f01', to: 'br', kind: 'operates in' }, { from: 'f18', to: 'br', kind: 'operates in' }, { from: 'f28', to: 'f01', kind: 'partners with' }, { from: 'f03', to: 'f18', kind: 'competes with' },
+  { from: 'f01', to: 'br', kind: 'operates in' }, { from: 'f18', to: 'br', kind: 'operates in' }, { from: 'f27', to: 'f01', kind: 'partners with' }, { from: 'f03', to: 'f18', kind: 'competes with' },
 ];
 
 /* ---------- Fontes ---------- */
@@ -236,7 +236,7 @@ chg('c-coa-int', 'Integration added', 'coa', 'Connectors', '—', 'PostgreSQL co
 // Demais missões (completa 42 mudanças relevantes na semana).
 const OTHER: [string, string, ChangeKind, string, string, string, string, ChangeEvent['category']][] = [
   ['m2', 'f01', 'Capability added', 'Backbone', '—', '+4,000 km of fiber', 'Backbone expansion announced', 'News'], ['m2', 'f03', 'Location changed', 'Rio de Janeiro', '9 PoPs', '11 PoPs', 'Coverage expanded', 'Product'], ['m2', 'f18', 'Product renamed', 'Services', 'Monitoring Plus', 'Fiber Guard', 'Product renamed', 'Product'],
-  ['m2', 'f28', 'Capability added', 'Services', '—', 'Managed wavelength', 'New service', 'Product'], ['m2', 'f08', 'Location changed', 'Brasília', '8 PoPs', '10 PoPs', 'Coverage expanded', 'Product'], ['m2', 'f11', 'Integration added', 'Partners', '—', 'Backhaul partnership', 'New partnership', 'News'],
+  ['m2', 'f27', 'Capability added', 'Services', '—', 'Managed wavelength', 'New service', 'Product'], ['m2', 'f08', 'Location changed', 'Brasília', '8 PoPs', '10 PoPs', 'Coverage expanded', 'Product'], ['m2', 'f11', 'Integration added', 'Partners', '—', 'Backhaul partnership', 'New partnership', 'News'],
   ['m2', 'f20', 'Location changed', 'Campinas', '6 PoPs', '7 PoPs', 'Coverage expanded', 'Product'], ['m2', 'f15', 'Feature removed', 'Services', 'Legacy ADSL', '—', 'Service retired', 'Product'], ['m2', 'f02', 'Location changed', 'Porto Alegre', '8 PoPs', '9 PoPs', 'Coverage expanded', 'Product'],
   ['m2', 'f25', 'Capability added', 'Services', '—', 'Dark fiber', 'New service', 'Product'], ['m2', 'f07', 'Documentation updated', 'Coverage', 'Coverage map v1', 'Coverage map v2', 'Coverage map updated', 'Documentation'],
   ['m3', 'coa', 'Location changed', 'Headquarters', 'São Paulo (Itaim)', 'São Paulo (Pinheiros)', 'Headquarters address updated', 'News'], ['m3', 'f01', 'Product renamed', 'Brand', 'Fibramax', 'Fibramax Telecom', 'Brand name updated', 'News'], ['m3', 'f09', 'Location changed', 'Headquarters', 'São José dos Campos', 'São Paulo', 'Headquarters moved', 'News'],
@@ -278,7 +278,7 @@ MISSIONS.forEach((m) => { m.changesWeek = CHANGES.filter((c) => c.missionId === 
 export const WATCHLISTS: Watchlist[] = [
   { id: 'w1', name: 'BI Competitors', entityIds: ['powerbi', 'tableau', 'qlik', 'looker', 'domo'], sources: 72, frequency: 'Daily', monitors: ['Pricing', 'Products', 'Features', 'Release Notes', 'Documentation', 'Integrations', 'Announcements'], missionId: 'm1' },
   { id: 'w2', name: 'Company A (deep watch)', entityIds: ['coa'], sources: 12, frequency: 'Daily', monitors: ['Pricing', 'Features', 'Documentation', 'Integrations'], missionId: 'm1' },
-  { id: 'w3', name: 'Fiber operators — São Paulo', entityIds: ['f01', 'f09', 'f18', 'f20', 'f28'], sources: 24, frequency: 'Daily', monitors: ['Locations', 'Products', 'Announcements'], missionId: 'm10' },
+  { id: 'w3', name: 'Fiber operators — São Paulo', entityIds: ['f01', 'f09', 'f18', 'f20', 'f27'], sources: 24, frequency: 'Daily', monitors: ['Locations', 'Products', 'Announcements'], missionId: 'm10' },
   { id: 'w4', name: 'Telecom regulation', entityIds: [], sources: 9, frequency: 'Daily', monitors: ['Regulations', 'Deadlines', 'Publications'], missionId: 'm4' },
 ];
 

@@ -168,6 +168,12 @@ function Crumbs({ path, reportName }: { path: string; reportName?: string }) {
   if (path.startsWith('/maps')) { const map = REPORTS.find((r) => path === `/maps/${r.id}`); parts.push({ label: t('navigation.maps'), to: '/maps' }, ...(map ? [{ label: map.name }] : [])); }
   if (path.startsWith('/workflows')) parts.push(path === '/workflows' ? { label: t('navigation.workflows') } : { label: t('navigation.workflows'), to: '/workflows' }, ...(path === '/workflows' ? [] : [{ label: t('navigation.workflowEditor') }]));
   if (path.startsWith('/migration')) parts.push(path === '/migration' ? { label: 'Migration Studio' } : { label: 'Migration Studio', to: '/migration' }, ...(path === '/migration' ? [] : [{ label: t('navigation.migrationProject') }]));
+  if (path.startsWith('/discovery')) {
+    const [, , sec, item] = path.split('/');
+    parts.push(sec ? { label: 'Discovery Studio', to: '/discovery' } : { label: 'Discovery Studio' });
+    if (sec) parts.push(item ? { label: sec.charAt(0).toUpperCase() + sec.slice(1), to: `/discovery/${sec}` } : { label: sec.charAt(0).toUpperCase() + sec.slice(1) });
+    if (item) parts.push({ label: decodeURIComponent(item) });
+  }
   if (path === '/') parts.push({ label: t('navigation.home') });
   return (
     <nav className="bw-crumbs" aria-label={t('navigation.youAreHere')}>

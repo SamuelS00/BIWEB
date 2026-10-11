@@ -1,0 +1,37 @@
+/* Explore: consulta que inicia uma investigação. Somente tokens; movimento só em opacity/width/stroke. */
+.ds-ex-q { display: grid; gap: 8px; }
+.ds-ex-field { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid var(--border-control); border-radius: var(--radius-md); background: var(--surface-panel); transition: border-color .2s ease, box-shadow .2s ease; }
+.ds-ex-field:focus-within { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.ds-ex-field label { color: var(--text-muted); font: 600 10px var(--font-sans); letter-spacing: .05em; text-transform: uppercase; }
+.ds-ex-row { display: flex; gap: 8px; align-items: center; }
+.ds-ex-row input { flex: 1; min-width: 0; height: 32px; border: 0; outline: 0; background: transparent; color: var(--text-primary); font: 500 15px var(--font-sans); }
+.ds-ex-row input::placeholder { color: var(--text-muted); }
+.ds-ex-sug { display: flex; flex-wrap: wrap; gap: 6px; }
+.ds-ex-sug button { max-width: 100%; padding: 3px 9px; border: 1px solid var(--border-subtle); border-radius: 12px; background: transparent; color: var(--text-secondary); font: 11px var(--font-sans); cursor: pointer; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds-ex-sug button:hover { border-color: var(--accent); color: var(--text-primary); } .ds-ex-sug button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.ds-ex-run { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 900px) { .ds-ex-run { grid-template-columns: 1fr; } }
+.ds-ex-plan { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; max-width: 520px; counter-reset: p; }
+.ds-ex-plan li { counter-increment: p; display: flex; gap: 10px; padding: 7px 12px; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); background: var(--surface-panel); font-size: 12px; }
+.ds-ex-plan li::before { content: counter(p); color: var(--text-muted); font: 600 11px var(--font-mono); width: 14px; }
+.ds-ex-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 8px 12px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--surface-panel); font-size: 12px; }
+.ds-ex-strip span { color: var(--text-muted); } .ds-ex-strip b { color: var(--text-primary); font: 600 15px var(--font-sans); margin-left: 4px; }
+.ds-ex-strip .is-hi b { color: var(--success); } .ds-ex-strip .is-mid b { color: var(--warning); } .ds-ex-strip .is-lo b { color: var(--danger); }
+.ds-ex-acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.ds-ex-two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 14px; } @media (max-width: 1000px) { .ds-ex-two { grid-template-columns: 1fr; } }
+.ds-ex-callout { display: flex; gap: 8px; align-items: flex-start; padding: 8px 12px; border: 1px solid var(--border-subtle); border-left: 3px solid var(--warning); border-radius: var(--radius-sm); background: var(--surface-panel); font-size: 12px; }
+.ds-ex-callout.is-ok { border-left-color: var(--success); } .ds-ex-callout svg { flex: none; margin-top: 2px; }
+.ds-ex-name { display: flex; flex-direction: column; min-width: 0; } .ds-ex-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-ex-name small { color: var(--text-muted); font-size: 10px; }
+.ds-ex-trunc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+.ds-ex-ent { text-align: left; cursor: pointer; } .ds-ex-ent:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; } .ds-ex-ent.is-on { border-color: var(--accent); }
+.ds-ex-cls { display: inline-flex; align-items: center; gap: 4px; }
+.ds-ex-mapw { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 12px; } @media (max-width: 900px) { .ds-ex-mapw { grid-template-columns: 1fr; } }
+.ds-ex-map { width: 100%; max-height: 520px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--surface-panel); }
+.ds-ex-map .g { stroke: var(--border-subtle); stroke-width: 1; fill: none; } .ds-ex-map .gl { fill: var(--text-muted); font: 9px var(--font-sans); }
+.ds-ex-map .pt { fill: var(--accent); fill-opacity: .85; stroke: var(--surface-panel); stroke-width: 1.5; cursor: pointer; } .ds-ex-map .pt:hover { fill-opacity: 1; }
+.ds-ex-map .pt.is-on { stroke: var(--text-primary); stroke-width: 2; } .ds-ex-map .pt:focus-visible { outline: none; stroke: var(--focus-ring); stroke-width: 3; }
+.ds-ex-map .pn { fill: var(--surface-panel); font: 600 10px var(--font-sans); pointer-events: none; text-anchor: middle; dominant-baseline: central; }
+.ds-ex-panel { padding: 10px 12px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--surface-panel); display: grid; gap: 8px; align-content: start; font-size: 12px; }
+.ds-ex-panel h4 { margin: 0; font: 600 13px var(--font-sans); }
+.ds-ex-fade { animation: ds-in .35s ease both; }
+@media (prefers-reduced-motion: reduce) { .ds-ex-fade { animation: none; } .ds-ex-field { transition: none; } }

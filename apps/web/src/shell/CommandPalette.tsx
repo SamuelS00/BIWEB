@@ -15,7 +15,7 @@ const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 
 /** Grupo é um id estável: a ordem e a lógica não dependem do rótulo traduzido. */
 type Group = 'reports' | 'actions' | 'editor' | 'copilot' | 'discovery';
-const GROUP_ID: Record<Group, MessageId> = { reports: 'palette.group.reports', actions: 'palette.group.actions', editor: 'palette.group.editor', copilot: 'palette.group.copilot', discovery: 'palette.group.discovery' };
+const GROUP_ID: Record<Group, MessageId> = { reports: 'palette.group.reports', actions: 'palette.group.actions', editor: 'palette.group.editor', copilot: 'palette.group.copilot', discovery: 'discovery.palette.group' };
 interface Item { group: Group; label: string; hint: string; thumb?: string; run: () => void }
 
 /** ⌘K: ir para relatórios, executar ações e perguntar ao Copilot. */
@@ -42,16 +42,16 @@ export function CommandPalette() {
       { group: 'actions', label: t('palette.action.newMigration'), hint: t('navigation.migration'), run: () => navigate({ to: '/migration' }) },
     ];
     const dsGo = (p: string) => () => navigate({ to: p as '/' });
-    const discoveryItems: Item[] = [
-      { group: 'discovery', label: t('palette.discovery.newMission'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/missions/new') },
-      { group: 'discovery', label: t('palette.discovery.explore'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/explore') },
-      { group: 'discovery', label: t('palette.discovery.watchlist'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/watchlists/new') },
-      { group: 'discovery', label: t('palette.discovery.compare'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/entities/compare') },
-      { group: 'discovery', label: t('palette.discovery.changes'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/changes') },
-      { group: 'discovery', label: t('palette.discovery.evidence'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/evidence') },
-      { group: 'discovery', label: t('palette.discovery.sendLde'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/datasets/enrichment') },
-      { group: 'discovery', label: t('palette.discovery.report'), hint: t('palette.hint.discovery'), run: dsGo('/discovery/datasets/ds1') },
-    ].filter((a) => !n || norm(a.label).includes(n) || norm('discovery').includes(n));
+    const discoveryItems = ([
+      { group: 'discovery', label: t('discovery.palette.newMission'), hint: t('discovery.palette.hint'), run: dsGo('/discovery/missions/new') },
+      { group: 'discovery', label: t('discovery.palette.explore'), hint: t('discovery.palette.hint'), run: dsGo('/discovery/explore') },
+      { group: 'discovery', label: t('discovery.palette.watchlist'), hint: t('discovery.palette.hint'), run: dsGo('/discovery/watchlists/new') },
+      { group: 'discovery', label: t('discovery.palette.compare'), hint: t('discovery.palette.hint'), run: dsGo('/discovery/entities/compare') },
+      { group: 'discovery', label: t('discovery.palette.changes'), hint: t('discovery.palette.hint'), run: dsGo('/discovery/changes') },
+      { group: 'discovery', label: t('discovery.palette.evidence'), hint: t('discovery.palette.hint'), run: dsGo('/discovery/evidence') },
+      { group: 'discovery', label: t('discovery.palette.sendLde'), hint: t('discovery.palette.hint'), run: dsGo('/discovery/datasets/enrichment') },
+      { group: 'discovery', label: t('discovery.palette.report'), hint: t('discovery.palette.hint'), run: dsGo('/discovery/datasets/ds1') },
+    ] as Item[]).filter((a) => !n || norm(a.label).includes(n) || norm('discovery').includes(n));
     const acts = actionItems.filter((a) => !n || norm(a.label).includes(n));
     const st = useEditor.getState();
     const editorItems: Item[] = [

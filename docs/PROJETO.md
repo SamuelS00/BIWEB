@@ -63,6 +63,7 @@ Se 5173 estiver ocupada o Vite sobe em outra porta: leia o log. Após editar uma
 | `/migration`, `/migration/$projectId` | Migration Studio: projetos e workspace de migração (lazy) | `routes/migration/` |
 | `/data`, `/connections` | **Data Workspace** (Living Data Engine): visão geral | `dataworkspace/` |
 | `/data/$section`, `/data/$section/$itemId` | Seções `sources`, `catalog`, `model`, `quality`, `published`, `transformations`, `lineage`, `enrichment`, `changes`, `runs`; `$itemId` = fonte, ativo, modelo, dataset, ChangeSet ou run | `dataworkspace/` |
+| `/discovery`, `/discovery/$section`, `/discovery/$section/$itemId` | **Discovery Studio** (BIWEB Discovery Engine, BDE): `explore`, `missions`, `watchlists`, `entities`, `sources`, `observations`, `changes`, `evidence`, `datasets`, `conflicts`, `policies`, `runs`, `settings`; `$itemId` = missão (`new` abre o wizard), watchlist, entidade (`compare`), fonte, observação, mudança, Evidence Pack, conflito, dataset (`enrichment`) ou run | `discovery/` |
 | `/models/$id` | Modelo semântico | `routes/model.tsx` |
 | `/copilot` | Copilot em tela cheia | `routes/copilot.tsx` |
 | `/apresentacao/` | Apresentação para clientes (estática, sem login, fora do roteador) | `public/apresentacao/` |
