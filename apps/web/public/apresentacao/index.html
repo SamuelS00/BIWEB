@@ -101,7 +101,6 @@ header.top .logo-d { display: none; } [data-theme="dark"] header.top .logo-l { d
 .prog { position: fixed; left: 0; top: 0; right: 0; height: 2px; z-index: 40; pointer-events: none; } .prog i { display: block; height: 100%; background: var(--acc); transform-origin: 0 50%; transform: scaleX(0); }
 header.top nav a { position: relative; transition: color .2s var(--e), background .2s var(--e); } header.top nav a.on { color: var(--t1); } header.top nav a.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: 2px; height: 2px; background: var(--acc); border-radius: 2px; }
 .btn-app { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 4px; background: var(--acc); color: var(--on); text-decoration: none; font-size: 12px; font-weight: 600; white-space: nowrap; } .btn-app:hover { background: var(--acc-h); }
-.numbers { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 28px 0 0; border: 1px solid var(--b1); border-radius: 6px; background: var(--panel); overflow: hidden; } .numbers div { padding: 14px 18px; border-right: 1px solid var(--b1); } .numbers div:last-child { border-right: 0; } .numbers b { display: block; font: 600 30px/36px "IBM Plex Sans", system-ui; letter-spacing: -.01em; font-variant-numeric: tabular-nums; } .numbers span { color: var(--t3); font-size: 12px; }
 .js .rv { opacity: 0; transform: translateY(18px); transition: opacity .65s var(--e), transform .65s var(--e); transition-delay: var(--d, 0ms); } .js .rv.in { opacity: 1; transform: none; }
 .js .shot .pin { opacity: 0; transform: translate(-50%, -50%) scale(.3); } .js .shot.in .pin { opacity: 1; transform: translate(-50%, -50%) scale(1); transition: opacity .3s var(--e), transform .5s cubic-bezier(.2, 1.5, .4, 1); transition-delay: calc(.6s + var(--i, 0) * .16s); }
 .js .col .ar.rv { transform: scaleY(.4); transform-origin: 50% 0; } .js .col .ar.rv.in { transform: none; }
@@ -109,7 +108,7 @@ header.top nav a { position: relative; transition: color .2s var(--e), backgroun
 .frame { cursor: zoom-in; } .frame img { transition: transform .8s var(--e); } .frame:hover img { transform: scale(1.012); } .frame:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; }
 .card, .panel, .vk, .nd { transition: transform .25s var(--e), border-color .25s var(--e); } .card:hover, .panel:hover, .vk:hover { transform: translateY(-2px); border-color: var(--b3); }
 .lb { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; background: rgba(8, 14, 22, .82); padding: 24px; } .lb.open { display: grid; animation: lbin .25s var(--e); } @keyframes lbin { from { opacity: 0; } } .lb img { max-width: min(96vw, 1600px); max-height: 88vh; width: auto; height: auto; border-radius: 6px; box-shadow: 0 24px 64px rgba(0,0,0,.5); background: var(--panel); } .lb button { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--b3); background: var(--panel); color: var(--t1); font-size: 18px; cursor: pointer; } .lb p { position: absolute; bottom: 14px; left: 0; right: 0; text-align: center; color: #fff; font-size: 13px; margin: 0; opacity: .8; }
-@media (max-width: 900px) { .numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); } .numbers div { border-bottom: 1px solid var(--b1); } .btn-app { display: none; } }
+@media (max-width: 900px) { .btn-app { display: none; } }
 @media (prefers-reduced-motion: reduce) { .js .rv, .js .shot .pin { opacity: 1 !important; transform: none !important; } .js .shot .pin { transform: translate(-50%, -50%) !important; } .prog { display: none; } }
 </style>
 </head>
@@ -127,7 +126,7 @@ header.top nav a { position: relative; transition: color .2s var(--e), backgroun
 <h1>Connect. Understand. Build. Operate.</h1>
 <p class="lead">O BIWEB conecta dados de qualquer origem, entende o que eles significam, constrói aplicações analíticas e operacionais, migra ambientes existentes e usa IA contextual para ajudar pessoas a criar, analisar e operar. Tudo na mesma plataforma.</p>
 <div class="btns"><a class="btn p" href="#ecossistema">Ver o ecossistema</a><a class="btn" href="#caso">Ver um caso completo</a></div>
-<div class="stage" aria-label="Ciclo da plataforma"><span>Connect</span><span>Understand</span><span>Build</span><span>Migrate</span><span>Analyze</span><span>Automate</span><span>Operate</span></div><div class="numbers" aria-label="O protótipo em números"><div><b data-count="18">18</b><span>fontes de exemplo</span></div><div><b data-count="118">118</b><span>conectores catalogados</span></div><div><b data-count="23">23</b><span>tipos de gráfico</span></div><div><b data-count="6">6</b><span>plataformas de BI migráveis</span></div><div><b data-count="3">3</b><span>Builders completos</span></div></div>
+<div class="stage" aria-label="Ciclo da plataforma"><span>Connect</span><span>Understand</span><span>Build</span><span>Migrate</span><span>Analyze</span><span>Automate</span><span>Operate</span></div>
 <figure class="shot mt"><div class="frame"><img class="im-l" src="img/home-l.jpg" width="1440" height="880" alt="Tela inicial do BIWEB: pulso do workspace, itens que precisam de atenção e atividade ao vivo" loading="lazy"><img class="im-d" src="img/home-d.jpg" width="1440" height="880" alt="Tela inicial do BIWEB: pulso do workspace, itens que precisam de atenção e atividade ao vivo" loading="lazy"><i class="pin" style="left:82.99%;top:14.55%">1</i><i class="pin" style="left:6.81%;top:65.68%">2</i><i class="pin" style="left:41.67%;top:34.09%">3</i><i class="pin" style="left:27.50%;top:95.23%">4</i></div><ol class="lg"><li><span><b>Precisa de atenção</b>: ocorrências, fluxos com falha e fontes desatualizadas num só lugar</span></li><li><span><b>Pulso do workspace</b>: dados, modelos, relatórios, mapas e fluxos juntos</span></li><li><span><b>Continue de onde parou</b>: um mapa operacional ao vivo</span></li><li><span><b>Copilot</b> sempre à mão, com o contexto da tela</span></li></ol></figure>
 <div class="legend-st"><b>Como ler este material:</b> <span class="lgi"><span class="st ok">Na demonstração</span>existe no protótipo navegável atual</span> <span class="lgi"><span class="st plan">Arquitetura aprovada</span>decisão de arquitetura aprovada, ainda não implementada</span> <span class="lgi"><span class="st road">Roadmap</span>planejado</span></div>
 </div></div>
@@ -204,7 +203,7 @@ try{
  function prog(){tick=false;var h=document.documentElement.scrollHeight-innerHeight;bar.style.transform='scaleX('+(h>0?Math.min(1,scrollY/h):0)+')';}
  addEventListener('scroll',function(){if(!tick){tick=true;requestAnimationFrame(prog);}},{passive:true});prog();
  /* entrada em cascata */
- var groups='.row3,.row4,.row6,.row8,.eng,.pillars,.srcgrid,.viz-grid,.story,.gal,.shots4,.stage,.numbers,.lg,.chips,.three-ent,.ba';
+ var groups='.row3,.row4,.row6,.row8,.eng,.pillars,.srcgrid,.viz-grid,.story,.gal,.shots4,.stage,.lg,.chips,.three-ent,.ba';
  var items=[];
  function rv(el,d){if(el.classList.contains('rv'))return;el.classList.add('rv');el.style.setProperty('--d',d+'ms');items.push(el);}
  $('.hero2 .wrap, .pg .wrap').forEach(function(w){Array.prototype.forEach.call(w.children,function(c,i){
@@ -213,11 +212,8 @@ try{
    else{rv(c,i<4?i*80:0);}
  });});
  $('.shot').forEach(function(sh){$('.pin',sh).forEach(function(p,i){p.style.setProperty('--i',i);});});
- var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);if(e.target.matches('.numbers div'))count(e.target);}});},{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12,rootMargin:'0px 0px -6% 0px'});
  items.forEach(function(el){io.observe(el);});
- /* contadores */
- function count(box){var n=$('[data-count]',box)[0];if(!n||n.dataset.done)return;n.dataset.done=1;var to=+n.dataset.count,t0=performance.now(),dur=1100;n.textContent='0';
-   (function f(t){var p=Math.min(1,(t-t0)/dur),v=Math.round(to*(1-Math.pow(1-p,3)));n.textContent=v.toLocaleString('pt-BR');if(p<1)requestAnimationFrame(f);})(t0);}
  setTimeout(function(){items.forEach(function(el){if(!el.classList.contains('in')){el.classList.add('in');}});},6000);
 }catch(err){r.classList.remove('js');}
 })();
