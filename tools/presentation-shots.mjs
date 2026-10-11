@@ -24,4 +24,14 @@ export default [
   ['mig-validation', '/migration/mp_commercial_ops', async (page) => { await page.getByRole('tab', { name: /Validação/ }).first().click().catch(() => page.getByText('Validação').first().click()); await page.waitForTimeout(800); }],
   ['mig-blueprint', '/migration/mp_commercial_ops', async (page) => { await page.getByRole('tab', { name: 'Blueprint' }).first().click().catch(() => page.getByText('Blueprint').first().click()); await page.waitForTimeout(800); }],
   ['copilot-home', '/', async (page) => { await page.getByRole('button', { name: 'Copilot' }).first().click(); await page.waitForTimeout(800); }],
+  // Discovery Studio (BDE)
+  ['bde-overview', '/discovery', null],
+  ['bde-explore', '/discovery/explore', async (page) => { await page.getByRole('button', { name: /Empresas que oferecem monitoramento/ }).first().click(); await page.waitForTimeout(9500); await page.getByRole('tab', { name: /^Table/ }).click(); await page.waitForTimeout(600); }],
+  ['bde-mission', '/discovery/missions/m1', null],
+  ['bde-watchlist', '/discovery/watchlists/w1', null],
+  ['bde-entity', '/discovery/entities/coa', async (page) => { await page.getByRole('tab', { name: /^Relationships/ }).click(); await page.waitForTimeout(1500); }],
+  ['bde-evidence', '/discovery/evidence/p-coa-rad', null],
+  ['bde-change', '/discovery/changes/c-coa-price', null],
+  ['bde-enrich', '/discovery/datasets/enrichment', async (page) => { await page.getByRole('button', { name: 'Preview' }).first().click().catch(() => {}); await page.waitForTimeout(600); }],
+  ['bde-copilot', '/discovery', async (page) => { await page.getByRole('button', { name: /Perguntar ao Copilot|Ask Copilot/ }).first().click(); await page.waitForTimeout(800); await page.getByText('O que mudou nos concorrentes esta semana?').first().click(); await page.waitForTimeout(2500); }],
 ];
