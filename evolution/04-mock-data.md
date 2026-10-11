@@ -3,7 +3,7 @@
 Todos os exemplos abaixo são demonstrativos, sem correspondência com rede ou clientes reais.
 
 ## Rede
-- Workspace: Operações de Rede · Virtsel Telecom.
+- Workspace: Operações de Rede · NovaLink Telecom.
 - Entidades: POP Lapa (normal), POP Barueri (atenção), POP Santo Amaro (normal); enlace `ENL-042` Barueri↔Osasco com 91% de utilização e saúde crítica; enlace `ENL-018` Lapa↔Paulista com 63% e normal.
 - Métricas publicadas: Utilização média (%), Disponibilidade (%), Enlaces críticos (contagem), Atenuação (dB). Saúde é estado discreto; utilização é escala sequencial.
 

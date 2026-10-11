@@ -68,7 +68,7 @@ const REGIONS: [string, number, number, string][] = [
   ['São Caetano', -23.623, -46.551, 'São Caetano do Sul'], ['Guarulhos', -23.454, -46.533, 'Guarulhos'],
 ];
 const POP_REGIONS = ['Sé', 'Barueri', 'Osasco', 'Pinheiros', 'Lapa', 'Santana', 'Tatuapé', 'Penha', 'Ipiranga', 'Santo Amaro', 'Jabaquara', 'Itaquera', 'São Miguel', 'Guarulhos', 'Santo André', 'São Bernardo', 'Campo Limpo', 'Pirituba'];
-const OWNERS = ['Virtsel Infra', 'Virtsel Infra', 'Virtsel Infra', 'MetroFibra (cessão)', 'TorreSul Compartilhada', 'Concessionária de Energia'];
+const OWNERS = ['NovaLink Infra', 'NovaLink Infra', 'NovaLink Infra', 'MetroFibra (cessão)', 'TorreSul Compartilhada', 'Concessionária de Energia'];
 const slug = (s: string) => s.replace(/'/g, '').replace(/\s+/g, '-');
 
 /** Voronoi por recorte de semiplanos (n = 42), limitado por um 20-gono em torno de cada centro → contorno orgânico da metrópole. */
@@ -118,7 +118,7 @@ export function generateNetwork(seed = 20261006): Network {
     const [lon, lat] = jitter(r, 0.006);
     const util = Math.round(45 + rnd() * 40);
     nodes.push({ id: `POP-${slug(name)}`, nome: `POP-${slug(name)}`, tipo: 'POP', subtipo: name === 'Sé' || name === 'Barueri' ? 'POP core' : 'POP metro', status: 'normal', capacidade: name === 'Sé' || name === 'Barueri' ? 400 : 100,
-      utilizacao: util, atenuacao_dB: 0, disponibilidade: 99.99, tecnologia: 'DWDM / IP-MPLS', criticidade: 'Alta', altura_m: 12, alarmes: 0, ...base(lon, lat), proprietario: 'Virtsel Infra' });
+      utilizacao: util, atenuacao_dB: 0, disponibilidade: 99.99, tecnologia: 'DWDM / IP-MPLS', criticidade: 'Alta', altura_m: 12, alarmes: 0, ...base(lon, lat), proprietario: 'NovaLink Infra' });
   }
   // 62 torres espalhadas pelas regiões (mais densas no centro expandido)
   const towerRegions = regions.flatMap((r, i) => (i < 35 ? [r, r] : [r])).sort(() => rnd() - 0.5).slice(0, 62);
@@ -127,7 +127,7 @@ export function generateNetwork(seed = 20261006): Network {
     const util = Math.round(25 + rnd() * 70);
     nodes.push({ id: `Torre SP-${String(i + 1).padStart(3, '0')}`, nome: `Torre SP-${String(i + 1).padStart(3, '0')}`, tipo: 'Torre', subtipo: rnd() < 0.3 ? 'Rooftop' : 'Greenfield',
       status: 'normal', capacidade: pick([10, 10, 25, 40]), utilizacao: util, atenuacao_dB: 0, disponibilidade: 99.9, tecnologia: pick(['5G NR 3,5 GHz', '4G LTE 2,6 GHz', '5G NR 3,5 GHz', 'Micro-ondas 18 GHz']),
-      criticidade: util > 75 ? 'Alta' : util > 50 ? 'Média' : 'Baixa', altura_m: Math.round(28 + rnd() * 34), alarmes: 0, ...base(lon, lat), proprietario: pick(['Virtsel Infra', 'TorreSul Compartilhada', 'Virtsel Infra']) });
+      criticidade: util > 75 ? 'Alta' : util > 50 ? 'Média' : 'Baixa', altura_m: Math.round(28 + rnd() * 34), alarmes: 0, ...base(lon, lat), proprietario: pick(['NovaLink Infra', 'TorreSul Compartilhada', 'NovaLink Infra']) });
   });
   // 48 equipamentos ancorados em POPs e torres
   const parents = [...nodes.filter((n) => n.tipo === 'POP'), ...nodes.filter((n) => n.tipo === 'Torre').slice(0, 20)];
@@ -167,7 +167,7 @@ export function generateNetwork(seed = 20261006): Network {
     const status = statusFrom(atn, util, rnd);
     const id = `ENL-${String(links.length + 1).padStart(4, '0')}`;
     links.push({ id, nome: `${a.nome} ↔ ${b.nome}`, tipo, camada, status, capacidade: cap, utilizacao: Math.min(99, util), atenuacao_dB: atn, disponibilidade: disp(status, rnd),
-      proprietario: camada === 'Backbone' ? 'Virtsel Infra' : pick(OWNERS.slice(0, 4)), tecnologia: tipo === 'Rádio' ? 'Micro-ondas 18 GHz' : camada === 'Backbone' ? 'DWDM 100G' : camada === 'Metro' ? 'Ethernet 100G' : pick(['GPON', 'Ethernet 10G', 'XGS-PON']),
+      proprietario: camada === 'Backbone' ? 'NovaLink Infra' : pick(OWNERS.slice(0, 4)), tecnologia: tipo === 'Rádio' ? 'Micro-ondas 18 GHz' : camada === 'Backbone' ? 'DWDM 100G' : camada === 'Metro' ? 'Ethernet 100G' : pick(['GPON', 'Ethernet 10G', 'XGS-PON']),
       criticidade: camada === 'Backbone' ? 'Alta' : camada === 'Metro' ? 'Média' : (util > 75 ? 'Média' : 'Baixa'), regiao: a.regiao, origem: a.id, destino: b.id,
       extensao_km: r2(ext), fibras: tipo === 'Rádio' ? 0 : camada === 'Backbone' ? 144 : camada === 'Metro' ? 48 : 12,
       lat: Math.round(((a.lat + b.lat) / 2) * 1e4) / 1e4, lon: Math.round(((a.lon + b.lon) / 2) * 1e4) / 1e4, geometria: geo.map(([x, y]) => [Math.round(x * 1e5) / 1e5, Math.round(y * 1e5) / 1e5]) });

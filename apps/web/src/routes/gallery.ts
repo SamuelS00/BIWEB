@@ -10,7 +10,7 @@ export interface GalleryItem {
   id: string; name: string; description: string; category: string; type: string; status: 'Publicado' | 'Rascunho' | 'Depreciado';
   version?: string; certified?: boolean; owner: string; updated: string; updatedOrder: number; cover: (small?: boolean) => string; views: number; origin?: 'copilot'; pages: number;
 }
-export const WORKSPACES = { rede: { label: 'Operações de Rede', company: 'Virtsel Telecom' }, comercial: { label: 'Comercial', company: 'Lume Varejo' } } as const;
+export const WORKSPACES = { rede: { label: 'Operações de Rede', company: 'NovaLink Telecom' }, comercial: { label: 'Comercial', company: 'Lume Varejo' } } as const;
 
 export function useGallery(): GalleryItem[] {
   const ws = useUi((s) => s.workspace);
