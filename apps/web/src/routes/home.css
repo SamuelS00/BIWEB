@@ -217,3 +217,17 @@
 .pz-create button { border-radius: var(--radius-sm); }
 .pz-create button svg, .pz-dock-pop li button svg:first-child { color: var(--text-secondary); }
 @media (max-width: 1100px) { .pz-media { height: 280px; } }
+
+/* Carrossel da retomada: troca automática entre mapa, relatório e fluxo, com transição suave e progresso em cada aba. */
+.pz-slide { position: absolute; inset: 0; background-color: var(--surface-canvas); animation: pz-slide-in 520ms var(--easing-enter) both; } .pz-slide--out { animation: pz-slide-out 520ms var(--easing-standard) both; pointer-events: none; z-index: 0; }
+@keyframes pz-slide-in { from { opacity: 0; transform: translateX(20px) scale(1.015); } to { opacity: 1; transform: none; } }
+@keyframes pz-slide-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(-20px) scale(.992); } }
+.pz-hero-text { animation: pz-text-in 420ms var(--easing-enter) both; } @keyframes pz-text-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.pz-media-top { z-index: 3; } .pz-car { pointer-events: auto; display: inline-flex; align-items: center; gap: 2px; padding: 2px; height: 26px; border-radius: 13px; background: rgba(8, 12, 18, .72); backdrop-filter: blur(6px); }
+.pz-car-tab, .pz-car-pp { position: relative; display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border: 0; border-radius: 11px; background: transparent; color: rgba(255, 255, 255, .72); font: 500 11px/16px var(--font-sans); cursor: pointer; transition: color 160ms var(--easing-standard), background 160ms var(--easing-standard); }
+.pz-car-tab:hover, .pz-car-pp:hover { color: #fff; background: rgba(255, 255, 255, .1); } .pz-car-tab.is-on { color: #fff; font-weight: 600; background: rgba(255, 255, 255, .14); } .pz-car-tab:focus-visible, .pz-car-pp:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pz-car-bar { position: absolute; left: 9px; right: 9px; bottom: 1px; height: 2px; border-radius: 1px; background: transparent; overflow: hidden; } .pz-car-tab.is-on .pz-car-bar { background: rgba(255, 255, 255, .22); }
+.pz-car-bar b { display: block; height: 100%; background: #fff; transform: scaleX(0); transform-origin: left; }
+.pz-car-pp { width: 22px; padding: 0; justify-content: center; margin-left: 2px; } .pz-pause { width: 8px; height: 10px; border-left: 2px solid currentColor; border-right: 2px solid currentColor; box-sizing: border-box; }
+@media (max-width: 520px) { .pz-car-tab { padding: 0 6px; } .pz-car-tab svg { display: none; } }
+@media (prefers-reduced-motion: reduce) { .pz-slide, .pz-slide--out, .pz-hero-text { animation: none; } .pz-slide--out { display: none; } }

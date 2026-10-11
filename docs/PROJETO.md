@@ -54,7 +54,7 @@ Se 5173 estiver ocupada o Vite sobe em outra porta: leia o log. Após editar uma
 | Rota | Tela | Arquivo principal |
 |---|---|---|
 | `/login` | Login (rota inicial, guarda de auth no `beforeLoad` da raiz) | `routes/login/` |
-| `/` | Home — Workspace Pulse | `routes/home.tsx`, `home-model.ts` |
+| `/` | Home — Workspace Pulse; "Continue de onde parou" é um carrossel (mapa → relatório → fluxo, 7 s, pausa com mouse/foco/botão, setas do teclado, sem autoplay com movimento reduzido) | `routes/home.tsx` (`Continue`), `home-model.ts`, `home.css` |
 | `/reports` | Catálogo de relatórios | `routes/reports.tsx` |
 | `/reports/$id` | Relatório aberto | `routes/report-route.tsx`, `editor/ReportView.tsx` |
 | `/reports/$id/edit` | Editor (lazy) | `editor/EditorPage.tsx` |

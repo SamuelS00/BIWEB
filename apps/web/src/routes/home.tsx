@@ -33,7 +33,11 @@ export function HomePage() {
   const [kind, setKind] = useStored<WorkKind>('biweb.home.last', 'map');
   const model = useHomeModel(ws, gallery);
   const live = useLive(ws);
-  const work = model.lastWork[kind];
+  // Carrossel da retomada: mapa → relatório → fluxo. O "último trabalho" escolhido na simulação entra na lista e abre o carrossel nele.
+  const [slide, setSlide] = useState<WorkKind>(kind);
+  useEffect(() => { setSlide(kind); }, [kind]);
+  const slides = useMemo<WorkKind[]>(() => { const base: WorkKind[] = ['map', 'dashboard', 'workflow']; return base.includes(kind) ? base : [...base, kind]; }, [kind]);
+  const work = model.lastWork[slide];
   const empty = state === 'new';
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -74,7 +78,7 @@ export function HomePage() {
 
       {state === 'active' && <>
         <div className="pz-top">
-          <Continue w={work} live={live.refresh} now={live.now} onAsk={() => askCopilot(work.ask)} aiEnabled={aiEnabled} />
+          <Continue works={model.lastWork} slides={slides} active={slide} onChange={setSlide} live={live.refresh} now={live.now} onAsk={() => askCopilot(work.ask)} aiEnabled={aiEnabled} />
           <AttentionList title="Precisa de atenção" rows={model.attention.map((a) => ({ id: a.id, tone: a.tone, title: a.title, detail: a.detail, action: a.action, to: a.to }))} />
         </div>
         <Pulse model={model} gallery={gallery} live={live} empty={false} ws={ws} />
@@ -104,20 +108,75 @@ export function HomePage() {
 const secs = (now: number, at: number) => Math.max(0, Math.round((now - at) / 1000));
 const toneCls = (t?: Stat['tone']) => `pz-tone--${t ?? 'info'}`;
 
-function Continue({ w, live, now, onAsk, aiEnabled }: { w: LastWork; live: { at: number; n: number }; now: number; onAsk: () => void; aiEnabled: boolean }) {
+const SLIDE_MS = 7000;
+const SLIDE_LABEL: Record<WorkKind, string> = { map: 'Mapa', dashboard: 'Relatório', workflow: 'Fluxo', dataset: 'Dataset', model: 'Modelo' };
+
+/** Retomada em carrossel: alterna entre mapa, relatório e fluxo sozinho (pausa com o mouse, o foco ou o botão), e cada visão leva ao próprio objeto. */
+function Continue({ works, slides, active, onChange, live, now, onAsk, aiEnabled }: { works: Record<WorkKind, LastWork>; slides: WorkKind[]; active: WorkKind; onChange: (k: WorkKind) => void; live: { at: number; n: number }; now: number; onAsk: () => void; aiEnabled: boolean }) {
+  const w = works[active];
   const s = secs(now, live.at);
+  const reduce = useMemo(() => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches, []);
+  const [userPaused, setUserPaused] = useState(reduce);
+  const [hold, setHold] = useState(false);
+  const paused = userPaused || hold;
+  const pausedRef = useRef(paused); pausedRef.current = paused;
+  const bars = useRef<Partial<Record<WorkKind, HTMLElement | null>>>({});
+  const elapsed = useRef(0);
+  const [leaving, setLeaving] = useState<LastWork | null>(null);
+  const prev = useRef(active);
+
+  /* a saída da visão anterior dura o tempo da transição; o relógio recomeça a cada troca */
+  useEffect(() => {
+    elapsed.current = 0;
+    if (prev.current === active) return;
+    if (!reduce) { setLeaving(works[prev.current]); const t = setTimeout(() => setLeaving(null), 520); prev.current = active; return () => clearTimeout(t); }
+    prev.current = active;
+  }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    let raf = 0, last = performance.now();
+    const tick = (t: number) => {
+      const dt = Math.min(100, t - last); last = t;
+      if (!pausedRef.current && !document.hidden) {
+        elapsed.current += dt;
+        if (elapsed.current >= SLIDE_MS) { elapsed.current = 0; onChange(slides[(slides.indexOf(active) + 1) % slides.length]!); }
+      }
+      for (const k of slides) { const b = bars.current[k]; if (b) b.style.transform = `scaleX(${k === active ? Math.min(1, elapsed.current / SLIDE_MS) : 0})`; }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active, slides, onChange]);
+
+  const step = (d: number) => onChange(slides[(slides.indexOf(active) + d + slides.length) % slides.length]!);
+  const idx = slides.indexOf(active);
   return (
-    <section className="pz-hero" aria-label="Continue de onde parou">
-      <div className={`pz-media pz-media--${w.kind}`}>
-        <PreviewFor p={w.preview} />
-        {w.live && <i key={live.n} className="pz-sweep" aria-hidden="true" />}
+    <section className="pz-hero" aria-roledescription="carousel" aria-label="Continue de onde parou"
+      onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)} onFocus={() => setHold(true)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHold(false); }}
+      onKeyDown={(e) => { if (e.key === 'ArrowRight') { e.preventDefault(); step(1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); } }}>
+      <div className="pz-media">
+        {leaving && <div className={`pz-slide pz-slide--out pz-media--${leaving.kind}`} aria-hidden="true"><PreviewFor p={leaving.preview} /></div>}
+        <div key={active} className={`pz-slide pz-media--${w.kind}`} role="group" aria-roledescription="slide" aria-label={`${idx + 1} de ${slides.length}: ${SLIDE_LABEL[active]}`}>
+          <PreviewFor p={w.preview} />
+          {w.live && <i key={live.n} className="pz-sweep" aria-hidden="true" />}
+          <ul className="pz-chips">{w.stats.map((x) => <li key={x.label} className={toneCls(x.tone)}><b key={x.value}>{x.value}</b>{x.label}</li>)}</ul>
+        </div>
         <div className="pz-media-top">
           {w.live ? <span className="pz-live"><i />Ao vivo<small>{s < 5 ? 'atualizado agora' : `há ${s} s`}</small></span> : <span />}
+          <div className="pz-car" role="group" aria-label="Escolher a visão">
+            {slides.map((k) => (
+              <button key={k} type="button" className={`pz-car-tab${k === active ? ' is-on' : ''}`} aria-pressed={k === active} onClick={() => onChange(k)}>
+                <Icon name={KIND[k].icon} size={12} />{SLIDE_LABEL[k]}
+                <i className="pz-car-bar" aria-hidden="true"><b ref={(el) => { bars.current[k] = el; }} /></i>
+              </button>
+            ))}
+            <button type="button" className="pz-car-pp" aria-label={userPaused ? 'Reproduzir o carrossel' : 'Pausar o carrossel'} aria-pressed={userPaused} onClick={() => setUserPaused(!userPaused)}>
+              {userPaused ? <Icon name="play" size={12} /> : <span className="pz-pause" aria-hidden="true" />}
+            </button>
+          </div>
         </div>
-        <ul className="pz-chips">{w.stats.map((x) => <li key={x.label} className={toneCls(x.tone)}><b key={x.value}>{x.value}</b>{x.label}</li>)}</ul>
       </div>
-      <div className="pz-hero-body">
-        <div className="pz-hero-text">
+      <div className="pz-hero-body" aria-live={paused ? 'polite' : 'off'}>
+        <div key={active} className="pz-hero-text">
           <span className="pz-kicker"><Icon name={KIND[w.kind].icon} size={12} />Continue de onde parou<em>{KIND[w.kind].label}</em></span>
           <h1>{w.title}</h1>
           <p>{w.sub} · editado {w.edited}</p>

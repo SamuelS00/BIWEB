@@ -147,6 +147,7 @@ Pacote `packages/assistant-ui` + motor de exemplo no app (`copilot/engine.ts`): 
 | Documentação desatualizada em relação às rotas | `tools/check-docs.mjs` roda no CI e falha se uma rota não estiver na doc; regras para agentes em `AGENTS.md` | `tools/check-docs.mjs`, `AGENTS.md`, `CLAUDE.md` |
 | Apresentação só cobria o Data Workspace e usava mockups | `apps/web/public/apresentacao/index.html` (endpoint `/apresentacao/`) reescrita: 26 blocos, motores (LDE, BCE, Migration, Copilot), Builders, caso completo e **capturas reais** geradas por script, com selos Na demonstração / Arquitetura proposta / Roadmap | `docs/apresentacao/`, `tools/capture-presentation.mjs` |
 | Canvas do Modelo e da Linhagem: ajuste ao abrir, centro em coluna de 0 px com a navegação recolhida | `fit` após medir e ao redimensionar; colunas do grid explícitas; alinhamento ao topo | `dataworkspace/Canvas.tsx`, `dataworkspace.css` |
+| Home estática na retomada | Carrossel animado alterna mapa, relatório e fluxo (transição em fade/deslizamento, progresso por aba, pausa e acessível); o "último trabalho" da simulação define a visão inicial | `routes/home.tsx`, `routes/home.css` |
 | Arquivos obsoletos na raiz | Removidos `design-output/` e `design-handoff.zip` | commit `6fe824a` |
 
 
