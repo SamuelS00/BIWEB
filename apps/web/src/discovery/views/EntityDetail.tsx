@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Badge, Button, Icon } from '@biweb/ui';
 import { EVIDENCE_PACKS, SOURCES, score, stamp } from '../data/seed';
-import { ago, changesOf, entityById, observationsOf, relationsOf } from '../data/derive';
+import { ago, changesOf, entityById, evidenceById, observationsOf, relationsOf } from '../data/derive';
 import { monthDay } from '../data/records';
 import type { EntityCandidate, Observation } from '../data/types';
 import { useDs } from '../store';
@@ -16,6 +16,8 @@ const TABS: Tab[] = ['overview', 'facts', 'products', 'relationships', 'changes'
 
 /** Evidência de um fato de conhecimento: só aparece quando existe uma observação/mudança que o sustente. */
 function evidenceFor(e: EntityCandidate, key: string): string | undefined {
+  const known = evidenceById(`e-${e.id}-k-${key}`);
+  if (known) return known.id;
   const obs = observationsOf(e.id), chg = changesOf(e.id);
   const re: Record<string, RegExp> = { Products: /price|pricing/i, Integrations: /connector|integration/i, Locations: /offices|points of presence/i };
   const o = re[key] ? obs.find((x) => re[key]!.test(x.claim)) : undefined;
@@ -64,7 +66,7 @@ export function EntityDetail({ id }: { id: string }) {
 }
 
 function Overview({ e }: { e: EntityCandidate }) {
-  const facts: [string, string][] = [['Headquarters', e.hq ?? '—'], ['Industry', e.industry ?? '—'], ['Products', e.products.join(', ') || '—'], ['Integrations', e.integrations.join(', ') || '—'], ['Locations', String(e.locations)], ['Sources', String(e.sources)]];
+  const facts: [string, string][] = [['Headquarters', e.hq ?? '—'], ['Industry', e.industry ?? '—'], ['Products', e.products.join(', ') || '—'], ['Integrations', e.integrations.join(', ') || '—'], ['Locations', String(e.locations)]];
   return (
     <>
       <div className="dw-grid2">

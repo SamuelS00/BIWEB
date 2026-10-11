@@ -26,7 +26,7 @@ interface S {
 }
 let tid = 0;
 export const useDs = create<S>((set, get) => ({
-  leftOpen: true, rightOpen: true, setPane: (p) => set(p),
+  leftOpen: true, rightOpen: false, setPane: (p) => set(p),
   sel: null, select: (sel, openRight = true) => set(openRight && sel ? { sel, rightOpen: true } : { sel }),
   context: 'Discovery Studio', setContext: (context) => set({ context }),
   resolved: {}, resolve: (id, pick) => set((s) => ({ resolved: { ...s.resolved, [id]: pick } })),

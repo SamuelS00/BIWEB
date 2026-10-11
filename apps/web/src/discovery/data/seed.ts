@@ -199,6 +199,14 @@ ENTITIES.filter((e) => e.id.startsWith('f')).forEach((e, i) => {
   ob({ id: `o-${e.id}-loc`, subjectId: e.id, subject: e.name, claim: 'Points of presence', value: `${e.locations}`, observedAt: stamp(600 + i * 90), sourceId: srcId, evidenceIds: [evId], confidence: cf(good ? 96 : mid ? 70 : 50, good ? 92 : 75, good ? 80 : mid ? 55 : 25, 88, good ? 95 : mid ? 82 : 60), extraction: 'Structured HTML', corroboration: good ? 2 : 1, missionId: 'm2', history: [{ at: day(30), value: String(Math.max(1, e.locations - 1)) }, { at: day(1), value: String(e.locations) }] });
 });
 
+// Evidência de conhecimento da entidade (cabeçalho do perfil): captura da fonte oficial, uma por fato.
+ENTITIES.filter((e) => e.type === 'Organization' && e.hq).forEach((e, i) => {
+  const sid = (e.id === 'coa' ? 's-coa-site' : SOURCES.find((x) => x.entityId === e.id && x.type !== 'Pricing Page')?.id);
+  if (!sid) return;
+  const facts: [string, string, string][] = [['Headquarters', `Headquarters: ${e.hq}.`, 'About › Contact'], ['Industry', `${e.name} — ${e.industry ?? 'Business'} company.`, 'Home › tagline'], ['Locations', `${e.locations} locations listed.`, 'About › Offices'], ['Products', e.products.join(' · '), 'Products › index'], ['Integrations', e.integrations.join(' · ') || 'n/a', 'Integrations › index']];
+  facts.forEach(([k, excerpt, loc]) => { if (e.id.startsWith('f') && (k === 'Integrations')) return; ev(`e-${e.id}-k-${k}`, sid, 'Primary', 'high', 'web', excerpt, loc, 900 + i * 40); });
+});
+
 export const EVIDENCE_PACKS: EvidencePack[] = [
   { id: 'p-coa-rad', claim: 'Company A launched realtime anomaly detection.', subjectId: 'coa', evidence: ['e-coa-rad-docs', 'e-coa-rad-notes', 'e-coa-rad-news'], firstObserved: '2026-10-09', lastConfirmed: '2026-10-11', contradictions: 'None' },
   { id: 'p-coa-price', claim: 'Company A disclosed Enterprise pricing: starting at $2,500/month.', subjectId: 'coa', evidence: ['e-coa-price'], firstObserved: '2026-10-11', lastConfirmed: '2026-10-11', contradictions: 'None' },

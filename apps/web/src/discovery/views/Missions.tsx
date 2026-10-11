@@ -57,7 +57,7 @@ function MissionDetail({ id }: { id: string }) {
   const paused = useDs((s) => !!s.paused[id]);
   const [tab, setTab] = useState<Tab>('overview');
   const data = useMemo(() => {
-    const ents = ENTITIES.filter((e) => e.missionIds.includes(id));
+    const ents = ENTITIES.filter((e) => (m?.entityIds.length ? m.entityIds.includes(e.id) : e.missionIds.includes(id)));
     const srcs = SOURCES.filter((s) => s.usedBy.includes(id));
     const obs = OBSERVATIONS.filter((o) => o.missionId === id);
     const chg = CHANGES.filter((c) => c.missionId === id).sort((a, b) => a.detectedMin - b.detectedMin);
