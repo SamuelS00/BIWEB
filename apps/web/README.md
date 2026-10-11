@@ -21,6 +21,8 @@ Tabela completa de rotas e mapa da arquitetura: [`docs/PROJETO.md`](../../docs/P
 | Migração | `/migration`, `/migration/:projectId` | `src/routes/migration/` |
 | Copilot e login | `/copilot`, `/login` | `src/routes/copilot.tsx`, `src/routes/login/` |
 
+**Idiomas:** pt-BR (padrão), en e es. Textos em `src/i18n/messages/` (um arquivo por domínio), formatação em `src/i18n/format.ts` e termos em `src/i18n/glossary.ts`. Regras em [`docs/PROJETO.md`](../../docs/PROJETO.md) §6.
+
 O workspace usa tiles do OpenStreetMap como contexto cartográfico, com atribuição visível. Ativos, telemetria, fluxos e incidentes são simulados no cliente; o protótipo não requer backend.
 
 ⌘K abre a busca de relatórios e ações e permite perguntar ao Copilot. O Copilot usa um **motor de exemplo** (`src/copilot/engine.ts`) com respostas sobre os dados do Lume Varejo; em produção, a mesma interface fala com a Assistant API.

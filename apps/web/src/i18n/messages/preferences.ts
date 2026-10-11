@@ -1,0 +1,55 @@
+import type { Locale } from '../locales';
+
+/** Popover "Exibição e preferências" do shell. */
+const pt = {
+  'preferences.trigger': 'Exibição e preferências',
+  'preferences.title': 'Exibição',
+  'preferences.language': 'Idioma',
+  'preferences.appTheme': 'Tema do app',
+  'preferences.appTheme.system': 'Sistema',
+  'preferences.appTheme.light': 'Claro',
+  'preferences.appTheme.dark': 'Escuro',
+  'preferences.dashTheme': 'Tema dos relatórios',
+  'preferences.dashTheme.light': 'Relatório claro',
+  'preferences.dashTheme.dark': 'Relatório escuro',
+  'preferences.density': 'Densidade',
+  'preferences.density.default': 'Padrão',
+  'preferences.density.compact': 'Compacta',
+  'preferences.copilot': 'Copilot (assistente de IA)',
+} as const;
+
+export const preferences = {
+  'pt-BR': pt,
+  en: {
+    'preferences.trigger': 'Display and preferences',
+    'preferences.title': 'Display',
+    'preferences.language': 'Language',
+    'preferences.appTheme': 'App theme',
+    'preferences.appTheme.system': 'System',
+    'preferences.appTheme.light': 'Light',
+    'preferences.appTheme.dark': 'Dark',
+    'preferences.dashTheme': 'Report theme',
+    'preferences.dashTheme.light': 'Light report',
+    'preferences.dashTheme.dark': 'Dark report',
+    'preferences.density': 'Density',
+    'preferences.density.default': 'Default',
+    'preferences.density.compact': 'Compact',
+    'preferences.copilot': 'Copilot (AI assistant)',
+  },
+  es: {
+    'preferences.trigger': 'Visualización y preferencias',
+    'preferences.title': 'Visualización',
+    'preferences.language': 'Idioma',
+    'preferences.appTheme': 'Tema de la app',
+    'preferences.appTheme.system': 'Sistema',
+    'preferences.appTheme.light': 'Claro',
+    'preferences.appTheme.dark': 'Oscuro',
+    'preferences.dashTheme': 'Tema de los informes',
+    'preferences.dashTheme.light': 'Informe claro',
+    'preferences.dashTheme.dark': 'Informe oscuro',
+    'preferences.density': 'Densidad',
+    'preferences.density.default': 'Estándar',
+    'preferences.density.compact': 'Compacta',
+    'preferences.copilot': 'Copilot (asistente de IA)',
+  },
+} satisfies Record<Locale, Record<keyof typeof pt, string>>;

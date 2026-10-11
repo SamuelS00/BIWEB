@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 import type { CopilotMessage } from '@biweb/assistant-ui';
+import { resolveLocale, type Locale } from '../i18n/locales';
 
-/** Estado efêmero de UI (docs/architecture/04 §7.3): tema, densidade, painéis, Copilot. O documento do dashboard NÃO vive aqui. */
+/** Estado efêmero de UI (docs/architecture/04 §7.3): tema, densidade, painéis, Copilot, idioma. O documento do dashboard NÃO vive aqui. */
 type Theme = 'light' | 'dark';
 interface UiState {
+  locale: Locale;
   appTheme: Theme | 'system';
   dashTheme: Theme;
   density: 'default' | 'compact';
@@ -26,11 +28,12 @@ const stored = <T,>(k: string, d: T): T => { try { const v = localStorage.getIte
 const persist = (k: string, v: unknown) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* armazenamento indisponível */ } };
 
 export const useUi = create<UiState>((set, get) => ({
+  locale: resolveLocale(stored<string | null>('biweb.locale', null), typeof navigator !== 'undefined' ? navigator.languages : []),
   appTheme: 'system', dashTheme: 'light', density: 'default', aiEnabled: true, panes: ['dados', 'inspector'],
   copilotOpen: false, copilotPrompt: null, copilotMessages: [],
   favorites: stored('biweb.favorites', ['rpt_visao_executiva', 'rpt_fechamento_set', 'net_operacoes', 'net_geografica']),
   reportsView: stored('biweb.reportsView', 'grid'), paletteOpen: false, workspace: stored('biweb.workspace', 'rede'),
-  set: (p) => { set(p); if (p.reportsView) persist('biweb.reportsView', p.reportsView); if (p.workspace) persist('biweb.workspace', p.workspace); },
+  set: (p) => { set(p); if (p.reportsView) persist('biweb.reportsView', p.reportsView); if (p.workspace) persist('biweb.workspace', p.workspace); if (p.locale) persist('biweb.locale', p.locale); },
   togglePane: (id) => set((s) => ({ panes: s.panes.includes(id) ? s.panes.filter((x) => x !== id) : [...s.panes, id] })),
   toggleFavorite: (id) => { const f = get().favorites.includes(id) ? get().favorites.filter((x) => x !== id) : [...get().favorites, id]; persist('biweb.favorites', f); set({ favorites: f }); },
   askCopilot: (text) => set({ copilotOpen: true, copilotPrompt: { text, nonce: Date.now() } }),

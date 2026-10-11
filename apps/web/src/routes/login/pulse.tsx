@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Icon, type IconName } from '@biweb/ui';
+import { useFormat, useT, type T } from '../../i18n/intl';
 
 /** Product Pulse: composição viva (dados → modelo → relatório, mapa e fluxo) com os mesmos componentes do produto, em escala reduzida. */
 export type PulseMode = 'idle' | 'connecting' | 'connected';
@@ -49,12 +50,13 @@ export function BiwebMark({ state = 'done', size = 16 }: { state?: 'loading' | '
   );
 }
 
-const CHAIN = ['Dados', 'Modelos', 'Relatórios', 'Mapas', 'Fluxos', 'Operações'];
+const CHAIN = ['pulse.chain.data', 'pulse.chain.models', 'pulse.chain.reports', 'pulse.chain.maps', 'pulse.chain.workflows', 'pulse.chain.operations'] as const;
 /** Cadeia do produto em uma linha: aparece uma vez, em ordem, e fica quieta. */
 export function Chain({ className = '' }: { className?: string }) {
+  const t = useT();
   return (
-    <ol className={`lp-chain ${className}`} aria-label="Dados, modelos, relatórios, mapas, fluxos e operações">
-      {CHAIN.map((c, i) => <li key={c} style={{ '--i': i } as CSSProperties}><i aria-hidden="true" />{c}</li>)}
+    <ol className={`lp-chain ${className}`} aria-label={t('pulse.chainLabel')}>
+      {CHAIN.map((c, i) => <li key={c} style={{ '--i': i } as CSSProperties}><i aria-hidden="true" />{t(c)}</li>)}
     </ol>
   );
 }
@@ -74,13 +76,15 @@ function Node({ id, cat, icon, type, name, line, dot, converge, children, classN
   );
 }
 
-const nfmt = (v: number, d = 2) => v.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
 const sparkPath = (pts: number[], w: number, h: number) => pts.map((v, i) => `${i ? 'L' : 'M'}${((i / (pts.length - 1)) * w).toFixed(1)} ${(h - (v / 100) * h).toFixed(1)}`).join('');
 const MARKERS: [number, number][] = [[46, 30], [92, 58], [140, 36], [178, 70], [118, 78], [64, 74], [206, 40], [28, 62]];
-const FLOW_STEPS = ['Coletar', 'Validar', 'Aprovar', 'Publicar'];
-const now = () => new Date().toLocaleTimeString('pt-BR');
+const FLOW_STEPS = ['pulse.flow.collect', 'pulse.flow.validate', 'pulse.flow.approve', 'pulse.flow.publish'] as const;
 
 export function ProductPulse({ mode }: { mode: PulseMode }) {
+  const t: T = useT();
+  const f = useFormat();
+  const nfmt = (v: number, d = 2) => f.decimal(v, d);
+  const now = () => f.time(Date.now());
   const reduced = useReducedMotion();
   const host = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -156,17 +160,17 @@ export function ProductPulse({ mode }: { mode: PulseMode }) {
           ))}
         </svg>
 
-        <Node id="s1" cat="var(--brand-slate)" icon="data" type="Fonte de dados" name="PostgreSQL · vendas" converge={pull('s1')} dot={on ? 'ok' : 'busy'}
-          line={on ? 'Conectado · 42 ms' : 'Conectando…'} />
-        <Node id="s2" cat="var(--brand-slate)" icon="data" type="Fonte de dados" name="API · ERP Lume" converge={pull('s2')} dot={on ? 'ok' : 'busy'}
-          line={on ? 'Conectado · 118 ms' : 'Conectando…'} className="d2" />
-        <Node id="n" cat="var(--brand-teal)" icon="bolt" type="Transformação" name="Normalizar" converge={pull('n')} dot={step < 4 ? 'off' : norm}
-          line={step < 4 ? 'Aguardando' : norm === 'busy' ? 'Processando…' : `Pronto · ${nfmt(rows)} M linhas`} />
-        <Node id="m" cat="var(--accent)" icon="model" type="Modelo semântico" name="Vendas Varejo" converge={{ x: 0, y: 0 }} dot={ready ? 'ok' : 'off'}
-          line={ready ? 'Pronto · 14 métricas' : 'Aguardando'} className="is-model" />
+        <Node id="s1" cat="var(--brand-slate)" icon="data" type={t('pulse.source')} name="PostgreSQL · vendas" converge={pull('s1')} dot={on ? 'ok' : 'busy'}
+          line={on ? `${t('pulse.connected')} · 42 ms` : t('pulse.connecting')} />
+        <Node id="s2" cat="var(--brand-slate)" icon="data" type={t('pulse.source')} name="API · ERP Lume" converge={pull('s2')} dot={on ? 'ok' : 'busy'}
+          line={on ? `${t('pulse.connected')} · 118 ms` : t('pulse.connecting')} className="d2" />
+        <Node id="n" cat="var(--brand-teal)" icon="bolt" type={t('pulse.transform')} name="Normalizar" converge={pull('n')} dot={step < 4 ? 'off' : norm}
+          line={step < 4 ? t('pulse.waiting') : norm === 'busy' ? t('pulse.processing') : `${t('pulse.ready')} · ${nfmt(rows)} ${t('pulse.metric.million')} ${t('pulse.metric.records')}`} />
+        <Node id="m" cat="var(--accent)" icon="model" type={t('pulse.semanticModel')} name="Vendas Varejo" converge={{ x: 0, y: 0 }} dot={ready ? 'ok' : 'off'}
+          line={ready ? `${t('pulse.ready')} · 14 ${t('pulse.metric.metrics')}` : t('pulse.waiting')} className="is-model" />
 
         <div className="lp-node lp-out lp-node--o1" style={{ left: NODES.o1.x, top: NODES.o1.y, width: NODES.o1.w, height: NODES.o1.h, '--cat': 'var(--accent)', '--cx': `${pull('o1').x}px`, '--cy': `${pull('o1').y}px` } as CSSProperties}>
-          <div className="lp-node-top"><span className="lp-glyph"><Icon name="report" size={12} /></span><span className="lp-node-type">Relatório · Visão executiva</span></div>
+          <div className="lp-node-top"><span className="lp-glyph"><Icon name="report" size={12} /></span><span className="lp-node-type">{t('pulse.report')}</span></div>
           <div className="lp-kpi"><b>R$ {nfmt(kpi)} M</b><span className="lp-delta">+{nfmt(3.1 + (kpi - 4.82) * 2, 1)}%</span></div>
           <svg className="lp-spark" viewBox="0 0 216 44" preserveAspectRatio="none">
             <path className="lp-spark-area" d={`${line}L216 44L0 44Z`} /><path className="lp-spark-line" d={line} />
@@ -175,7 +179,7 @@ export function ProductPulse({ mode }: { mode: PulseMode }) {
         </div>
 
         <div className="lp-node lp-out lp-node--o2" style={{ left: NODES.o2.x, top: NODES.o2.y, width: NODES.o2.w, height: NODES.o2.h, '--cat': 'var(--brand-teal)', '--cx': `${pull('o2').x}px`, '--cy': `${pull('o2').y}px` } as CSSProperties}>
-          <div className="lp-node-top"><span className="lp-glyph"><Icon name="pin" size={12} /></span><span className="lp-node-type">Mapa · Lojas e entregas</span></div>
+          <div className="lp-node-top"><span className="lp-glyph"><Icon name="pin" size={12} /></span><span className="lp-node-type">{t('pulse.map')}</span></div>
           <svg className="lp-map" viewBox="0 0 216 96" preserveAspectRatio="xMidYMid slice">
             <path className="lp-land" d="M0 20L38 8L84 16L118 6L170 14L216 4V96H0Z" /><path className="lp-land lp-land--2" d="M120 96L132 60L168 48L216 52V96Z" />
             <path className="lp-river" d="M0 66C40 60 70 80 110 70S180 60 216 76" />
@@ -184,13 +188,13 @@ export function ProductPulse({ mode }: { mode: PulseMode }) {
         </div>
 
         <div className="lp-node lp-out lp-node--o3" style={{ left: NODES.o3.x, top: NODES.o3.y, width: NODES.o3.w, height: NODES.o3.h, '--cat': 'var(--brand-slate)', '--cx': `${pull('o3').x}px`, '--cy': `${pull('o3').y}px` } as CSSProperties}>
-          <div className="lp-node-top"><span className="lp-glyph"><Icon name="share" size={12} /></span><span className="lp-node-type">Fluxo · Reposição semanal</span></div>
+          <div className="lp-node-top"><span className="lp-glyph"><Icon name="share" size={12} /></span><span className="lp-node-type">{t('pulse.workflow')}</span></div>
           <ol className="lp-flow">
-            {FLOW_STEPS.map((s, i) => <li key={s} className={i < flow - 1 ? 'is-done' : i === flow - 1 ? 'is-run' : ''}><i>{i < flow - 1 ? <Icon name="check" size={12} /> : null}</i><span>{s}</span></li>)}
+            {FLOW_STEPS.map((s, i) => <li key={s} className={i < flow - 1 ? 'is-done' : i === flow - 1 ? 'is-run' : ''}><i>{i < flow - 1 ? <Icon name="check" size={12} /> : null}</i><span>{t(s)}</span></li>)}
           </ol>
         </div>
 
-        <div className="lp-live"><span className="lp-tag">AO VIVO</span><span>{mode === 'connected' ? 'Conectado' : 'Workspace Lume Varejo · 2 fontes · 14 métricas'}</span><time>{stamp && `atualizado ${stamp}`}</time></div>
+        <div className="lp-live"><span className="lp-tag">{t('common.live')}</span><span>{mode === 'connected' ? t('pulse.connectedWorkspace') : t('pulse.liveWorkspace')}</span><time>{stamp && t('pulse.updated', { time: stamp })}</time></div>
       </div>
       <Chain className="lp-chain--pane" />
     </div>

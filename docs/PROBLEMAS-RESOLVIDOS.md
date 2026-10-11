@@ -150,6 +150,15 @@ Pacote `packages/assistant-ui` + motor de exemplo no app (`copilot/engine.ts`): 
 | Home estática na retomada | Carrossel animado alterna mapa, relatório e fluxo (transição em fade/deslizamento, progresso por aba, pausa e acessível); o "último trabalho" da simulação define a visão inicial | `routes/home.tsx`, `routes/home.css` |
 | Arquivos obsoletos na raiz | Removidos `design-output/` e `design-handoff.zip` | commit `6fe824a` |
 
+### 2.z Internacionalização (pt-BR, en, es) — 2026-10-10
+| Problema | Solução | Onde |
+|---|---|---|
+| `react-intl` instalado e um catálogo `pt-BR.ts`, mas nenhum componente usava: o `IntlProvider` era fixo em pt-BR e os 14 ids do catálogo estavam mortos | Catálogo por domínio com os três idiomas lado a lado, ids tipados e fallback para pt-BR; chave morta vira falha de teste | `apps/web/src/i18n/` |
+| Troca de idioma exigiria recarregar a aplicação | Idioma na store `ui-store` (persistida em `biweb.locale`); `LocaleProvider` troca o `IntlProvider` em runtime e atualiza `<html lang>` | `i18n/intl.tsx`, `state/ui-store.ts`, `shell/AppShell.tsx` |
+| Paleta de comandos comparava grupos pelo rótulo (`'Copilot'`): traduzir o rótulo quebraria a lógica | Grupos com id estável (`reports`, `actions`, `editor`, `copilot`); o rótulo só é traduzido na exibição | `shell/CommandPalette.tsx` |
+| E2E assumiria pt-BR, mas o Playwright abre em `en-US`: sem correção, toda a suíte falharia | `locale: 'pt-BR'` no config do Playwright | `testing/e2e/playwright.config.ts` |
+| Zustand usa o estado inicial como snapshot no `renderToStaticMarkup`: teste SSR não enxerga `setState` | Troca reativa verificada no navegador; o teste automatizado cobre a renderização por idioma e a store separadamente | `i18n/i18n.test.tsx` |
+| Espanhol sem separador em 4 dígitos (`1234`) e BRL como `1234,56 BRL` | Convenção CLDR mantida, conforme o pedido ("convenção adequada ao locale"); registrada no glossário/decisões | `i18n/format.ts`, `i18n/glossary.ts` |
 
 ## 3. Decisões que valem daqui para frente
 1. **Não apagar o que existe**: cada nova rodada incorpora ao estado atual e preserva o design system aprovado.

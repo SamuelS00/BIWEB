@@ -2,7 +2,7 @@
 
 > Documento vivo. É o ponto de entrada para quem vai evoluir o código. O **porquê** de longo prazo está no blueprint ([`architecture/`](architecture/), ADRs); aqui está o **como o projeto é hoje** e **como mexer nele**.
 > Histórico do que já foi resolvido: [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md). Regras para humanos e agentes manterem esta doc em dia: [`AGENTS.md`](../AGENTS.md).
-> Última revisão: 2026-10-10 (Data Workspace, CI/deploy automático, apresentação para clientes). Apresentação para clientes: `/apresentacao/` no app (seção 13).
+> Última revisão: 2026-10-10 (internacionalização pt-BR/en/es, Data Workspace, CI/deploy automático, apresentação para clientes). Apresentação para clientes: `/apresentacao/` no app (seção 13).
 
 ## 1. O que é
 
@@ -84,7 +84,7 @@ src/
   dataworkspace/ Data Workspace (LDE): ver 5.8.1
   net/          grafo da Rede SP (geração, layout, line-of-sight)
   fixtures/     Lume Varejo
-  i18n/         pt-BR.ts
+  i18n/         idiomas pt-BR, en e es: catálogo por domínio (inclui Product Pulse), formatadores, glossário (ver 6)
 ```
 
 ### 5.1 Estado
@@ -152,12 +152,24 @@ UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `
 
 **Código**
 - TypeScript estrito com `noUncheckedIndexedAccess` (indexar array/Record exige guarda).
-- Textos de UI em pt-BR (`i18n/pt-BR.ts`).
+- Textos de UI pelo catálogo (`i18n/`), nunca literais em componentes. Detalhes na subseção **Idiomas** abaixo.
 - Dados demo **determinísticos** (semeados); sem `Math.random` solto em dados que testes usam.
 - Armazenamento do browser sempre protegido por `try/catch`.
 - Fronteiras entre pacotes: `.dependency-cruiser.cjs` (core sem React, plugins só via SDK, IA fora do core, sem ciclos). Imports só de tipos (`import type`) não contam como ciclo (`tsPreCompilationDeps: false`); ciclos em runtime quebram o CI. Utilitários compartilhados vão para arquivos próprios (ex.: `editor/time.ts`), não para componentes.
 - Build: **não** usar `manualChunks` no Vite (gerou dependência circular e quebrou produção).
 - Mapa em tela cheia: não deixar `transform` em ancestral de `position: fixed` (a animação de entrada prendia o elemento).
+
+**Idiomas**
+- Idiomas: `pt-BR` (padrão), `en`, `es` (`i18n/locales.ts`). Escolha salva em `localStorage` (`biweb.locale`, pela store `ui-store`, com `try/catch`); sem escolha, vale o idioma do navegador; se não houver suporte, pt-BR.
+- Troca sem recarregar: `LocaleProvider` (`i18n/intl.tsx`) re-renderiza o `IntlProvider` quando `locale` muda. Seletor no popover "Exibição e preferências" do rail.
+- Textos: `t('dominio.chave')` via `useT()`. Catálogo em `i18n/messages/<dominio>.ts`, um arquivo por domínio com pt-BR, en e es lado a lado. `satisfies` derruba o typecheck se faltar ou sobrar chave em algum idioma. Ids são tipados (`MessageId`), com autocomplete.
+- O painel visual Product Pulse do login usa o domínio `i18n/messages/pulse.ts`; nomes demonstrativos de fontes, modelos e workspace continuam sendo conteúdo de exemplo.
+- Chave com prefixo do domínio e nome estável (`palette.hint.ai`), nunca derivada do texto. Idioma sem uma chave cai para pt-BR; o id cru nunca aparece.
+- Plural e interpolação pelo ICU do `react-intl`: `{count, plural, one {…} other {…}}` e `{query}`. Nada de concatenar `s` ou valores.
+- Número, moeda, data, hora, tempo relativo e duração: `useFormat()` (`i18n/format.ts`). Moeda é independente do idioma (`en` com BRL mostra `R$`). Sem `timeZone` explícito, datas usam o fuso do navegador, como antes.
+- Estado interno não guarda texto traduzido: status é `running`, não `Executando`.
+- Conteúdo do usuário (relatórios, datasets, métricas, nomes de workflow) e nomes de produto não são traduzidos. Termos do produto e técnicos ficam em `i18n/glossary.ts` (com status `approved`/`needs-review` e decisão `keep`/`translate`); mude o termo lá e nas mensagens que o usam.
+- Testes em `i18n/i18n.test.tsx`: paridade de chaves, chave morta, plural, interpolação, formatadores, persistência e fallback.
 
 **Git**
 - Commits em pt-BR no formato `tipo(escopo): resumo` (`feat`, `fix`, `build`, `chore`…), corpo com bullets do que mudou.
@@ -187,13 +199,13 @@ UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `
 
 | Camada | Comando | Cobre |
 |---|---|---|
-| Unit (Vitest) | `pnpm test` | tokens (contraste), ui, motor de gráficos, `cf`, dados de vendas, Copilot do editor, mapas, workflows, relatórios demo, Migration Studio |
-| E2E (Playwright + axe) | `pnpm e2e` | shell inicial (`testing/e2e/tests/shell.spec.ts`, 8 testes) |
+| Unit (Vitest) | `pnpm test` | tokens (contraste), ui, motor de gráficos, `cf`, dados de vendas, Copilot do editor, mapas, workflows, relatórios demo, Migration Studio, idiomas (`i18n`) |
+| E2E (Playwright + axe) | `pnpm e2e` | shell inicial (`testing/e2e/tests/shell.spec.ts`, 8 testes); roda fixado em `pt-BR` (`testing/e2e/playwright.config.ts`) |
 | Documentação | `node tools/check-docs.mjs` | toda rota de `router.tsx` aparece na tabela da seção 4 |
 | Fronteiras | `pnpm check:boundaries` | regras de dependência |
 | CI | `.github/workflows/ci.yml` | lint, typecheck, testes, build, fronteiras, docs (job `ts`) e clippy/testes Rust (job `rust`) |
 
-Hoje: 78 testes unitários em `apps/web` (10 arquivos), mais tokens e ui. Lacunas: testes do Data Workspace (`sample.ts`, `store.ts`, `copilot.ts`), E2E do editor, mapas, workflows, migração e login; teste visual; carga e correção de queries (aguardam backend).
+Hoje: 99 testes unitários em `apps/web` (11 arquivos; 21 deles de i18n), mais tokens e ui. Lacunas: testes do Data Workspace (`sample.ts`, `store.ts`, `copilot.ts`), E2E do editor, mapas, workflows, migração e login; teste visual; carga e correção de queries (aguardam backend).
 
 ## 9. Build e deploy
 
@@ -226,6 +238,8 @@ Hoje: 78 testes unitários em `apps/web` (10 arquivos), mais tokens e ui. Lacuna
 | Copilot | Assistente de IA (hoje simulado) |
 | QDL, Semantic layer, Cell | Conceitos do blueprint ainda não implementados |
 
+Traduções dos termos (pt-BR, en, es) e o status de cada decisão: `apps/web/src/i18n/glossary.ts`. Esta tabela define o conceito; o glossário define o rótulo.
+
 ## 11. Roadmap técnico (próximos passos naturais)
 
 1. Persistência real: salvar/abrir `ReportDoc` num backend (hoje só memória/estado local), com versões imutáveis (ADR-0024).
@@ -237,6 +251,7 @@ Hoje: 78 testes unitários em `apps/web` (10 arquivos), mais tokens e ui. Lacuna
    Data Workspace: testes unitários de `sample.ts`/`store.ts`/`copilot.ts`, ligação real ao LDE e persistência de decisões.
 8. Material de apresentação para os demais módulos (relatórios, mapas, fluxos, migração), com capturas reais, segurança e governança.
 7. Grãos de data por minuto/hora para relatórios em tempo real.
+8. Internacionalização restante. Migrados: login, shell (rail, topbar, breadcrumbs, preferências, notificações), ⌘K e os rótulos/formatadores do painel Product Pulse. Ainda em pt-BR: Home, Data Workspace, Report/Map/Workflow Builders, Migration Studio, Copilot (respostas do motor de exemplo), dados demo (`routes/home-model.ts`, nomes de componentes em `editor/doc.ts`, `dataworkspace/*`, `routes/migration/*`) e a apresentação `/apresentacao/`. A formatação existente (`toLocaleString`, `toFixed`, `${v}%`, dezenas de pontos) ainda não usa `i18n/format.ts`.
 
 ## 12. Como manter esta documentação
 

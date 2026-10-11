@@ -1,0 +1,50 @@
+import type { Locale } from '../locales';
+
+const pt = {
+  'pulse.chain.data': 'Dados',
+  'pulse.chain.models': 'Modelos',
+  'pulse.chain.reports': 'Relatórios',
+  'pulse.chain.maps': 'Mapas',
+  'pulse.chain.workflows': 'Fluxos',
+  'pulse.chain.operations': 'Operações',
+  'pulse.source': 'Fonte de dados',
+  'pulse.connected': 'Conectado',
+  'pulse.connecting': 'Conectando…',
+  'pulse.transform': 'Transformação',
+  'pulse.waiting': 'Aguardando',
+  'pulse.processing': 'Processando…',
+  'pulse.ready': 'Pronto',
+  'pulse.semanticModel': 'Modelo semântico',
+  'pulse.report': 'Relatório · Visão executiva',
+  'pulse.map': 'Mapa · Lojas e entregas',
+  'pulse.workflow': 'Fluxo · Reposição semanal',
+  'pulse.flow.collect': 'Coletar',
+  'pulse.flow.validate': 'Validar',
+  'pulse.flow.approve': 'Aprovar',
+  'pulse.flow.publish': 'Publicar',
+  'pulse.liveWorkspace': 'Workspace Lume Varejo · 2 fontes · 14 métricas',
+  'pulse.connectedWorkspace': 'Conectado',
+  'pulse.updated': 'atualizado {time}',
+  'pulse.metric.million': 'M',
+  'pulse.metric.metrics': 'métricas',
+  'pulse.metric.records': 'linhas',
+  'pulse.chainLabel': 'Dados, modelos, relatórios, mapas, fluxos e operações',
+} as const;
+
+export const pulse = {
+  'pt-BR': pt,
+  en: {
+    'pulse.chain.data': 'Data', 'pulse.chain.models': 'Models', 'pulse.chain.reports': 'Reports', 'pulse.chain.maps': 'Maps', 'pulse.chain.workflows': 'Workflows', 'pulse.chain.operations': 'Operations',
+    'pulse.source': 'Data source', 'pulse.connected': 'Connected', 'pulse.connecting': 'Connecting…', 'pulse.transform': 'Transformation', 'pulse.waiting': 'Waiting', 'pulse.processing': 'Processing…', 'pulse.ready': 'Ready', 'pulse.semanticModel': 'Semantic model',
+    'pulse.report': 'Report · Executive overview', 'pulse.map': 'Map · Stores and deliveries', 'pulse.workflow': 'Workflow · Weekly replenishment', 'pulse.flow.collect': 'Collect', 'pulse.flow.validate': 'Validate', 'pulse.flow.approve': 'Approve', 'pulse.flow.publish': 'Publish',
+    'pulse.liveWorkspace': 'Lume Varejo workspace · 2 sources · 14 metrics', 'pulse.connectedWorkspace': 'Connected', 'pulse.updated': 'updated {time}', 'pulse.metric.million': 'M', 'pulse.metric.metrics': 'metrics', 'pulse.metric.records': 'rows',
+    'pulse.chainLabel': 'Data, models, reports, maps, workflows and operations',
+  },
+  es: {
+    'pulse.chain.data': 'Datos', 'pulse.chain.models': 'Modelos', 'pulse.chain.reports': 'Informes', 'pulse.chain.maps': 'Mapas', 'pulse.chain.workflows': 'Flujos', 'pulse.chain.operations': 'Operaciones',
+    'pulse.source': 'Fuente de datos', 'pulse.connected': 'Conectado', 'pulse.connecting': 'Conectando…', 'pulse.transform': 'Transformación', 'pulse.waiting': 'Esperando', 'pulse.processing': 'Procesando…', 'pulse.ready': 'Listo', 'pulse.semanticModel': 'Modelo semántico',
+    'pulse.report': 'Informe · Vista ejecutiva', 'pulse.map': 'Mapa · Tiendas y entregas', 'pulse.workflow': 'Flujo · Reposición semanal', 'pulse.flow.collect': 'Recopilar', 'pulse.flow.validate': 'Validar', 'pulse.flow.approve': 'Aprobar', 'pulse.flow.publish': 'Publicar',
+    'pulse.liveWorkspace': 'Workspace Lume Varejo · 2 fuentes · 14 métricas', 'pulse.connectedWorkspace': 'Conectado', 'pulse.updated': 'actualizado {time}', 'pulse.metric.million': 'M', 'pulse.metric.metrics': 'métricas', 'pulse.metric.records': 'filas',
+    'pulse.chainLabel': 'Datos, modelos, informes, mapas, flujos y operaciones',
+  },
+} satisfies Record<Locale, Record<keyof typeof pt, string>>;

@@ -4,7 +4,7 @@ Instruções para agentes de IA (Claude Code, Codex, Cursor…) e para quem cont
 
 ## Resumo
 - Hoje só existe o front-end `apps/web` (React 19 + Vite + TanStack Router + zustand + React Aria), 100% no browser com dados demonstrativos determinísticos. `control-plane`, `crates/` e quase todos os `packages/*` são esqueletos.
-- Textos de UI em pt-BR. Estilo só com tokens (`packages/tokens`); nada de cor literal.
+- Textos de UI pelo catálogo `apps/web/src/i18n` (pt-BR, en, es): nada de texto visível hardcoded em componente. Estilo só com tokens (`packages/tokens`); nada de cor literal.
 - Design system aprovado: **preserve-o**. Sem glow, gradiente de fundo, partículas, sparkle por tudo nem gráficos decorativos.
 
 ## Comandos (a partir de `apps/web`; `pnpm` pode não estar no PATH)
