@@ -6,6 +6,8 @@ import type {
   Authority, BlockReason, ChangeEvent, ChangeKind, Confidence, Conflict, DiscoveryResult, EnrichmentProposal, EntityCandidate, Evidence, EvidencePack, ExternalDocument,
   FetchSnapshot, Level, Observation, Relationship, ResearchDataset, ResearchMission, Run, SourceDescriptor, SourcePolicy, SourceType, Watchlist,
 } from './types';
+import { tx } from './tx';
+import type { MessageId } from '../../i18n/catalog';
 
 export const WORKSPACE = 'NovaLink Operations';
 /** "Agora" da demonstração: 2026-10-11 14:42 (UTC usado só como relógio fixo). */
@@ -326,13 +328,10 @@ export const PROPOSALS: EnrichmentProposal[] = [
   })),
 ];
 
-export const EXPLORE_EXAMPLES = [
-  'Companies offering fiber optic monitoring in Brazil', 'Competitors with AI Analytics features', 'Find public data to enrich our customers',
-  'Which companies opened new units in São Paulo?', 'What changed in the competitors’ products?',
-];
-export const BLOCK_LABEL: Record<BlockReason, string> = { robots: 'Blocked by robots.txt', policy: 'Policy restricted', 'rate-limit': 'Rate limit reached', 'auth-required': 'Authentication required', unavailable: 'Source unavailable', removed: 'Content removed' };
-export const BLOCK_NOTE: Record<BlockReason, string> = {
-  robots: 'The site disallows automated access to this path. The BDE respects robots.txt and does not retry.', policy: 'Collection from this source is not permitted by the workspace policy (terms or personal-data rules).',
-  'rate-limit': 'The configured rate limit was reached. The BDE waits for the window to reopen; it never rotates identities or raises the limit.', 'auth-required': 'The content requires a login. The BDE only reads public or explicitly authorized sources.',
-  unavailable: 'The source did not respond. The last good snapshot is kept; a new check is scheduled.', removed: 'The page was removed by its publisher. Existing evidence keeps its snapshot as provenance.',
-};
+/** Consultas de exemplo do Explore: ids do catálogo (cada idioma tem a sua redação). */
+export const EXPLORE_EXAMPLES: MessageId[] = ['discovery.explore.ex.fiber', 'discovery.explore.ex.competitors', 'discovery.explore.ex.public', 'discovery.explore.ex.sp', 'discovery.explore.ex.changes'];
+export const EXPLORE_DEEP: MessageId = 'discovery.explore.ex.deep';
+export const BLOCK_LABEL: Record<BlockReason, string> = { get robots() { return tx('discovery.common.block.robots'); }, get policy() { return tx('discovery.common.block.policy'); }, get 'rate-limit'() { return tx('discovery.common.block.rateLimit'); }, get 'auth-required'() { return tx('discovery.common.block.authRequired'); }, get unavailable() { return tx('discovery.common.block.unavailable'); }, get removed() { return tx('discovery.common.block.removed'); } };
+/** Versões por id de mensagem (i18n) dos motivos de bloqueio: as views traduzem com `t(BLOCK_LABEL_ID[k])`. `BLOCK_LABEL`/`BLOCK_NOTE` ficam só para quem ainda lê texto fixo. */
+export const BLOCK_LABEL_ID: Record<BlockReason, MessageId> = { robots: 'discovery.sources.block.robots', policy: 'discovery.sources.block.policy', 'rate-limit': 'discovery.sources.block.rateLimit', 'auth-required': 'discovery.sources.block.authRequired', unavailable: 'discovery.sources.block.unavailable', removed: 'discovery.sources.block.removed' };
+export const BLOCK_NOTE_ID: Record<BlockReason, MessageId> = { robots: 'discovery.sources.blockNote.robots', policy: 'discovery.sources.blockNote.policy', 'rate-limit': 'discovery.sources.blockNote.rateLimit', 'auth-required': 'discovery.sources.blockNote.authRequired', unavailable: 'discovery.sources.blockNote.unavailable', removed: 'discovery.sources.blockNote.removed' };

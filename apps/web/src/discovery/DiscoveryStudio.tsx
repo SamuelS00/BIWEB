@@ -74,12 +74,12 @@ export function DiscoveryStudio() {
         <div className="dw-title"><h1>{t('discovery.title')}</h1><p>{t('discovery.subtitle')} · NovaLink Operations</p></div>
         <DemoTag />
         <span className="flex-1" />
-        <Badge tone="neutral" icon="lock">Public or authorized sources only</Badge>
+        <Badge tone="neutral" icon="lock">{t('discovery.studio.publicOnly')}</Badge>
         {aiEnabled && <Button size="sm" icon="copilot" onPress={() => useUi.getState().set({ copilotOpen: true })}>{t('discovery.action.copilot')}</Button>}
         <Button variant="primary" size="sm" icon="plus" onPress={() => go(dpath('missions', 'new'))}>{t('discovery.action.newMission')}</Button>
       </header>
       <nav className="dw-mnav" aria-label={t('discovery.nav.label')}>
-        <select value={section} aria-label="Section" onChange={(e) => go(dpath(e.target.value))}>{NAV.map((n) => <option key={n.id} value={n.id}>{t(n.labelId)}</option>)}</select>
+        <select value={section} aria-label={t('discovery.studio.section')} onChange={(e) => go(dpath(e.target.value))}>{NAV.map((n) => <option key={n.id} value={n.id}>{t(n.labelId)}</option>)}</select>
       </nav>
       {st.leftOpen && (
         <aside className="dw-left" aria-label={t('discovery.nav.label')}>
@@ -88,12 +88,12 @@ export function DiscoveryStudio() {
             <li className="dw-nav-sep"><span>{t('discovery.nav.governance')}</span></li>
             {NAV.filter((n) => n.adv).map((n) => <NavItem key={n.id} id={n.id} label={t(n.labelId)} icon={n.icon} on={section === n.id} badge={badge(n.id)} />)}
           </ul>
-          <div className="ds-rule"><Icon name="lock" size={12} /><p><b>BDE discovers.</b> LDE trusts after validating. BCE builds from contracts. Copilot explains and orchestrates.</p></div>
+          <div className="ds-rule"><Icon name="lock" size={12} /><p><b>{t('discovery.studio.ruleLead')}</b> {t('discovery.studio.ruleRest')}</p></div>
         </aside>
       )}
       <main className="dw-center" id="ds-center">{center}</main>
       {st.rightOpen && (
-        <aside className="dw-right" aria-label="Inspector">
+        <aside className="dw-right" aria-label={t('discovery.pane.inspector')}>
           <div className="dw-rtabs" role="tablist"><button type="button" role="tab" aria-selected>{t('discovery.pane.inspector')}</button><span className="flex-1" /><IconButton icon="close" label={t('discovery.pane.close')} size="sm" onPress={() => st.setPane({ rightOpen: false })} /></div>
           <div className="dw-rbody"><Inspector /></div>
         </aside>

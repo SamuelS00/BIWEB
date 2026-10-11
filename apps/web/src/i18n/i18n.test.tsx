@@ -89,8 +89,8 @@ describe('catálogo', () => {
     }
   });
 
-  it('todo id começa com o nome do domínio (chave estável, não ligada ao texto)', () => {
-    for (const [name, domain] of domains) for (const id of Object.keys(domain['pt-BR'])) expect(id.startsWith(`${name}.`), id).toBe(true);
+  it('todo id começa com o nome do domínio (os domínios `discovery*` dividem o prefixo `discovery.`; chave estável, não ligada ao texto)', () => {
+    for (const [name, domain] of domains) for (const id of Object.keys(domain['pt-BR'])) expect(id.startsWith(`${name.startsWith('discovery') ? 'discovery' : name}.`), id).toBe(true);
   });
 
   it('não há ids duplicados entre domínios', () => {

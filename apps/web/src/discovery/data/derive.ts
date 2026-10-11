@@ -1,4 +1,5 @@
 import { CHANGES, CONFLICTS, ENTITIES, EVIDENCE, EVIDENCE_PACKS, FLOW, MISSIONS, OBSERVATIONS, OBS_WEEK, PROPOSALS, RELATIONSHIPS, SOURCES, WEEK_MIN, levelOf, score, snapshotsOf } from './seed';
+import { tx } from './tx';
 import type { ChangeEvent, Confidence, Conflict, EnrichmentProposal, EntityCandidate, Evidence, Observation, SourceDescriptor } from './types';
 
 export const entityById = (id: string): EntityCandidate | undefined => ENTITIES.find((e) => e.id === id);
@@ -18,15 +19,16 @@ export const confidenceOf = (o: Observation) => score(o.confidence);
 export function breakdown(c: Confidence) {
   const lv = (v: number) => levelOf(v);
   return [
-    { key: 'authority', label: 'Source authority', v: c.authority, level: lv(c.authority) },
-    { key: 'freshness', label: 'Freshness', v: c.freshness, level: lv(c.freshness) },
-    { key: 'corroboration', label: 'Corroboration', v: c.corroboration, level: lv(c.corroboration) },
-    { key: 'extraction', label: 'Extraction', v: c.extraction, level: lv(c.extraction) },
-    { key: 'entityMatch', label: 'Entity match', v: c.entityMatch, level: lv(c.entityMatch) },
+    { key: 'authority', get label() { return tx('discovery.ui.conf.authority'); }, v: c.authority, level: lv(c.authority) },
+    { key: 'freshness', get label() { return tx('discovery.ui.conf.freshness'); }, v: c.freshness, level: lv(c.freshness) },
+    { key: 'corroboration', get label() { return tx('discovery.ui.conf.corroboration'); }, v: c.corroboration, level: lv(c.corroboration) },
+    { key: 'extraction', get label() { return tx('discovery.ui.conf.extraction'); }, v: c.extraction, level: lv(c.extraction) },
+    { key: 'entityMatch', get label() { return tx('discovery.ui.conf.entityMatch'); }, v: c.entityMatch, level: lv(c.entityMatch) },
   ] as const;
 }
-export const LEVEL_LABEL = { high: 'High', medium: 'Medium', low: 'Low' } as const;
-export const CONFLICT_LABEL = { none: 'None', minor: 'Minor', major: 'Major' } as const;
+/** Rótulos com getter: seguem o idioma ativo sem mudar a API (`LEVEL_LABEL[l]`). */
+export const LEVEL_LABEL = { get high() { return tx('discovery.common.level.high'); }, get medium() { return tx('discovery.common.level.medium'); }, get low() { return tx('discovery.common.level.low'); } };
+export const CONFLICT_LABEL = { get none() { return tx('discovery.common.conflict.none'); }, get minor() { return tx('discovery.common.conflict.minor'); }, get major() { return tx('discovery.common.conflict.major'); } };
 
 /** Estado variável da UI que muda números exibidos em várias telas. */
 export interface DsLive { resolved: Record<string, 'a' | 'b'>; proposals: Record<string, EnrichmentProposal['status']>; extraMissions: number }
@@ -39,6 +41,6 @@ export function stats(live: DsLive) {
   };
 }
 export const fmtK = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n));
-export function ago(min: number) { if (min < 60) return `${min} min ago`; if (min < 1440) return `${Math.round(min / 60)} h ago`; return `${Math.round(min / 1440)} d ago`; }
+export function ago(min: number) { if (min < 60) return tx('discovery.common.agoMin', { n: min }); if (min < 1440) return tx('discovery.common.agoHour', { n: Math.round(min / 60) }); return tx('discovery.common.agoDay', { n: Math.round(min / 1440) }); }
 export function conflictValue(c: Conflict, live: DsLive) { const r = live.resolved[c.id]; return r ? c[r].value : null; }
 export { snapshotsOf };

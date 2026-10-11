@@ -4,6 +4,7 @@
  */
 import { CHANGES, ENTITIES, EVIDENCE, RELATIONSHIPS, RESULT_FIBER, SOURCES } from './seed';
 import { observationsOf, inWeek } from './derive';
+import type { MessageId } from '../../i18n/catalog';
 import type { EntityCandidate, SourceDescriptor } from './types';
 
 export type QueryKind = 'fiber' | 'competitors' | 'public' | 'sp' | 'changes' | 'bi' | 'none';
@@ -14,21 +15,23 @@ const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,
 export function classifyQuery(q: string): QueryPlan {
   const s = norm(q);
   if (!s.trim()) return { kind: 'none', plan: false };
-  if (s.includes('profundamente') || s.includes('deep') || s.includes('mercado de bi') || s.includes('bi market')) return { kind: 'bi', plan: true };
-  if (s.includes('mudancas') || s.includes('changed') || s.includes('changes')) return { kind: 'changes', plan: false };
-  if (s.includes('fibra') || s.includes('fiber')) return { kind: 'fiber', plan: false };
-  if (s.includes('ai analytics') || s.includes('concorrentes') || s.includes('competitors')) return { kind: 'competitors', plan: false };
-  if (s.includes('dados publicos') || s.includes('publicos') || s.includes('public data')) return { kind: 'public', plan: false };
-  if (s.includes('novas unidades') || s.includes('new units') || s.includes('sao paulo')) return { kind: 'sp', plan: false };
+  const has = (...terms: string[]) => terms.some((x) => s.includes(x));
+  /* pt-BR, en e es: a consulta é digitada no idioma atual */
+  if (has('profundamente', 'profundidade', 'profundidad', 'deep', 'mercado de bi', 'bi market')) return { kind: 'bi', plan: true };
+  if (has('mudancas', 'mudou', 'changed', 'changes', 'cambi')) return { kind: 'changes', plan: false };
+  if (has('fibra', 'fiber')) return { kind: 'fiber', plan: false };
+  if (has('ai analytics', 'concorrentes', 'competidores', 'competitors')) return { kind: 'competitors', plan: false };
+  if (has('dados publicos', 'datos publicos', 'publicos', 'public data')) return { kind: 'public', plan: false };
+  if (has('novas unidades', 'nuevas unidades', 'new units', 'sao paulo')) return { kind: 'sp', plan: false };
   return { kind: 'none', plan: false };
 }
 
-export const PLAN_STEPS = ['Identify major vendors', 'Discover official sources', 'Find public market references', 'Extract product information', 'Compare capabilities', 'Validate evidence', 'Build market landscape'];
-export const RUN_STEPS = ['Understanding intent', 'Expanding search concepts', 'Discovering candidate sources', 'Evaluating relevance', 'Extracting entities', 'Cross-checking evidence', 'Building result'];
+export const PLAN_STEPS: MessageId[] = ['discovery.explore.plan.1', 'discovery.explore.plan.2', 'discovery.explore.plan.3', 'discovery.explore.plan.4', 'discovery.explore.plan.5', 'discovery.explore.plan.6', 'discovery.explore.plan.7'];
+export const RUN_STEPS: MessageId[] = ['discovery.explore.run.1', 'discovery.explore.run.2', 'discovery.explore.run.3', 'discovery.explore.run.4', 'discovery.explore.run.5', 'discovery.explore.run.6', 'discovery.explore.run.7'];
 
 export type Band = 'high' | 'medium' | 'review';
 export const bandOf = (c: number): Band => (c >= 90 ? 'high' : c >= 75 ? 'medium' : 'review');
-export const BAND_LABEL: Record<Band, string> = { high: 'High confidence', medium: 'Medium confidence', review: 'Needs review' };
+export const BAND_LABEL: Record<Band, MessageId> = { high: 'discovery.explore.band.high', medium: 'discovery.explore.band.medium', review: 'discovery.explore.band.review' };
 
 export function bandCounts(list: { confidence: number }[]) {
   const r = { found: list.length, high: 0, medium: 0, review: 0 };
@@ -93,14 +96,21 @@ export function candidateSources(kind: QueryKind): Candidate[] {
   return out;
 }
 
-/** Fontes de referência para "Find Public Data": colunas derivadas de forma determinística. */
-export interface PublicRow { src: SourceDescriptor; description: string; fields: string[]; coverage: number; license: string; access: string; country: string; freshness: string }
-const PUB_META: Record<string, { description: string; fields: string[]; coverage: number; country: string }> = {
-  's-gov-offices': { description: 'Registry of company offices and branches', fields: ['CNPJ', 'City', 'State', 'Address'], coverage: 78, country: 'Brazil' },
-  's-anatel': { description: 'Telecom operators, licences and network indicators', fields: ['Operator', 'Licence', 'Coverage', 'Subscribers'], coverage: 92, country: 'Brazil' },
-  's-ibge': { description: 'National address registry used to geocode locations', fields: ['Address', 'Municipality', 'Lat/Lon'], coverage: 96, country: 'Brazil' },
-  's-cnpj': { description: 'Company registration data (legal name, activity, headquarters)', fields: ['CNPJ', 'Legal name', 'Industry (CNAE)', 'Headquarters'], coverage: 88, country: 'Brazil' },
-  's-api-cep': { description: 'Postal code lookup API', fields: ['Postal code', 'Street', 'City'], coverage: 99, country: 'Brazil' },
+/** Fontes de referência para "Find Public Data": colunas derivadas de forma determinística. Textos são ids do catálogo. */
+export interface PublicRow { src: SourceDescriptor; descId: MessageId; fieldIds: MessageId[]; coverage: number; license: string; access: string; countryId: MessageId; freshnessMin: number }
+const F = {
+  cnpj: 'discovery.explore.field.cnpj', city: 'discovery.explore.field.city', state: 'discovery.explore.field.state', address: 'discovery.explore.field.address', operator: 'discovery.explore.field.operator',
+  licence: 'discovery.explore.field.licence', coverage: 'discovery.explore.field.coverage', subscribers: 'discovery.explore.field.subscribers', municipality: 'discovery.explore.field.municipality', latLon: 'discovery.explore.field.latLon',
+  legalName: 'discovery.explore.field.legalName', industry: 'discovery.explore.field.industry', hq: 'discovery.explore.field.hq', postal: 'discovery.explore.field.postal', street: 'discovery.explore.field.street',
+  name: 'discovery.explore.field.name', identifier: 'discovery.explore.field.identifier', location: 'discovery.explore.field.location',
+} as const satisfies Record<string, MessageId>;
+const BR: MessageId = 'discovery.explore.country.brazil';
+const PUB_META: Record<string, { descId: MessageId; fieldIds: MessageId[]; coverage: number }> = {
+  's-gov-offices': { descId: 'discovery.explore.pub.offices', fieldIds: [F.cnpj, F.city, F.state, F.address], coverage: 78 },
+  's-anatel': { descId: 'discovery.explore.pub.anatel', fieldIds: [F.operator, F.licence, F.coverage, F.subscribers], coverage: 92 },
+  's-ibge': { descId: 'discovery.explore.pub.ibge', fieldIds: [F.address, F.municipality, F.latLon], coverage: 96 },
+  's-cnpj': { descId: 'discovery.explore.pub.cnpj', fieldIds: [F.cnpj, F.legalName, F.industry, F.hq], coverage: 88 },
+  's-api-cep': { descId: 'discovery.explore.pub.cep', fieldIds: [F.postal, F.street, F.city], coverage: 99 },
 };
 export function publicRows(): PublicRow[] {
   const ref = SOURCES.filter((s) => s.authority === 'REFERENCE' && !s.blocked);
@@ -109,8 +119,8 @@ export function publicRows(): PublicRow[] {
   return [...named, ...gen].map((src, i) => {
     const m = PUB_META[src.id];
     return {
-      src, description: m?.description ?? `Reference dataset (${src.type})`, fields: m?.fields ?? ['Name', 'Identifier', 'Location'], coverage: m?.coverage ?? 60 + ((i * 7) % 25),
-      license: src.policy.license, access: src.policy.access, country: m?.country ?? 'Brazil', freshness: src.lastCheckedMin >= 1440 ? `${Math.round(src.lastCheckedMin / 1440)} d` : `${src.lastCheckedMin} min`,
+      src, descId: m?.descId ?? 'discovery.explore.pub.generic', fieldIds: m?.fieldIds ?? [F.name, F.identifier, F.location], coverage: m?.coverage ?? 60 + ((i * 7) % 25),
+      license: src.policy.license, access: src.policy.access, countryId: BR, freshnessMin: src.lastCheckedMin,
     };
   });
 }

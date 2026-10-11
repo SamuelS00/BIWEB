@@ -4,10 +4,11 @@
  */
 import { CHANGES, ENTITIES, EVIDENCE_PACKS, NOW, OBSERVATIONS, SOURCES, score } from './seed';
 import { changesOf, entityById, evidenceById, observationsOf, sourceById } from './derive';
+import { activeLocale, tx } from './tx';
 import type { Evidence, EvidencePack, Observation } from './types';
 
 const minAgoOf = (stampStr: string) => Math.max(0, Math.round((NOW - Date.parse(`${stampStr.replace(' ', 'T')}${stampStr.length <= 10 ? 'T00:00' : ''}Z`)) / 60000));
-export const monthDay = (stampStr: string) => { const [, m, d] = stampStr.slice(0, 10).split('-'); return `${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][Number(m) - 1] ?? m} ${Number(d)}`; };
+export const monthDay = (stampStr: string) => { const [, m, d] = stampStr.slice(0, 10).split('-'); return new Intl.DateTimeFormat(activeLocale(), { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(Date.UTC(2000, Number(m) - 1, Number(d))); };
 
 /* ---------- Conflitos × observações ---------- */
 /** Observações que representam cada lado de um conflito: a UI de conflitos é a fonte de verdade do status exibido. */
@@ -21,20 +22,20 @@ export function liveStatus(o: Observation, resolved: Record<string, 'a' | 'b'>):
   }
   return o.status;
 }
-export const STATUS_LABEL: Record<LiveStatus, string> = { confirmed: 'Confirmed', 'needs-verification': 'Needs verification', conflicted: 'Conflicted', superseded: 'Superseded' };
+export const STATUS_LABEL: Record<LiveStatus, string> = { get confirmed() { return tx('discovery.common.status.confirmed'); }, get 'needs-verification'() { return tx('discovery.common.status.needsVerification'); }, get conflicted() { return tx('discovery.common.status.conflicted'); }, get superseded() { return tx('discovery.common.status.superseded'); } };
 
 /* ---------- Evidência ---------- */
 export function evidenceTitle(e: Evidence): string {
   const s = sourceById(e.sourceId);
-  if (!s) return 'Evidence';
-  if (/release/i.test(s.url)) return 'Release Notes';
-  if (s.type === 'News') return 'Industry Article';
-  if (s.type === 'Documentation') return s.authority === 'PRIMARY' ? 'Official Product Documentation' : 'Documentation';
-  if (s.type === 'Pricing Page') return 'Official Pricing Page';
-  if (s.type === 'Official Website') return 'Official Website';
-  if (s.type === 'Open Data' || s.type === 'Public Database' || s.type === 'Government') return 'Public Dataset';
-  if (s.type === 'Document') return 'Annual Report (PDF)';
-  if (s.type === 'RSS') return 'Official Blog';
+  if (!s) return tx('discovery.common.evidence');
+  if (/release/i.test(s.url)) return tx('discovery.common.evTitle.release');
+  if (s.type === 'News') return tx('discovery.common.evTitle.article');
+  if (s.type === 'Documentation') return s.authority === 'PRIMARY' ? tx('discovery.common.evTitle.docsOfficial') : tx('discovery.common.evTitle.docs');
+  if (s.type === 'Pricing Page') return tx('discovery.common.evTitle.pricing');
+  if (s.type === 'Official Website') return tx('discovery.common.evTitle.website');
+  if (s.type === 'Open Data' || s.type === 'Public Database' || s.type === 'Government') return tx('discovery.common.evTitle.dataset');
+  if (s.type === 'Document') return tx('discovery.common.evTitle.report');
+  if (s.type === 'RSS') return tx('discovery.common.evTitle.blog');
   return s.type;
 }
 /** Fontes independentes: espelhos contam como a fonte original. */
@@ -56,10 +57,15 @@ export const packScore = (p: EvidencePack) => { const o = packObservation(p); re
 /* ---------- Matriz de comparação ---------- */
 export const COMPARE_ROWS = ['Products', 'Features', 'AI', 'Maps', 'Automation', 'Integrations', 'Pricing model', 'Last relevant change'] as const;
 export type CompareRow = (typeof COMPARE_ROWS)[number];
+/** Rótulo exibido de cada linha da matriz (a chave em inglês continua sendo o identificador). */
+export const COMPARE_ROW_LABEL: Record<CompareRow, string> = {
+  get Products() { return tx('discovery.common.cmp.products'); }, get Features() { return tx('discovery.common.cmp.features'); }, get AI() { return tx('discovery.common.cmp.ai'); }, get Maps() { return tx('discovery.common.cmp.maps'); },
+  get Automation() { return tx('discovery.common.cmp.automation'); }, get Integrations() { return tx('discovery.common.cmp.integrations'); }, get 'Pricing model'() { return tx('discovery.common.cmp.pricing'); }, get 'Last relevant change'() { return tx('discovery.common.cmp.lastChange'); },
+};
 export interface CompareCell { value: string; evidenceIds: string[]; confidence: number | null; confirmedMin: number | null }
 const uniq = <T,>(a: T[]) => [...new Set(a)];
 export function compareCell(entityId: string, row: CompareRow): CompareCell {
-  const e = entityById(entityId); const none: CompareCell = { value: 'Not observed yet', evidenceIds: [], confidence: null, confirmedMin: null };
+  const e = entityById(entityId); const none: CompareCell = { value: tx('discovery.common.notObserved'), evidenceIds: [], confidence: null, confirmedMin: null };
   if (!e) return none;
   const obs = observationsOf(entityId), chg = changesOf(entityId);
   const fromChange = (c: (typeof CHANGES)[number]): CompareCell => ({ value: c.after, evidenceIds: c.evidenceIds, confidence: c.evidenceIds.length ? (c.confidence === 'high' ? 92 : 78) : null, confirmedMin: c.detectedMin });
@@ -79,7 +85,7 @@ export function compareCell(entityId: string, row: CompareRow): CompareCell {
     }
     case 'Pricing model': {
       const o = obs.find((x) => /pricing model/i.test(x.claim)) ?? obs.find((x) => /price/i.test(x.claim));
-      if (o) return fromObs(o, o.claim === 'Price' ? `${o.subject.split('/')[1]?.trim() ?? 'Plan'}: ${o.value}` : o.value);
+      if (o) return fromObs(o, o.claim === 'Price' ? `${o.subject.split('/')[1]?.trim() ?? tx('discovery.common.plan')}: ${o.value}` : o.value);
       const c = chg.find((x) => x.category === 'Pricing'); return c ? fromChange(c) : none;
     }
     case 'Last relevant change': { const c = chg[0]; return c ? { ...fromChange(c), value: `${c.kind}: ${c.semantic}` } : none; }
@@ -100,15 +106,17 @@ export function lineDiff(a: string[], b: string[]): DiffLine[] {
 
 /* ---------- Extrator personalizado (prévia) ---------- */
 export const EXTRACT_FIELDS = ['Product Name', 'Plan', 'Price', 'Features', 'Availability'] as const;
+/** Terceiro item de cada linha é uma descrição traduzida (getter): a desestruturação `[campo, tipo, desc]` segue funcionando. */
+const schemaRow = (f: string, ty: string, d: () => string): [string, string, string] => { const r: [string, string, string] = [f, ty, '']; Object.defineProperty(r, 2, { get: d, enumerable: true }); return r; };
 export const PRODUCT_SCHEMA: [string, string, string][] = [
-  ['product_name', 'string', 'Canonical product name'], ['pricing_model', 'enum', 'Subscription, consumption, per user, contact sales'], ['starting_price', 'money', 'Lowest disclosed price, with currency and period'],
-  ['features[]', 'string[]', 'Capabilities listed by the publisher'], ['integrations[]', 'string[]', 'Named systems the product connects to'], ['availability', 'enum', 'Available, beta, waitlist, retired'], ['last_updated', 'date', 'When the publisher last changed the page'],
+  schemaRow('product_name', 'string', () => tx('discovery.common.schema.productName')), schemaRow('pricing_model', 'enum', () => tx('discovery.common.schema.pricingModel')), schemaRow('starting_price', 'money', () => tx('discovery.common.schema.startingPrice')),
+  schemaRow('features[]', 'string[]', () => tx('discovery.common.schema.features')), schemaRow('integrations[]', 'string[]', () => tx('discovery.common.schema.integrations')), schemaRow('availability', 'enum', () => tx('discovery.common.schema.availability')), schemaRow('last_updated', 'date', () => tx('discovery.common.schema.lastUpdated')),
 ];
 export interface ExtractRow { plan: string; price: string; features: string; availability: string }
 /** Extrai linhas "Plano — preço" do snapshot mais recente. Sem padrão reconhecido, devolve vazio (nada é inventado). */
 export function previewExtract(lines: string[]): { product: string; rows: ExtractRow[] } {
   const feats = lines.find((l) => /^includes/i.test(l))?.replace(/^includes\s*/i, '') ?? '—';
-  const rows = lines.filter((l) => / — /.test(l)).map((l): ExtractRow => { const [plan = '', price = ''] = l.split(' — '); return { plan, price, features: feats, availability: /contact sales/i.test(price) ? 'Contact Sales' : 'Available' }; });
+  const rows = lines.filter((l) => / — /.test(l)).map((l): ExtractRow => { const [plan = '', price = ''] = l.split(' — '); return { plan, price, features: feats, availability: /contact sales/i.test(price) ? tx('discovery.common.contactSales') : tx('discovery.common.available') }; });
   return { product: '', rows };
 }
 export { ENTITIES, EVIDENCE_PACKS, OBSERVATIONS };

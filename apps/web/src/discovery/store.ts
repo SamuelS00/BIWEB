@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { MISSIONS, PROPOSALS, WATCHLISTS } from './data/seed';
+import { tx } from './data/tx';
 import type { EnrichmentProposal, ResearchMission, ResearchSpec, Watchlist } from './data/types';
 
 export type SelKind = 'entity' | 'source' | 'observation' | 'change' | 'evidence' | 'conflict' | 'mission' | 'dataset' | 'run' | 'node';
@@ -33,7 +34,7 @@ export const useDs = create<S>((set, get) => ({
   proposals: Object.fromEntries(PROPOSALS.map((p) => [p.id, p.status])), setProposal: (id, st) => set((s) => ({ proposals: { ...s.proposals, [id]: st } })),
   missions: MISSIONS, addMission: (name, template, spec) => {
     const id = `m${get().missions.length + 1}`;
-    const m: ResearchMission = { id, name, template, spec, status: 'active', lastRunMin: 0, nextRun: spec.frequency === 'One time' ? '—' : 'Tomorrow 08:00', entities: spec.entities.length, sourcesMonitored: spec.sources.length * 6, observations: 0, changesWeek: 0, entityIds: [] };
+    const m: ResearchMission = { id, name, template, spec, status: 'active', lastRunMin: 0, nextRun: spec.frequency === 'One time' ? '—' : tx('discovery.common.tomorrow'), entities: spec.entities.length, sourcesMonitored: spec.sources.length * 6, observations: 0, changesWeek: 0, entityIds: [] };
     set((s) => ({ missions: [...s.missions, m] })); return id;
   },
   watchlists: WATCHLISTS, addWatchlist: (w) => { const id = `w${get().watchlists.length + 1}`; set((s) => ({ watchlists: [...s.watchlists, { ...w, id }] })); return id; },

@@ -6,12 +6,16 @@ import { palette } from './messages/palette';
 import { preferences } from './messages/preferences';
 import { pulse } from './messages/pulse';
 import { discovery } from './messages/discovery';
+import { discoveryGovern } from './messages/discovery-govern';
+import { discoveryExplore } from './messages/discovery-explore';
+import { discoveryWork } from './messages/discovery-work';
+import { discoveryEntities } from './messages/discovery-entities';
 
 /**
  * Catálogo por domínio. Cada arquivo em `messages/` traz os três idiomas lado a lado e é tipado
  * com `satisfies`: chave faltando ou sobrando em qualquer idioma quebra o typecheck.
  */
-export const CATALOG = { common, navigation, preferences, palette, auth, pulse, discovery } as const;
+export const CATALOG = { common, navigation, preferences, palette, auth, pulse, discovery, discoveryGovern, discoveryExplore, discoveryWork, discoveryEntities } as const;
 
 type Catalog = typeof CATALOG;
 /** Id de mensagem: autocomplete em `t('…')`. Derivado do catálogo, não digitado à mão. */
