@@ -48,6 +48,7 @@ Formato: **Context · Decision · Alternatives · Advantages · Disadvantages ·
 | [0042](ADR-0042-composition-engine-and-canonical-contracts.md) | Composition Engine (BCE) e contratos canônicos de construção — **Aceito** (2026-10-10) | 5–6 | Depois |
 | [0043](ADR-0043-lde-and-bce-as-independent-services.md) | LDE e BCE como serviços independentes — **Aceito** (2026-10-10) | 3–6 | Depois |
 | [0044](ADR-0044-copilot-intelligence-core.md) | Copilot com contexto global (Intelligence Core) — **Aceito** (2026-10-10) | 5–6 | Depois |
+| [0045](ADR-0045-biweb-discovery-engine.md) | BIWEB Discovery Engine (BDE) como motor independente de inteligência externa — **Aceito** (2026-10-11) | 5–6 | Depois |
 
 ## Emendas de 2026-10-06 (IA nativa)
 Os ADRs 0001, 0002, 0003, 0004, 0005, 0006, 0011, 0015, 0016, 0017, 0019, 0020, 0024, 0025, 0028, 0029, 0030 e 0032 receberam uma seção **"Emenda 2026-10-06 — IA nativa"** descrevendo extensões **aditivas** decorrentes da incorporação da IA ([31-ai-assistant](../31-ai-assistant.md)). Nenhuma decisão anterior foi revertida.

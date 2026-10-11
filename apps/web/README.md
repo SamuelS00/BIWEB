@@ -19,6 +19,7 @@ Tabela completa de rotas e mapa da arquitetura: [`docs/PROJETO.md`](../../docs/P
 | Mapas | `/maps`, `/maps/:mapId` | `src/routes/maps/` |
 | Fluxos | `/workflows`, `/workflows/:id` | `src/routes/workflows/` |
 | Migração | `/migration`, `/migration/:projectId` | `src/routes/migration/` |
+| Discovery Studio (BDE) | `/discovery`, `/discovery/:section`, `/discovery/:section/:itemId` | `src/discovery/` |
 | Copilot e login | `/copilot`, `/login` | `src/routes/copilot.tsx`, `src/routes/login/` |
 
 **Idiomas:** pt-BR (padrão), en e es. Textos em `src/i18n/messages/` (um arquivo por domínio), formatação em `src/i18n/format.ts` e termos em `src/i18n/glossary.ts`. Regras em [`docs/PROJETO.md`](../../docs/PROJETO.md) §6.

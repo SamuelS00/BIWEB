@@ -2,11 +2,13 @@
 
 > Documento vivo. É o ponto de entrada para quem vai evoluir o código. O **porquê** de longo prazo está no blueprint ([`architecture/`](architecture/), ADRs); aqui está o **como o projeto é hoje** e **como mexer nele**.
 > Histórico do que já foi resolvido: [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md). Regras para humanos e agentes manterem esta doc em dia: [`AGENTS.md`](../AGENTS.md).
-> Última revisão: 2026-10-10 (internacionalização pt-BR/en/es, Data Workspace, CI/deploy automático, apresentação para clientes). Apresentação para clientes: `/apresentacao/` no app (seção 13).
+> Última revisão: 2026-10-11 (BIWEB Discovery Engine / Discovery Studio, internacionalização pt-BR/en/es, Data Workspace, CI/deploy automático, apresentação para clientes). Apresentação para clientes: `/apresentacao/` no app (seção 13).
 
 ## 1. O que é
 
-Plataforma web de Business Intelligence: relatórios e dashboards editáveis, mapas operacionais (GIS), gêmeo digital 3D, workflows de dados, migração de plataformas de BI externas e um Copilot de IA. Hoje existe **apenas o front-end** (`apps/web`), rodando 100% no browser com dados demonstrativos determinísticos. O blueprint prevê control plane TS + data plane Rust, mas esses módulos são esqueletos.
+Plataforma web de inteligência e operações: relatórios e dashboards editáveis, mapas operacionais (GIS), gêmeo digital 3D, workflows de dados, migração de plataformas de BI externas, **inteligência externa guiada por evidências (Discovery Studio)** e um Copilot de IA. Hoje existe **apenas o front-end** (`apps/web`), rodando 100% no browser com dados demonstrativos determinísticos. O blueprint prevê control plane TS + data plane Rust, mas esses módulos são esqueletos.
+
+**Ecossistema de motores.** O BIWEB combina Internal Data Intelligence (**LDE**, Data Workspace), External Intelligence (**BDE**, Discovery Studio), Application Composition (**BCE**), Analytics Reconstruction (**Migration Engine**), Contextual Intelligence (**Copilot / Intelligence Core**) e Operational Applications (**Report, Map e Workflow Builders**). O LDE entende os dados internos, o BDE entende o mundo externo; ambos geram *Trusted Knowledge*, que alimenta o BCE, que alimenta os Builders e as Operations; o Copilot atravessa tudo. Fronteiras de confiança: **BDE descobre · LDE confia após validar · BCE constrói a partir de contratos · Copilot explica e orquestra.** Os motores são independentes (BDE e LDE não são o mesmo sistema). Narrativa e diagrama completos: [`bde/01-biweb-discovery-engine.md`](bde/01-biweb-discovery-engine.md) §2.
 
 ## 2. Mapa do repositório
 
@@ -20,7 +22,7 @@ Plataforma web de Business Intelligence: relatórios e dashboards editáveis, ma
 | `apps/control-plane`, `jdbc-bridge`, `render-service` | Backends | Esqueleto |
 | `crates/` | Data plane Rust (Cargo workspace) | Esqueleto |
 | `testing/` | `e2e` (Playwright + axe), `load`, `query-correctness`, `corpus`, `ai-evals` | Só `e2e` |
-| `docs/` | Blueprint, ADRs, design system, runbooks, esta doc | — |
+| `docs/` | Blueprint, ADRs, design system, runbooks, esta doc; `docs/bde/` = BIWEB Discovery Engine (auditoria/plano e página do motor) | — |
 | `apps/web/public/apresentacao/` | Apresentação para clientes servida em `/apresentacao/` (HTML + capturas) | Funcional |
 | `.github/workflows/` | `ci.yml` (TS + Rust), `deploy.yml` (Cloudflare Pages a cada push em `main`) | Funcional |
 | `tools/` | `brand/` (capas e logos), `artifact/inline.mjs`, `deploy.sh`, `check-docs.mjs` (confere rotas × doc) | Funcional |
@@ -83,6 +85,7 @@ src/
   copilot/      motor de exemplo do Copilot (simulado)
   datasources/  Tela antiga de Dados (DataPage, importação, linhagem); hoje aba "Datasets de relatório" em Publicados
   dataworkspace/ Data Workspace (LDE): ver 5.8.1
+  discovery/    Discovery Studio (BDE): ver 5.10
   net/          grafo da Rede SP (geração, layout, line-of-sight)
   fixtures/     Lume Varejo
   i18n/         idiomas pt-BR, en e es: catálogo por domínio (inclui Product Pulse), formatadores, glossário (ver 6)
@@ -139,6 +142,18 @@ Protótipo navegável do Living Data Engine (LDE): conectar → descobrir → en
 - A tela anterior de Dados (`datasources/DataPage.tsx`) foi preservada como aba "Datasets de relatório" em Publicados.
 - Não commite arquivos com nomes que diferem só por caixa (`catalog.ts` × `Catalog.tsx` quebra o `tsc` no macOS): os dados ficam em `registry.ts`.
 
+### 5.10 Discovery Studio (`discovery/`)
+Protótipo navegável do BIWEB Discovery Engine (BDE): descobrir → adquirir → extrair → entender → verificar → conectar → monitorar → entregar informação **externa** de fontes públicas ou autorizadas. **Só front-end**: dados demo determinísticos (rotulados "Demo data"); nenhuma fonte real é consultada. Conceito e governança: [`bde/01-biweb-discovery-engine.md`](bde/01-biweb-discovery-engine.md); decisão: [ADR-0045](architecture/adr/ADR-0045-biweb-discovery-engine.md).
+- **Dados** (`data/`): `types.ts` (contratos: ResearchMission, ResearchSpec, SourceDescriptor, SourcePolicy, FetchSnapshot, ExternalDocument, Observation, Evidence, EvidencePack, EntityCandidate, ChangeEvent, Conflict, EnrichmentProposal, ResearchDataset…), `seed.ts` (**fonte única** de todos os números e registros), `derive.ts` (`stats()`, seletores, `score`), arquivos de apoio por área (`explore.ts`, `datasets.ts`, `missions.ts`, `records.ts`). A confiança é guardada por componente (authority, freshness, corroboration, extraction, entity match, contradictions) e o agregado é **calculado** (`score`). Testes: `seed.test.ts` garante que Overview, missões, watchlists, conflitos e propostas batem (12 missões, 184 fontes, 42 mudanças na semana, 3 conflitos, 8 propostas; 27 organizações = 18 + 7 + 2).
+- **Estado** (`store.ts`, zustand): seleção do inspetor, conflitos resolvidos, status das propostas, missões e watchlists criadas, consulta/modo do Explore (persistem ao abrir uma entidade e voltar), evidência aberta, comparação e toasts. A URL guarda só seção + item.
+- **Casca** (`DiscoveryStudio.tsx`): reaproveita o layout `dw` do Data Workspace (navegação · centro · inspetor recolhível) e o CSS `dataworkspace.css`; o que é próprio fica em `discovery.css` e nas folhas por área (`views/*.css`). Seções `lazy`. `panels/Inspector.tsx` é o inspetor contextual.
+- **Telas** (`views/`): Overview (External Intelligence Pulse), Explore (+ `ExploreModes`), Missions (+ `MissionWizard`, 8 passos, ResearchSpec), Watchlists, Changes (Before/After semântico e snapshots), Entities (+ `EntityDetail`, `EntityGraph`, `Compare`), Sources (registry, snapshots, política, Advanced, extratores), Observations, Evidence (Evidence Pack), Conflicts, Datasets (handoffs e enriquecimento), Runs, Governance (Policies e Settings).
+- **Componentes novos** (`ui.tsx`): `ConfidenceBreakdown`, `SemanticChange`, `TraceBtn`/`EvidenceViewer` (Source Provenance e verificação com segunda fonte), `ProgressList`, `Grid` (tabela densa), selos de autoridade/saúde. O resto reusa `dataworkspace/ui.tsx`, `Canvas.tsx` e `@biweb/ui`.
+- **Handoffs**: *Send to LDE* chama `useDw.receiveExternal` (`dataworkspace/store.ts`) e a proposta aparece em `/data/enrichment` (bloco "Externo · BDE"), onde só é aplicada após revisão; Map/Report/Workflow abrem as rotas existentes (`/maps`, `/reports/novo/edit`, `/workflows`). Dependência de uma via: `discovery` → `dataworkspace`, nunca o contrário.
+- **Copilot**: `copilot-lite.ts` (engine leve no shell + `discoveryPath`) carrega `copilot.ts` sob demanda; links do Copilot usam ids `ev:`, `ch:`, `en:`, `ds:`, `ob:`, `cf:`, `ms:`, `src:`, `go:<rota>`.
+- **i18n**: shell, navegação e ⌘K pelo domínio `i18n/messages/discovery.ts` (pt-BR, en, es). O corpo das telas usa vocabulário de produto em inglês (Explore, Observations, Evidence…) fixo no código, como o Data Workspace; migrar para o catálogo está no roadmap (§11).
+- **Regras do módulo**: nada externo é aplicado em silêncio (DISCOVER → PROPOSE → REVIEW → LDE VALIDATION → APPLY); toda afirmação mostra Source, Evidence e Confidence ou "Needs verification"; interpretação de IA (`ds-ai`) fica separada da evidência; fontes bloqueadas mostram o motivo e nunca são contornadas; vocabulário técnico (selector, XPath, proxy…) só em Advanced.
+
 ### 5.9 Copilot
 UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `aiEnabled`: a plataforma tem que funcionar com a IA desligada (ADR-0033, imposto pelo dependency-cruiser).
 
@@ -192,6 +207,8 @@ UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `
 
 **Nova plataforma ou projeto de migração:** `PLATFORMS` em `routes/migration/model.ts` → projeto em `analysis.ts › PROJECTS` (+ `SUMMARY_TREES`/`SUMMARY_DIALECT` se for resumido).
 
+**Nova missão, fonte ou entidade do Discovery:** registrar em `discovery/data/seed.ts` (com evidência) → atualizar `stats()` se mudar um número global → ajustar `seed.test.ts`. **Nova seção do Discovery:** componente em `discovery/views/` (`{ id?: string }`) → `lazy` e `NAV` em `DiscoveryStudio.tsx` → chave em `i18n/messages/discovery.ts` → `DiscoverySection` em `data/types.ts`.
+
 **Nova rota:** `createRoute` em `router.tsx` (lazy se pesada) → item no `AppShell` e na paleta ⌘K → atualizar a tabela da seção 4.
 
 **Novo workflow seed:** `routes/workflows/seeds.ts`; nova regra de execução em `engine.ts` + teste.
@@ -200,13 +217,13 @@ UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `
 
 | Camada | Comando | Cobre |
 |---|---|---|
-| Unit (Vitest) | `pnpm test` | tokens (contraste), ui, motor de gráficos, `cf`, dados de vendas, Copilot do editor, mapas, workflows, relatórios demo, Migration Studio, idiomas (`i18n`) |
+| Unit (Vitest) | `pnpm test` | tokens (contraste), ui, motor de gráficos, `cf`, dados de vendas, Copilot do editor, mapas, workflows, relatórios demo, Migration Studio, idiomas (`i18n`), Discovery (`discovery/data`) |
 | E2E (Playwright + axe) | `pnpm e2e` | shell inicial (`testing/e2e/tests/shell.spec.ts`, 8 testes); roda fixado em `pt-BR` (`testing/e2e/playwright.config.ts`) |
 | Documentação | `node tools/check-docs.mjs` | toda rota de `router.tsx` aparece na tabela da seção 4 |
 | Fronteiras | `pnpm check:boundaries` | regras de dependência |
 | CI | `.github/workflows/ci.yml` | lint, typecheck, testes, build, fronteiras, docs (job `ts`) e clippy/testes Rust (job `rust`) |
 
-Hoje: 99 testes unitários em `apps/web` (11 arquivos; 21 deles de i18n), mais tokens e ui. Lacunas: testes do Data Workspace (`sample.ts`, `store.ts`, `copilot.ts`), E2E do editor, mapas, workflows, migração e login; teste visual; carga e correção de queries (aguardam backend).
+Hoje: 109 testes unitários em `apps/web` (13 arquivos; 21 deles de i18n, 10 do Discovery: consistência dos números demo e classificação de consultas), mais tokens e ui. Lacunas: testes de interface do Discovery e E2E do módulo; testes do Data Workspace (`sample.ts`, `store.ts`, `copilot.ts`), E2E do editor, mapas, workflows, migração e login; teste visual; carga e correção de queries (aguardam backend).
 
 ## 9. Build e deploy
 
@@ -237,6 +254,11 @@ Hoje: 99 testes unitários em `apps/web` (11 arquivos; 21 deles de i18n), mais t
 | Picker | Seletor de visualização agrupado por pergunta |
 | Product Pulse / Workspace Pulse | Composição viva do login / Home |
 | Copilot | Assistente de IA (hoje simulado) |
+| BDE / Discovery Studio | BIWEB Discovery Engine: inteligência externa guiada por evidências (hoje protótipo com dados demo) |
+| Observation / Evidence / Evidence Pack | Fato externo com fonte e confiança decomposta / trecho que o sustenta / evidências de uma afirmação |
+| Research Mission / Watchlist / ResearchSpec | Investigação com objetivo / acompanhamento contínuo / contrato legível da missão |
+| Semantic Change | Mudança descrita pelo significado, não por diff de HTML |
+| Trusted Knowledge | Conhecimento validado (LDE) a partir de dados internos e de enriquecimento externo aprovado |
 | QDL, Semantic layer, Cell | Conceitos do blueprint ainda não implementados |
 
 Traduções dos termos (pt-BR, en, es) e o status de cada decisão: `apps/web/src/i18n/glossary.ts`. Esta tabela define o conceito; o glossário define o rótulo.
@@ -251,8 +273,9 @@ Traduções dos termos (pt-BR, en, es) e o status de cada decisão: `apps/web/sr
 6. Ampliar E2E (Data Workspace incluso) e adicionar testes visuais; documentar deploy em `docs/runbooks/`.
    Data Workspace: testes unitários de `sample.ts`/`store.ts`/`copilot.ts`, ligação real ao LDE e persistência de decisões.
 8. Material de apresentação para os demais módulos (relatórios, mapas, fluxos, migração), com capturas reais, segurança e governança.
+9. Discovery Studio: motor real do BDE (aquisição respeitando políticas, extração, snapshots e observations persistidas), watchlists agendadas, corpo das telas no catálogo i18n e E2E do módulo (ADR-0045).
 7. Grãos de data por minuto/hora para relatórios em tempo real.
-8. Internacionalização restante. Migrados: login, shell (rail, topbar, breadcrumbs, preferências, notificações), ⌘K e os rótulos/formatadores do painel Product Pulse. Ainda em pt-BR: Home, Data Workspace, Report/Map/Workflow Builders, Migration Studio, Copilot (respostas do motor de exemplo), dados demo (`routes/home-model.ts`, nomes de componentes em `editor/doc.ts`, `dataworkspace/*`, `routes/migration/*`) e a apresentação `/apresentacao/`. A formatação existente (`toLocaleString`, `toFixed`, `${v}%`, dezenas de pontos) ainda não usa `i18n/format.ts`.
+8. Internacionalização restante. Migrados: login, shell (rail, topbar, breadcrumbs, preferências, notificações), ⌘K e os rótulos/formatadores do painel Product Pulse. Ainda em pt-BR (ou, no Discovery, em inglês fixo): corpo do Discovery Studio, Home, Data Workspace, Report/Map/Workflow Builders, Migration Studio, Copilot (respostas do motor de exemplo), dados demo (`routes/home-model.ts`, nomes de componentes em `editor/doc.ts`, `dataworkspace/*`, `routes/migration/*`) e a apresentação `/apresentacao/`. A formatação existente (`toLocaleString`, `toFixed`, `${v}%`, dezenas de pontos) ainda não usa `i18n/format.ts`.
 
 ## 12. Como manter esta documentação
 

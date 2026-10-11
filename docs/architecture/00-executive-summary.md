@@ -17,6 +17,9 @@ Uma **plataforma** de BI (não uma aplicação), composta por cinco motores com 
 | **Dashboard Engine** | Interpretar documentos declarativos de dashboard em queries, estado e interações | Browser **e** servidor (isomórfico) | TypeScript |
 | **Visualization Engine** | Renderizar dados via plugins intercambiáveis | Browser (+ render service para exports) | TypeScript |
 
+### Ecossistema de inteligência (emenda de 2026-10-11)
+Acima dos motores de dados, o produto se organiza em motores de inteligência independentes (ADR-0043, ADR-0045): **LDE** (inteligência interna: "o que nossos dados significam?"), **BDE** — BIWEB Discovery Engine, exposto como Discovery Studio (inteligência externa: "o que acontece fora da organização?"), **BCE** (composição de aplicações), **Analytics Migration Engine** (reconstrução) e **Copilot / Intelligence Core** (contexto e orquestração), alimentando os Builders de Report, Map e Workflow e, por fim, as Operations. LDE e BDE geram *Trusted Knowledge* que alimenta o BCE. Fronteiras de confiança: o BDE **descobre**, o LDE **confia após validar**, o BCE **constrói a partir de contratos**, o Copilot **explica e orquestra**. O BDE nunca altera o modelo do LDE: entrega propostas de enriquecimento revisáveis. Detalhes em [`../bde/01-biweb-discovery-engine.md`](../bde/01-biweb-discovery-engine.md).
+
 ### As decisões que definem a arquitetura
 
 1. **Dois planos, cada um um monolito modular.** *Control plane* em **TypeScript (Node + Fastify)** — identidade, tenancy, conteúdo, autoria semântica, orquestração, entrega, governança. *Data plane* em **Rust** — compilador semântico, query service, conectores, ingestão/transformação, pre-aggregations, realtime gateway. Não há microservices no início; há **duas fronteiras de deploy justificadas** por perfis de carga e domínios de falha diferentes (uma query descontrolada não derruba o login). Ver [ADR-0001](adr/ADR-0001-two-plane-architecture.md).

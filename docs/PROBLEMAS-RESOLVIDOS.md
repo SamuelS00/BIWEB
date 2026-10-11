@@ -160,6 +160,15 @@ Pacote `packages/assistant-ui` + motor de exemplo no app (`copilot/engine.ts`): 
 | Zustand usa o estado inicial como snapshot no `renderToStaticMarkup`: teste SSR não enxerga `setState` | Troca reativa verificada no navegador; o teste automatizado cobre a renderização por idioma e a store separadamente | `i18n/i18n.test.tsx` |
 | Espanhol sem separador em 4 dígitos (`1234`) e BRL como `1234,56 BRL` | Convenção CLDR mantida, conforme o pedido ("convenção adequada ao locale"); registrada no glossário/decisões | `i18n/format.ts`, `i18n/glossary.ts` |
 
+### 2.x Discovery Studio (BIWEB Discovery Engine) — 2026-10-11
+| Problema | Solução | Onde |
+|---|---|---|
+| Não havia onde descobrir, verificar e monitorar informação externa com proveniência | Novo motor independente (BDE) e módulo **Discovery Studio**: observations com evidência e confiança decomposta, Evidence Packs, mudanças semânticas, conflitos, missões, watchlists e datasets | `apps/web/src/discovery/`, `docs/bde/`, ADR-0045 |
+| Risco de dado externo entrar no conhecimento interno em silêncio | Fluxo DISCOVER → PROPOSE → REVIEW → LDE VALIDATION → APPLY: "Send to LDE" cria proposta que o Data Workspace só aplica após revisão | `discovery/views/Datasets.tsx`, `dataworkspace/store.ts › receiveExternal`, `Enrichment.tsx` |
+| Números demo divergindo entre telas (12 missões, 184 fontes, 42 mudanças, 3 conflitos…) | Fonte única `seed.ts` + `stats()` e teste de consistência; confiança agregada calculada dos componentes | `discovery/data/seed.ts`, `derive.ts`, `seed.test.ts` |
+| Fontes bloqueadas poderiam sugerir "contorno" | A UI mostra o bloqueio e o motivo (robots, policy, rate limit, auth, indisponível, removida) e não oferece bypass | `seed.ts › BLOCK_LABEL`, `views/Sources.tsx`, `views/Governance.tsx` |
+| Chaves do catálogo i18n do ⌘K quebravam o teste de domínio | Rótulos do Discovery em `discovery.palette.*` no próprio domínio | `i18n/messages/discovery.ts` |
+
 ## 3. Decisões que valem daqui para frente
 1. **Não apagar o que existe**: cada nova rodada incorpora ao estado atual e preserva o design system aprovado.
 2. **Tokens, nunca cores literais**; contraste testado.
