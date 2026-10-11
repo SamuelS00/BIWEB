@@ -47,4 +47,4 @@
 @media(prefers-reduced-motion:reduce){.dm-live i{animation:none}.dm-windows u,.dm-bars u{transition:none}}
 @media(max-width:560px){.dm-windows>div{grid-template-columns:62px 1fr 40px}.dm-windows .bw-badge{display:none}.dm-slider input{width:100px}}
 .demo-anomaly-row .bw-badge{flex:none}.demo-widget.demo-wide{min-height:0}
-.demo-cohort td{background:color-mix(in srgb,var(--demo-accent) calc(var(--heat,0) * 85%),var(--surface-app));color:var(--text-primary);font-variant-numeric:tabular-nums;text-shadow:0 0 3px rgba(0,0,0,.35)}
+.demo-cohort td{background:color-mix(in srgb,var(--demo-accent) calc(var(--heat,0) * 85%),var(--surface-app));color:var(--text-primary);font-variant-numeric:tabular-nums;text-shadow:0 0 3px var(--media-shade)}

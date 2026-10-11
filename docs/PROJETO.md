@@ -2,7 +2,7 @@
 
 > Documento vivo. É o ponto de entrada para quem vai evoluir o código. O **porquê** de longo prazo está no blueprint ([`architecture/`](architecture/), ADRs); aqui está o **como o projeto é hoje** e **como mexer nele**.
 > Histórico do que já foi resolvido: [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md). Regras para humanos e agentes manterem esta doc em dia: [`AGENTS.md`](../AGENTS.md).
-> Última revisão: 2026-10-11 (BIWEB Discovery Engine / Discovery Studio, internacionalização pt-BR/en/es, Data Workspace, CI/deploy automático, apresentação para clientes). Apresentação para clientes: `/apresentacao/` no app (seção 13).
+> Última revisão: 2026-10-11 (BIWEB Discovery Engine / Discovery Studio, revisão de "AI slop" (tokens `--media-*`, fim das faixas laterais), internacionalização pt-BR/en/es, Data Workspace, CI/deploy automático, apresentação para clientes). Apresentação para clientes: `/apresentacao/` no app (seção 13).
 
 ## 1. O que é
 
@@ -26,7 +26,8 @@ Plataforma web de inteligência e operações: relatórios e dashboards editáve
 | `apps/web/public/apresentacao/` | Apresentação para clientes servida em `/apresentacao/` (HTML + capturas) | Funcional |
 | `.github/workflows/` | `ci.yml` (TS + Rust), `deploy.yml` (Cloudflare Pages a cada push em `main`) | Funcional |
 | `tools/` | `brand/` (capas e logos), `artifact/inline.mjs`, `deploy.sh`, `check-docs.mjs` (confere rotas × doc) | Funcional |
-| `design-handoff/`, `REFERENCE_PACK_*.md`, `SCREEN_CATALOG_BI.md`, `SKILLS_STACK.md` | Material de entrada de design | Referência |
+| `design-handoff/` | Material de entrada de design; fonte única dos reference packs, catálogo de telas e skills | Referência |
+| `REFERENCE_PACK_COMPLEX_WORKFLOWS.md` | Pack complementar de workflows complexos, GIS, realtime e IA | Referência |
 
 > Trabalhe em `apps/web` e use os pacotes `tokens`, `ui` e `assistant-ui`. Não preencha os esqueletos sem um épico em [`architecture/32-epics-and-implementation-prompts.md`](architecture/32-epics-and-implementation-prompts.md).
 
@@ -142,7 +143,7 @@ Protótipo navegável do Living Data Engine (LDE): conectar → descobrir → en
 - A tela anterior de Dados (`datasources/DataPage.tsx`) foi preservada como aba "Datasets de relatório" em Publicados.
 - Não commite arquivos com nomes que diferem só por caixa (`catalog.ts` × `Catalog.tsx` quebra o `tsc` no macOS): os dados ficam em `registry.ts`.
 
-### 5.10 Discovery Studio (`discovery/`)
+### 5.9 Discovery Studio (`discovery/`)
 Protótipo navegável do BIWEB Discovery Engine (BDE): descobrir → adquirir → extrair → entender → verificar → conectar → monitorar → entregar informação **externa** de fontes públicas ou autorizadas. **Só front-end**: dados demo determinísticos (rotulados "Demo data"); nenhuma fonte real é consultada. Conceito e governança: [`bde/01-biweb-discovery-engine.md`](bde/01-biweb-discovery-engine.md); decisão: [ADR-0045](architecture/adr/ADR-0045-biweb-discovery-engine.md).
 - **Dados** (`data/`): `types.ts` (contratos: ResearchMission, ResearchSpec, SourceDescriptor, SourcePolicy, FetchSnapshot, ExternalDocument, Observation, Evidence, EvidencePack, EntityCandidate, ChangeEvent, Conflict, EnrichmentProposal, ResearchDataset…), `seed.ts` (**fonte única** de todos os números e registros), `derive.ts` (`stats()`, seletores, `score`), arquivos de apoio por área (`explore.ts`, `datasets.ts`, `missions.ts`, `records.ts`). A confiança é guardada por componente (authority, freshness, corroboration, extraction, entity match, contradictions) e o agregado é **calculado** (`score`). Testes: `seed.test.ts` garante que Overview, missões, watchlists, conflitos e propostas batem (12 missões, 184 fontes, 42 mudanças na semana, 3 conflitos, 8 propostas; 27 organizações = 18 + 7 + 2).
 - **Estado** (`store.ts`, zustand): seleção do inspetor, conflitos resolvidos, status das propostas, missões e watchlists criadas, consulta/modo do Explore (persistem ao abrir uma entidade e voltar), evidência aberta, comparação e toasts. A URL guarda só seção + item.
@@ -154,15 +155,16 @@ Protótipo navegável do BIWEB Discovery Engine (BDE): descobrir → adquirir �
 - **i18n**: shell, navegação e ⌘K pelo domínio `i18n/messages/discovery.ts` (pt-BR, en, es). O corpo das telas usa vocabulário de produto em inglês (Explore, Observations, Evidence…) fixo no código, como o Data Workspace; migrar para o catálogo está no roadmap (§11).
 - **Regras do módulo**: nada externo é aplicado em silêncio (DISCOVER → PROPOSE → REVIEW → LDE VALIDATION → APPLY); toda afirmação mostra Source, Evidence e Confidence ou "Needs verification"; interpretação de IA (`ds-ai`) fica separada da evidência; fontes bloqueadas mostram o motivo e nunca são contornadas; vocabulário técnico (selector, XPath, proxy…) só em Advanced.
 
-### 5.9 Copilot
+### 5.10 Copilot
 UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `aiEnabled`: a plataforma tem que funcionar com a IA desligada (ADR-0033, imposto pelo dependency-cruiser).
 
 ## 6. Convenções
 
 **Design**
-- Cores, raios e espaçamentos só via tokens (`--accent`, `--viz-cat-n`, `--viz-status-*`, `--dash-*`…). Nenhuma cor literal fora de `packages/tokens`.
+- Cores, raios e espaçamentos só via tokens (`--accent`, `--viz-cat-n`, `--viz-status-*`, `--dash-*`…). Nenhuma cor literal fora de `packages/tokens`. Superfícies sempre escuras sobre mapa, foto ou capa usam o grupo `--media-*` (`scrim`, `text`, `hairline`, `map-*`…) e o tooltip de dados usa `--viz-tooltip-positive/-negative`. Exceções declaradas: paletas de dados dos mapas (`routes/maps/*`, `legend.ts`), capas geradas (`editor/covers.ts`, `MapCover.tsx`), cores de marca de terceiros (`migration/ui.tsx`) e a paleta do motor 3D (`viz/scene3d/format.ts`, canvas sem acesso a CSS vars).
 - Preservar o design system aprovado; evoluir sem redesenhar o produto.
 - Evitar padrões genéricos de IA: card central sobre gradiente, glow, glassmorphism, partículas, slogans gigantes.
+- Callouts, citações e cartões não usam faixa colorida lateral (`border-left` de acento) nem faixa no topo: borda inteira de 1 px, com a cor do estado misturada à borda (`color-mix`) quando houver tom. Trilhos de linha do tempo e a cor de categoria dos nós de grafo ficam, porque codificam estrutura.
 - Gráfico responde a uma pergunta; mais informação por interação, não mais ruído.
 - Movimento respeita `prefers-reduced-motion`. Acessibilidade: axe sem violações graves, gráficos operáveis por teclado.
 
@@ -271,11 +273,11 @@ Traduções dos termos (pt-BR, en, es) e o status de cada decisão: `apps/web/sr
 4. Extrair do `apps/web` para os pacotes: `dashboard-core` (documento + migrations), `viz-sdk` (contrato de plugin), `layout-engine`.
 5. Copilot real via Model Gateway com principal delegado e ChangeSets (ADR-0033–0041).
 6. Ampliar E2E (Data Workspace incluso) e adicionar testes visuais; documentar deploy em `docs/runbooks/`.
-   Data Workspace: testes unitários de `sample.ts`/`store.ts`/`copilot.ts`, ligação real ao LDE e persistência de decisões.
+7. Data Workspace: testes unitários de `sample.ts`/`store.ts`/`copilot.ts`, ligação real ao LDE e persistência de decisões.
 8. Material de apresentação para os demais módulos (relatórios, mapas, fluxos, migração), com capturas reais, segurança e governança.
 9. Discovery Studio: motor real do BDE (aquisição respeitando políticas, extração, snapshots e observations persistidas), watchlists agendadas, corpo das telas no catálogo i18n e E2E do módulo (ADR-0045).
-7. Grãos de data por minuto/hora para relatórios em tempo real.
-8. Internacionalização restante. Migrados: login, shell (rail, topbar, breadcrumbs, preferências, notificações), ⌘K e os rótulos/formatadores do painel Product Pulse. Ainda em pt-BR (ou, no Discovery, em inglês fixo): corpo do Discovery Studio, Home, Data Workspace, Report/Map/Workflow Builders, Migration Studio, Copilot (respostas do motor de exemplo), dados demo (`routes/home-model.ts`, nomes de componentes em `editor/doc.ts`, `dataworkspace/*`, `routes/migration/*`) e a apresentação `/apresentacao/`. A formatação existente (`toLocaleString`, `toFixed`, `${v}%`, dezenas de pontos) ainda não usa `i18n/format.ts`.
+10. Grãos de data por minuto/hora para relatórios em tempo real.
+11. Internacionalização restante. Migrados: login, shell (rail, topbar, breadcrumbs, preferências, notificações), ⌘K e os rótulos/formatadores do painel Product Pulse. Ainda em pt-BR (ou, no Discovery, em inglês fixo): corpo do Discovery Studio, Home, Data Workspace, Report/Map/Workflow Builders, Migration Studio, Copilot (respostas do motor de exemplo), dados demo (`routes/home-model.ts`, nomes de componentes em `editor/doc.ts`, `dataworkspace/*`, `routes/migration/*`) e a apresentação `/apresentacao/`. A formatação existente (`toLocaleString`, `toFixed`, `${v}%`, dezenas de pontos) ainda não usa `i18n/format.ts`.
 
 ## 12. Como manter esta documentação
 
@@ -283,6 +285,7 @@ Traduções dos termos (pt-BR, en, es) e o status de cada decisão: `apps/web/sr
 - Terminou algo relevante ou resolveu um problema? Acrescente em [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md) (problema → solução → onde).
 - Decisão arquitetural nova ou que contraria o blueprint? Escreva um ADR em `architecture/adr/` e cite aqui.
 - Atualize a data de revisão no topo.
+- Mantenha a distinção entre estado implementado (`PROJETO.md`), decisões (`architecture/adr/`) e direção futura (`architecture/` e roadmap). Documentos de auditoria encerrados devem ser marcados como históricos.
 
 ## 13. Apresentação para clientes (`apps/web/public/apresentacao/`)
 

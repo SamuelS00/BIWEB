@@ -27,7 +27,7 @@
 .vz-lbl { fill: var(--dash-title); font: 400 11px/1 var(--font-sans); }
 .vz-val { fill: var(--dash-subtitle); font: 500 10.5px/1 var(--font-sans); font-variant-numeric: tabular-nums; }
 .vz-big { fill: var(--dash-title); font: 600 18px/1 var(--font-sans); font-variant-numeric: tabular-nums; }
-.vz-onmark { fill: #fff; font: 600 10px/1 var(--font-sans); pointer-events: none; }
+.vz-onmark { fill: var(--media-text); font: 600 10px/1 var(--font-sans); pointer-events: none; }
 .vz-mark { cursor: pointer; transition: opacity var(--duration-base) var(--easing-standard); }
 .vz-chart { position: absolute; inset: 0; display: flex; flex-direction: column; }
 .vz-plot { position: relative; flex: 1; min-height: 0; }
@@ -266,17 +266,17 @@ button.vz-chain-node:hover { text-decoration: underline; text-underline-offset: 
 .vz-drag { fill: var(--accent); opacity: .16; stroke: var(--accent); stroke-width: 1; }
 .vz-band-1 { fill: var(--viz-status-critical); opacity: .16; } .vz-band-2 { fill: var(--viz-status-warning); opacity: .16; } .vz-band-3 { fill: var(--viz-status-normal); opacity: .16; }
 .vz-ref text { font: 600 9.5px var(--font-sans); paint-order: stroke; stroke: var(--dash-widget-surface); stroke-width: 3px; stroke-linejoin: round; }
-.vz-note-i { fill: #fff; font: 700 9px var(--font-sans); pointer-events: none; }
+.vz-note-i { fill: var(--media-text); font: 700 9px var(--font-sans); pointer-events: none; }
 .vz-note { cursor: help; }
 .vz-brush-line { stroke: var(--text-muted); stroke-width: 1; }
 .vz-brush-win { fill: var(--accent); opacity: .16; stroke: var(--accent); }
 .vz-reset { position: absolute; top: 2px; right: 6px; z-index: 6; padding: 3px 9px; border: 1px solid var(--border-default); border-radius: 999px; background: var(--surface-panel); color: var(--text-primary); font: 600 10px var(--font-sans); cursor: pointer; box-shadow: var(--shadow-popover); }
 .vz-hint { position: absolute; bottom: 2px; right: 8px; font: 400 9.5px var(--font-sans); color: var(--text-muted); pointer-events: none; }
-.vz-rtip { position: absolute; left: 0; top: 0; z-index: 30; min-width: 170px; max-width: 280px; padding: 9px 11px; border-radius: var(--radius-md); background: var(--viz-tooltip-bg); color: var(--viz-tooltip-text); box-shadow: 0 8px 24px rgba(0,0,0,.28); font: 400 11px/16px var(--font-sans); pointer-events: none; animation: bw-fade 110ms var(--easing-standard); }
+.vz-rtip { position: absolute; left: 0; top: 0; z-index: 30; min-width: 170px; max-width: 280px; padding: 9px 11px; border-radius: var(--radius-md); background: var(--viz-tooltip-bg); color: var(--viz-tooltip-text); box-shadow: var(--shadow-popover); font: 400 11px/16px var(--font-sans); pointer-events: none; animation: bw-fade 110ms var(--easing-standard); }
 .vz-rtip-h { display: flex; flex-direction: column; gap: 1px; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent); }
 .vz-rtip-h b { font: 700 10.5px/14px var(--font-sans); letter-spacing: .05em; text-transform: uppercase; } .vz-rtip-h span { opacity: .7; font-size: 10px; }
 .vz-rtip-r { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 1.5px 0; } .vz-rtip-r > span { display: inline-flex; align-items: center; gap: 6px; opacity: .88; }
-.vz-rtip-r.is-strong b { font-size: 12.5px; } .vz-rtip-r.is-muted { opacity: .72; } .vz-rtip-r.is-up b { color: #6fe3a1; } .vz-rtip-r.is-down b { color: #ff9a8f; }
+.vz-rtip-r.is-strong b { font-size: 12.5px; } .vz-rtip-r.is-muted { opacity: .72; } .vz-rtip-r.is-up b { color: var(--viz-tooltip-positive); } .vz-rtip-r.is-down b { color: var(--viz-tooltip-negative); }
 .vz-rtip i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; } .vz-rtip i.sw-dash { height: 0; width: 12px; border-top: 2px dashed; border-radius: 0; } .vz-rtip i.sw-dot { border-radius: 50%; }
 .vz-drill { flex-wrap: wrap; gap: 4px 6px; } .vz-drill button:disabled { opacity: .4; cursor: default; } .vz-crumb-wrap { display: inline-flex; gap: 6px; align-items: center; } .vz-crumb-wrap i { font-style: normal; color: var(--text-muted); }
 .vz-crumb { color: var(--dash-title) !important; font-weight: 500 !important; } .vz-crumb[aria-current='true'] { font-weight: 700 !important; text-decoration: underline; text-underline-offset: 3px; } .vz-drill-next { margin-left: auto; font-size: 10px; color: var(--text-muted); }

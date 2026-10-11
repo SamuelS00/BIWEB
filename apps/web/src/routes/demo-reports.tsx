@@ -10,9 +10,9 @@ import './demo-reports.css';
 
 type DemoId = 'demo_anomaly' | 'demo_sla' | 'demo_customer';
 const META: Record<DemoId, { title: string; sub: string; accent: string; icon: 'timeline' | 'kpi' | 'chart'; kicker: string }> = {
-  demo_anomaly: { title: 'Anomaly Explorer', sub: 'Detecção de desvios em séries operacionais: baseline móvel, z-score e leitura assistida.', accent: '#e8734a', icon: 'timeline', kicker: 'Detecção' },
-  demo_sla: { title: 'SLA & Risk Monitor', sub: 'Orçamento de erro, taxa de consumo, projeção de esgotamento e risco por serviço.', accent: '#4a8fe8', icon: 'kpi', kicker: 'Confiabilidade' },
-  demo_customer: { title: 'Customer Behavior', sub: 'Onboarding, retenção por coorte e caminhos de ativação das contas.', accent: '#2fb8a0', icon: 'chart', kicker: 'Experiência' },
+  demo_anomaly: { title: 'Anomaly Explorer', sub: 'Detecção de desvios em séries operacionais: baseline móvel, z-score e leitura assistida.', accent: 'var(--viz-cat-6)', icon: 'timeline', kicker: 'Detecção' },
+  demo_sla: { title: 'SLA & Risk Monitor', sub: 'Orçamento de erro, taxa de consumo, projeção de esgotamento e risco por serviço.', accent: 'var(--viz-cat-1)', icon: 'kpi', kicker: 'Confiabilidade' },
+  demo_customer: { title: 'Customer Behavior', sub: 'Onboarding, retenção por coorte e caminhos de ativação das contas.', accent: 'var(--viz-cat-3)', icon: 'chart', kicker: 'Experiência' },
 };
 
 function Metric({ label, value, note, tone, spark, color }: { label: string; value: string; note: string; tone?: 'warning' | 'danger' | 'success'; spark?: number[]; color?: string }) {
@@ -106,7 +106,7 @@ function CustomerReport({ refresh, stamp }: { refresh: number; stamp: (rows: (st
   useEffect(() => { stamp([['etapa', 'contas', 'conversão da etapa %'], ...FUNNEL.map((f, i) => [f, funnel[i]!, (rate(funnel, i) * 100).toFixed(1)])]); return () => stamp(null); }, [funnel, stamp]); // eslint-disable-line react-hooks/exhaustive-deps
   const W = 640, H = 230, bw = 92, gap = (W - bw * 5) / 4, max = funnel[0]!, bh = (n: number) => n / max * (H - 70);
   const curves = COHORTS.map((c, ci) => ({ c, ci, pts: Array.from({ length: COHORTS.length - ci }, (_, m) => ({ x: m, y: retention(seg, ci, m)! })) }));
-  const palette = ['#2fb8a0', '#4a8fe8', '#a78bfa', '#e8b84a', '#e8734a', '#d96a9a'];
+  const palette = ['var(--viz-cat-3)', 'var(--viz-cat-1)', 'var(--viz-cat-5)', 'var(--viz-cat-2)', 'var(--viz-cat-6)', 'var(--viz-cat-4)'];
   return <>
     <div className="demo-context"><label>Segmento<select value={seg} onChange={(e) => setSeg(e.target.value as Segment)}>{SEGMENTS.map((s) => <option key={s}>{s}</option>)}</select></label><label>Comparar com<select value={compare} onChange={(e) => setCompare(e.target.value as Segment | 'Nenhum')}><option>Nenhum</option>{SEGMENTS.filter((s) => s !== seg).map((s) => <option key={s}>{s}</option>)}</select></label><SegmentedControl label="Visão de comportamento" value={view} onChange={setView} options={[{ id: 'Jornada', label: 'Jornada' }, { id: 'Coortes', label: 'Coortes' }, { id: 'Caminhos', label: 'Caminhos' }]} /><span className="flex-1" /><Badge tone="neutral">Aquisição · últimos 6 meses</Badge></div>
     <div className="demo-metrics"><Metric label="Contas criadas" value={nf(funnel[0]!)} note={other ? `${compare}: ${nf(other[0]!)}` : 'no período'} /><Metric label="Ativação em 7 dias" value={`${nf(act * 100, 1)}%`} note={other ? `${compare}: ${nf(other[4]! / other[0]! * 100, 1)}%` : `${nf(funnel[4]!)} contas`} tone={act > .3 ? 'success' : 'warning'} spark={funnel.map((n) => n)} /><Metric label="Maior abandono" value={`${nf(worst.pct * 100, 0)}%`} note={`${FUNNEL[worst.i - 1]} → ${FUNNEL[worst.i]}`} tone="danger" /><Metric label="Melhor segmento" value={bestSeg.s} note={`${nf(bestSeg.v * 100, 1)}% de ativação`} tone="success" /></div>

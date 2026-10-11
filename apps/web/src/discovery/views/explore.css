@@ -19,7 +19,7 @@
 .ds-ex-strip .is-hi b { color: var(--success); } .ds-ex-strip .is-mid b { color: var(--warning); } .ds-ex-strip .is-lo b { color: var(--danger); }
 .ds-ex-acts { display: flex; flex-wrap: wrap; gap: 6px; }
 .ds-ex-two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 14px; } @media (max-width: 1000px) { .ds-ex-two { grid-template-columns: 1fr; } }
-.ds-ex-callout { display: flex; gap: 8px; align-items: flex-start; padding: 8px 12px; border: 1px solid var(--border-subtle); border-left: 3px solid var(--warning); border-radius: var(--radius-sm); background: var(--surface-panel); font-size: 12px; }
+.ds-ex-callout { display: flex; gap: 8px; align-items: flex-start; padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--warning) 45%, var(--border-subtle)); border-radius: var(--radius-sm); background: var(--surface-panel); font-size: 12px; }
 .ds-ex-callout.is-ok { border-left-color: var(--success); } .ds-ex-callout svg { flex: none; margin-top: 2px; }
 .ds-ex-name { display: flex; flex-direction: column; min-width: 0; } .ds-ex-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-ex-name small { color: var(--text-muted); font-size: 10px; }
 .ds-ex-trunc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }

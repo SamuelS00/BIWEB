@@ -16,7 +16,7 @@ export function useGo() {
 export const dpath = (section: string, id?: string) => (section === 'overview' ? '/discovery' : `/discovery/${section}${id ? `/${encodeURIComponent(id)}` : ''}`);
 
 /** Selo obrigatório: todo dado do módulo é demonstrativo. */
-export function DemoTag() { return <span className="ds-demo" title="Dados de demonstração, determinísticos; nenhuma fonte real foi consultada.">Demo data</span>; }
+export function DemoTag() { return <span className="ds-demo" title="Deterministic demo data; no real source was queried.">Demo data</span>; }
 
 const AUTH_TONE: Record<Authority, Tone> = { PRIMARY: 'success', SECONDARY: 'accent', REFERENCE: 'neutral', DISCOVERY: 'neutral' };
 export function AuthorityBadge({ a }: { a: Authority }) { return <Badge tone={AUTH_TONE[a]}>{a}</Badge>; }

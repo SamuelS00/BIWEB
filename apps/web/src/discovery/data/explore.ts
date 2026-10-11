@@ -14,12 +14,12 @@ const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,
 export function classifyQuery(q: string): QueryPlan {
   const s = norm(q);
   if (!s.trim()) return { kind: 'none', plan: false };
-  if (s.includes('profundamente') || s.includes('deep') || s.includes('mercado de bi')) return { kind: 'bi', plan: true };
-  if (s.includes('mudancas')) return { kind: 'changes', plan: false };
-  if (s.includes('fibra')) return { kind: 'fiber', plan: false };
-  if (s.includes('ai analytics') || s.includes('concorrentes')) return { kind: 'competitors', plan: false };
-  if (s.includes('dados publicos') || s.includes('publicos')) return { kind: 'public', plan: false };
-  if (s.includes('novas unidades') || s.includes('sao paulo')) return { kind: 'sp', plan: false };
+  if (s.includes('profundamente') || s.includes('deep') || s.includes('mercado de bi') || s.includes('bi market')) return { kind: 'bi', plan: true };
+  if (s.includes('mudancas') || s.includes('changed') || s.includes('changes')) return { kind: 'changes', plan: false };
+  if (s.includes('fibra') || s.includes('fiber')) return { kind: 'fiber', plan: false };
+  if (s.includes('ai analytics') || s.includes('concorrentes') || s.includes('competitors')) return { kind: 'competitors', plan: false };
+  if (s.includes('dados publicos') || s.includes('publicos') || s.includes('public data')) return { kind: 'public', plan: false };
+  if (s.includes('novas unidades') || s.includes('new units') || s.includes('sao paulo')) return { kind: 'sp', plan: false };
   return { kind: 'none', plan: false };
 }
 

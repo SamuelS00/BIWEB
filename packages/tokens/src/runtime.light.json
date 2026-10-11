@@ -147,6 +147,16 @@
       "$value": "#ffffff",
       "$description": "Runtime · texto do tooltip de dados sobre `viz-tooltip-bg`."
     },
+    "tooltip-positive": {
+      "$type": "color",
+      "$value": "#6fe3a1",
+      "$description": "Runtime · variação positiva dentro do tooltip de dados (sobre `viz-tooltip-bg`)."
+    },
+    "tooltip-negative": {
+      "$type": "color",
+      "$value": "#ff9a8f",
+      "$description": "Runtime · variação negativa dentro do tooltip de dados (sobre `viz-tooltip-bg`)."
+    },
     "highlight-dim": {
       "$type": "color",
       "$value": "rgba(245,246,247,0.65)",
@@ -195,6 +205,138 @@
         "$value": "#dde8f2",
         "$description": "Mapa-base: fundo fora da área mapeada."
       }
+    }
+  },
+  "media": {
+    "scrim": {
+      "$type": "color",
+      "$value": "rgba(8, 12, 18, 0.72)",
+      "$description": "Mídia · Faixa/vidro escuro sobre mapa, foto ou capa; igual nos dois temas."
+    },
+    "scrim-strong": {
+      "$type": "color",
+      "$value": "rgba(11, 16, 24, 0.92)",
+      "$description": "Mídia · Fundo de tooltip e HUD sobre mapa."
+    },
+    "halo": {
+      "$type": "color",
+      "$value": "rgba(8, 12, 18, 0.92)",
+      "$description": "Mídia · Contorno de rótulo sobre mapa escuro."
+    },
+    "shade": {
+      "$type": "color",
+      "$value": "rgba(0, 0, 0, 0.34)",
+      "$description": "Mídia · Sombreado de legibilidade sobre imagem."
+    },
+    "text": {
+      "$type": "color",
+      "$value": "#ffffff",
+      "$description": "Mídia · Texto e marcas sobre `media-scrim` e sobre mapas."
+    },
+    "text-muted": {
+      "$type": "color",
+      "$value": "rgba(255, 255, 255, 0.72)",
+      "$description": "Mídia · Texto secundário sobre `media-scrim`."
+    },
+    "hairline": {
+      "$type": "color",
+      "$value": "rgba(255, 255, 255, 0.16)",
+      "$description": "Mídia · Borda fina sobre `media-scrim`."
+    },
+    "fill-faint": {
+      "$type": "color",
+      "$value": "rgba(255, 255, 255, 0.1)",
+      "$description": "Mídia · Preenchimento sutil sobre `media-scrim`."
+    },
+    "fill": {
+      "$type": "color",
+      "$value": "rgba(255, 255, 255, 0.14)",
+      "$description": "Mídia · Preenchimento de controle sobre `media-scrim`."
+    },
+    "fill-strong": {
+      "$type": "color",
+      "$value": "rgba(255, 255, 255, 0.22)",
+      "$description": "Mídia · Trilha ou listra sobre `media-scrim` e barras."
+    },
+    "label": {
+      "$type": "color",
+      "$value": "#b9c2d3",
+      "$description": "Mídia · Texto secundário em tooltip de mapa."
+    },
+    "forecast": {
+      "$type": "color",
+      "$value": "#c5d1ff",
+      "$description": "Mídia · Rótulo de previsão no mapa."
+    },
+    "ink": {
+      "$type": "color",
+      "$value": "#0b1018",
+      "$description": "Mídia · Texto escuro sobre marcador claro do mapa."
+    },
+    "ok": {
+      "$type": "color",
+      "$value": "#8ff0bb",
+      "$description": "Mídia · Positivo sobre `media-scrim`."
+    },
+    "warn": {
+      "$type": "color",
+      "$value": "#ffd37a",
+      "$description": "Mídia · Atenção sobre `media-scrim`."
+    },
+    "bad": {
+      "$type": "color",
+      "$value": "#ff9c94",
+      "$description": "Mídia · Negativo sobre `media-scrim`."
+    },
+    "info": {
+      "$type": "color",
+      "$value": "#35d0ff",
+      "$description": "Mídia · Destaque informativo sobre mapa."
+    },
+    "star": {
+      "$type": "color",
+      "$value": "#f3c64d",
+      "$description": "Mídia · Favorito fixado em cartão com imagem."
+    },
+    "live": {
+      "$type": "color",
+      "$value": "#46c28b",
+      "$description": "Mídia · Indicador ao vivo."
+    },
+    "map-day": {
+      "$type": "color",
+      "$value": "#e6edf0",
+      "$description": "Mídia · Base clara do mapa."
+    },
+    "map-dark": {
+      "$type": "color",
+      "$value": "#17212b",
+      "$description": "Mídia · Base escura do mapa."
+    },
+    "map-night": {
+      "$type": "color",
+      "$value": "#080b10",
+      "$description": "Mídia · Base noturna do mapa."
+    },
+    "map-terrain": {
+      "$type": "color",
+      "$value": "#e6e2d5",
+      "$description": "Mídia · Base de relevo do mapa."
+    },
+    "map-terrain-tint": {
+      "$type": "color",
+      "$value": "#ddd6bd",
+      "$description": "Mídia · Tinta de relevo sobre a base do mapa."
+    },
+    "paper": {
+      "$type": "color",
+      "$value": "#ffffff",
+      "$description": "Mídia · Folha de documento em miniatura."
+    },
+    "paper-line": {
+      "$type": "color",
+      "$value": "#d9dee5",
+      "$description": "Mídia · Linha de texto em folha de documento em miniatura."
     }
   }
 }

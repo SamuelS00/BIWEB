@@ -1,7 +1,7 @@
 # BIWEB Studio — Problemas resolvidos até o momento
 
 > Documento objetivo: **problema → solução → onde está**. Cobre o que foi entregue no `apps/web` (de 2026-10-06 a 2026-10-10), as decisões tomadas e o que ainda está em aberto.
-> O blueprint de arquitetura (ADRs 0001–0041) continua em [`architecture/`](architecture/); aqui está só o que foi **implementado e decidido na prática**.
+> O blueprint de arquitetura (ADRs 0001–0045) continua em [`architecture/`](architecture/); aqui está só o que foi **implementado e decidido na prática**.
 
 ## 1. Estado atual
 
@@ -27,9 +27,9 @@
 ### 2.2 Referências e design (processo)
 | Problema | Decisão |
 |---|---|
-| Design sem base em produtos maduros | `REFERENCE_PACK_BI.md` (Power BI, Figma, Superset, Grafana…) com o que extrair e **o que não copiar** |
+| Design sem base em produtos maduros | `design-handoff/REFERENCE_PACK_BI.md` (Power BI, Figma, Superset, Grafana…) com o que extrair e **o que não copiar** |
 | Gargalos de complexidade (GIS, workflow, IA, modelagem) | `REFERENCE_PACK_COMPLEX_WORKFLOWS.md` (fichas REF-A/X, 3D urbano, replay, realtime) |
-| Dependência de ferramentas de design | `SKILLS_STACK.md` + `SCREEN_CATALOG_BI.md` (catálogo de telas) para guiar o Claude Design |
+| Dependência de ferramentas de design | `design-handoff/SKILLS_STACK.md` + `design-handoff/SCREEN_CATALOG_BI.md` (catálogo de telas) para guiar o Claude Design |
 | `design-output/` desatualizado | **Decisão do usuário:** ignorar o design antigo; preservar só o Complex Workflows pack e referenciá-lo na aplicação. A pasta e o `design-handoff.zip` (cópia antiga dos `.md`) foram removidos em 2026-10-10 |
 | Home/Login com cara de "produto gerado por IA" | Prompts proibiram o padrão (sidebar + boas-vindas + KPIs + cards; card central sobre gradiente/glass/glow). Resultado: Home **Workspace Pulse** e login **Product Pulse** |
 
@@ -145,7 +145,7 @@ Pacote `packages/assistant-ui` + motor de exemplo no app (`copilot/engine.ts`): 
 | Token do `wrangler login` não servia no CI | Token de API (Pages: Edit) + `CLOUDFLARE_ACCOUNT_ID` como Actions secrets; o OAuth do login expira em ~1 h | `docs/PROJETO.md` §9 |
 | CI vermelho por ciclos de dependência | `ago()` movida para `editor/time.ts`; imports só de tipos deixam de contar como ciclo | `editor/time.ts`, `.dependency-cruiser.cjs` |
 | Documentação desatualizada em relação às rotas | `tools/check-docs.mjs` roda no CI e falha se uma rota não estiver na doc; regras para agentes em `AGENTS.md` | `tools/check-docs.mjs`, `AGENTS.md`, `CLAUDE.md` |
-| Apresentação só cobria o Data Workspace e usava mockups | `apps/web/public/apresentacao/index.html` (endpoint `/apresentacao/`) reescrita: 26 blocos, motores (LDE, BCE, Migration, Copilot), Builders, caso completo e **capturas reais** geradas por script, com selos Na demonstração / Arquitetura proposta / Roadmap | `docs/apresentacao/`, `tools/capture-presentation.mjs` |
+| Apresentação só cobria o Data Workspace e usava mockups | `apps/web/public/apresentacao/index.html` (endpoint `/apresentacao/`) reescrita: blocos, motores (LDE, BCE, Migration, Copilot), Builders, caso completo e **capturas reais** geradas por script, com selos Na demonstração / Arquitetura proposta / Roadmap | `apps/web/public/apresentacao/`, `tools/capture-presentation.mjs` |
 | Canvas do Modelo e da Linhagem: ajuste ao abrir, centro em coluna de 0 px com a navegação recolhida | `fit` após medir e ao redimensionar; colunas do grid explícitas; alinhamento ao topo | `dataworkspace/Canvas.tsx`, `dataworkspace.css` |
 | Home estática na retomada | Carrossel animado alterna mapa, relatório e fluxo (transição em fade/deslizamento, progresso por aba, pausa e acessível); o "último trabalho" da simulação define a visão inicial | `routes/home.tsx`, `routes/home.css` |
 | Arquivos obsoletos na raiz | Removidos `design-output/` e `design-handoff.zip` | commit `6fe824a` |
@@ -168,6 +168,8 @@ Pacote `packages/assistant-ui` + motor de exemplo no app (`copilot/engine.ts`): 
 | Números demo divergindo entre telas (12 missões, 184 fontes, 42 mudanças, 3 conflitos…) | Fonte única `seed.ts` + `stats()` e teste de consistência; confiança agregada calculada dos componentes | `discovery/data/seed.ts`, `derive.ts`, `seed.test.ts` |
 | Fontes bloqueadas poderiam sugerir "contorno" | A UI mostra o bloqueio e o motivo (robots, policy, rate limit, auth, indisponível, removida) e não oferece bypass | `seed.ts › BLOCK_LABEL`, `views/Sources.tsx`, `views/Governance.tsx` |
 | Chaves do catálogo i18n do ⌘K quebravam o teste de domínio | Rótulos do Discovery em `discovery.palette.*` no próprio domínio | `i18n/messages/discovery.ts` |
+| Cores literais em CSS (tooltip, mapas, capas de cartão, favoritos) e faixas laterais coloridas em callouts, citações e cartões, com cara de UI gerada | Grupo `media` em `packages/tokens` (`--media-*`, mesmo valor nos dois temas) e `--viz-tooltip-positive/-negative` (corrige verde claro sobre tooltip claro no tema escuro), com contraste testado; callouts passam a borda inteira; faixa do topo dos cartões de galeria removida; acentos de Fluxos e relatórios demo vêm de `--viz-cat-*` | `packages/tokens/src/runtime.*.json`, `apps/web/src/**/*.css`, `routes/workflows/WorkflowsGallery.tsx`, `routes/demo-reports.tsx` |
+| Discovery misturava inglês e português na mesma tela (consultas de exemplo, objetivos de template, tooltip do Demo data) | Textos do corpo do Discovery em inglês, como a decisão já documentada; `classifyQuery` entende inglês e português | `discovery/data/seed.ts`, `missions.ts`, `explore.ts` |
 
 ## 3. Decisões que valem daqui para frente
 1. **Não apagar o que existe**: cada nova rodada incorpora ao estado atual e preserva o design system aprovado.

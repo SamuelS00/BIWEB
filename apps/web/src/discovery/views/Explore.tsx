@@ -50,7 +50,7 @@ export function ExploreView({ id }: { id?: string }) {
         </div>
         <div className="ds-ex-sug" role="group" aria-label="Example queries">
           {EXPLORE_EXAMPLES.map((s) => <button key={s} type="button" disabled={running} onClick={() => start(s)}>{s}</button>)}
-          <button type="button" disabled={running} onClick={() => start('Pesquise profundamente o mercado de BI')}>Pesquise profundamente o mercado de BI</button>
+          <button type="button" disabled={running} onClick={() => start('Research the BI market in depth')}>Research the BI market in depth</button>
         </div>
       </form>
 

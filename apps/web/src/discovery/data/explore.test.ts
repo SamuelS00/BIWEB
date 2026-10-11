@@ -6,7 +6,7 @@ import { schemaOf } from './datasets';
 describe('explore', () => {
   it('classifica as consultas de exemplo', () => {
     expect(EXPLORE_EXAMPLES.map((q) => classifyQuery(q).kind)).toEqual(['fiber', 'competitors', 'public', 'sp', 'changes']);
-    expect(classifyQuery('Pesquise profundamente o mercado de BI')).toEqual({ kind: 'bi', plan: true });
+    expect(classifyQuery('Research the BI market in depth')).toEqual({ kind: 'bi', plan: true });
     expect(classifyQuery('xyz').kind).toBe('none');
   });
   it('resultado de fibra: 27 = 18 + 7 + 2', () => {

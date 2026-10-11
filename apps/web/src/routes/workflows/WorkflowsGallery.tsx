@@ -11,7 +11,7 @@ import './workflows.css';
 
 const KIND: Record<string, string> = { batch: 'Lote', realtime: 'Tempo real', scheduled: 'Agendado', event: 'Por evento', human: 'Com pessoas', operations: 'Operações' };
 const STATUS: Record<string, string> = { running: 'Em execução', success: 'Última execução OK', failed: 'Falha na última execução', paused: 'Aguardando pessoa', warning: 'Concluído com avisos' };
-const ACCENT: Record<string, string> = { Dados: '#4f8cff', 'Tempo real': '#3fc08a', Operações: '#e0a03a', Pessoas: '#c07bd6', Relatórios: '#7f9bd8', Governança: '#d6736b' };
+const ACCENT: Record<string, string> = { Dados: 'var(--viz-cat-1)', 'Tempo real': 'var(--viz-cat-3)', Operações: 'var(--viz-cat-2)', Pessoas: 'var(--viz-cat-4)', Relatórios: 'var(--viz-cat-5)', Governança: 'var(--viz-cat-6)' };
 
 /** Miniatura do grafo, desenhada com as posições reais dos nós. */
 function Cover({ wf }: { wf: Workflow }) {
@@ -40,7 +40,7 @@ export function WorkflowsGallery() {
     <div className="wg-toolbar"><div className="mg-chips" role="tablist" aria-label="Categorias">{tags.map((c) => <button key={c} role="tab" aria-selected={tag === c} onClick={() => setTag(c)}>{c}<span>{c === 'Todos' ? wfs.length : wfs.filter((w) => w.tag === c).length}</span></button>)}</div><div className="mg-search"><TextField label="Buscar fluxos" hideLabel icon="search" placeholder="Buscar por nome ou tema" value={query} onChange={setQuery} /></div></div>
     {shown.length ? <div className="mg-grid">{shown.map((w) => {
       const last = runs[w.id]?.[0], published = w.versions.find((v) => v.state === 'published');
-      return <Link key={w.id} to="/workflows/$workflowId" params={{ workflowId: w.id }} onClick={() => open(w.id)} className="mg-card" style={{ ['--card-accent' as string]: ACCENT[w.tag] ?? '#4f8cff' }} aria-label={`${w.name}. ${w.description}`}>
+      return <Link key={w.id} to="/workflows/$workflowId" params={{ workflowId: w.id }} onClick={() => open(w.id)} className="mg-card" style={{ ['--card-accent' as string]: ACCENT[w.tag] ?? 'var(--viz-cat-1)' }} aria-label={`${w.name}. ${w.description}`}>
         <div className="mg-cover"><Cover wf={w} /><div className="mg-badges"><span className="mg-pill">{w.tag}</span>{w.kind === 'realtime' ? <span className="mg-pill is-live"><i />AO VIVO</span> : last?.status === 'failed' ? <span className="mg-pill wg-bad">Falha</span> : last?.status === 'paused' ? <span className="mg-pill wg-warn">Aguardando</span> : null}</div></div>
         <div className="mg-body"><h2>{w.name}</h2><p>{w.description}</p>
           <div className="mg-tags"><span>{KIND[w.kind]}</span><span>{w.nodes.length} nós</span>{w.schedule && <span>{w.schedule}</span>}{published ? <span>v{published.v}</span> : <span>Rascunho</span>}</div>

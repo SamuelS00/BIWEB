@@ -297,7 +297,7 @@ export const DATASETS: ResearchDataset[] = [
   { id: 'ds4', name: 'Technology Landscape', version: 1, companies: 14, fields: 22, coverage: 84, changesSinceLast: 6, missionId: 'm5', geo: false, updated: stamp(600) },
 ];
 
-export const RESULT_FIBER: DiscoveryResult = { id: 'r1', query: 'Empresas que oferecem monitoramento de fibra óptica no Brasil', found: 27, high: 18, medium: 7, review: 2, entityIds: ENTITIES.filter((e) => e.id.startsWith('f')).map((e) => e.id) };
+export const RESULT_FIBER: DiscoveryResult = { id: 'r1', query: 'Companies offering fiber optic monitoring in Brazil', found: 27, high: 18, medium: 7, review: 2, entityIds: ENTITIES.filter((e) => e.id.startsWith('f')).map((e) => e.id) };
 
 export const RUNS: Run[] = [
   { id: 'DR-2841', name: 'Fiber Network Market Brazil', missionId: 'm2', started: stamp(11), durationS: 504, evaluated: 184, relevant: 61, documents: 18, entities: 27, observations: 348, conflicts: 4, stage: 5 },
@@ -327,8 +327,8 @@ export const PROPOSALS: EnrichmentProposal[] = [
 ];
 
 export const EXPLORE_EXAMPLES = [
-  'Empresas que oferecem monitoramento de fibra óptica no Brasil', 'Concorrentes com funcionalidades de AI Analytics', 'Encontre dados públicos para enriquecer nossos clientes',
-  'Quais empresas abriram novas unidades em São Paulo?', 'Quais mudanças ocorreram nos produtos dos concorrentes?',
+  'Companies offering fiber optic monitoring in Brazil', 'Competitors with AI Analytics features', 'Find public data to enrich our customers',
+  'Which companies opened new units in São Paulo?', 'What changed in the competitors’ products?',
 ];
 export const BLOCK_LABEL: Record<BlockReason, string> = { robots: 'Blocked by robots.txt', policy: 'Policy restricted', 'rate-limit': 'Rate limit reached', 'auth-required': 'Authentication required', unavailable: 'Source unavailable', removed: 'Content removed' };
 export const BLOCK_NOTE: Record<BlockReason, string> = {
