@@ -2,7 +2,7 @@
 
 > Documento vivo. É o ponto de entrada para quem vai evoluir o código. O **porquê** de longo prazo está no blueprint ([`architecture/`](architecture/), ADRs); aqui está o **como o projeto é hoje** e **como mexer nele**.
 > Histórico do que já foi resolvido: [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md). Regras para humanos e agentes manterem esta doc em dia: [`AGENTS.md`](../AGENTS.md).
-> Última revisão: 2026-10-10 (Data Workspace, CI/deploy automático, apresentação para clientes). Apresentação para clientes: [apresentacao/biweb.html](apresentacao/biweb.html) (ver seção 13).
+> Última revisão: 2026-10-10 (Data Workspace, CI/deploy automático, apresentação para clientes). Apresentação para clientes: `/apresentacao/` no app (seção 13).
 
 ## 1. O que é
 
@@ -20,7 +20,8 @@ Plataforma web de Business Intelligence: relatórios e dashboards editáveis, ma
 | `apps/control-plane`, `jdbc-bridge`, `render-service` | Backends | Esqueleto |
 | `crates/` | Data plane Rust (Cargo workspace) | Esqueleto |
 | `testing/` | `e2e` (Playwright + axe), `load`, `query-correctness`, `corpus`, `ai-evals` | Só `e2e` |
-| `docs/` | Blueprint, ADRs, design system, runbooks, esta doc e `apresentacao/` (material para clientes) | — |
+| `docs/` | Blueprint, ADRs, design system, runbooks, esta doc | — |
+| `apps/web/public/apresentacao/` | Apresentação para clientes servida em `/apresentacao/` (HTML + capturas) | Funcional |
 | `.github/workflows/` | `ci.yml` (TS + Rust), `deploy.yml` (Cloudflare Pages a cada push em `main`) | Funcional |
 | `tools/` | `brand/` (capas e logos), `artifact/inline.mjs`, `deploy.sh`, `check-docs.mjs` (confere rotas × doc) | Funcional |
 | `design-handoff/`, `REFERENCE_PACK_*.md`, `SCREEN_CATALOG_BI.md`, `SKILLS_STACK.md` | Material de entrada de design | Referência |
@@ -64,6 +65,7 @@ Se 5173 estiver ocupada o Vite sobe em outra porta: leia o log. Após editar uma
 | `/data/$section`, `/data/$section/$itemId` | Seções `sources`, `catalog`, `model`, `quality`, `published`, `transformations`, `lineage`, `enrichment`, `changes`, `runs`; `$itemId` = fonte, ativo, modelo, dataset, ChangeSet ou run | `dataworkspace/` |
 | `/models/$id` | Modelo semântico | `routes/model.tsx` |
 | `/copilot` | Copilot em tela cheia | `routes/copilot.tsx` |
+| `/apresentacao/` | Apresentação para clientes (estática, sem login, fora do roteador) | `public/apresentacao/` |
 
 Rotas legadas de mapas e `/dashboards/$id` redirecionam. Com `VITE_HASH_HISTORY=1` o roteamento usa hash (builds estático e artifact).
 
@@ -243,10 +245,12 @@ Hoje: 78 testes unitários em `apps/web` (10 arquivos), mais tokens e ui. Lacuna
 - Decisão arquitetural nova ou que contraria o blueprint? Escreva um ADR em `architecture/adr/` e cite aqui.
 - Atualize a data de revisão no topo.
 
-## 13. Material de apresentação (`docs/apresentacao/`)
+## 13. Apresentação para clientes (`apps/web/public/apresentacao/`)
 
-- `biweb.html`: página única, em PT-BR com títulos em inglês, no design do app (tokens claro/escuro, botão **Tema**). Conta a história **Why → Plataforma → Fundação de dados → Builders → Migração → Inteligência → Caso → Diferenciais → Visão** em 26 blocos numerados. Abra o arquivo direto no navegador; para enviar a clientes, mande a pasta `apresentacao/` inteira (o HTML carrega `img/`).
-- `img/*.jpg`: **capturas reais** do protótipo, em claro (`-l`) e escuro (`-d`). Não são mockups. Gerar de novo: suba o dev server e rode `BIWEB_URL=http://127.0.0.1:5173 node tools/capture-presentation.mjs [nome…]` (roteiro em `tools/presentation-shots.mjs`; usa o Google Chrome instalado via playwright). Sempre regenere as capturas quando a UI mudar de forma visível.
-- Cada trecho leva um selo de honestidade: **Na demonstração** (existe no protótipo), **Arquitetura proposta** (desenho, ex.: Composition Engine e contratos canônicos) ou **Roadmap** (ex.: visuais customizados, temas por organização). Não afirmar integração com provedores de IA nem benchmarks.
-- Números do material (18 fontes, 104 ativos, 118 conectores: 38 disponíveis, 55 preparados, 25 planejados; 23 tipos de gráfico) vêm do app: confira antes de editar.
-- Os marcadores numerados das capturas (`.pin`) ficam por coordenadas em % da imagem 1440×880; se refizer uma captura, confira se os marcadores ainda apontam para o lugar certo.
+- **Endpoint:** `/apresentacao/` (arquivo estático de `public/`, **sem login**; fora do roteador e do shell). Em produção: `https://app.biwebstudio.com.br/apresentacao/`. No app, ⌘K → "Abrir apresentação do produto".
+- `index.html`: página única, PT-BR com títulos em inglês, no design do app (tokens claro/escuro, botão **Tema**). Conta a história **Why → Plataforma → Fundação de dados → Builders → Migração → Inteligência → Caso → Diferenciais → Visão** em 26 blocos. Movimento (respeita `prefers-reduced-motion`): entrada em cascata, marcadores que surgem em sequência, contadores, barra de progresso, navegação ativa e ampliação das capturas (clique). O JS está no fim do arquivo e é opcional: sem ele a página aparece completa.
+- `img/*.jpg`: **capturas reais** do protótipo, em claro (`-l`) e escuro (`-d`). Gerar de novo: suba o dev server e rode `BIWEB_URL=http://127.0.0.1:5173 node tools/capture-presentation.mjs [nome…]` (roteiro em `tools/presentation-shots.mjs`; usa o Google Chrome instalado via playwright). Regenere quando a UI mudar de forma visível. Os marcadores numerados (`.pin`) usam coordenadas em % da imagem 1440×880; confira-os após refazer uma captura.
+- Selos de honestidade em cada trecho: **Na demonstração** (existe no protótipo), **Arquitetura aprovada** (decidida em ADR, ainda não implementada: Composition Engine/BCE, contratos canônicos, LDE e BCE como serviços independentes, Intelligence Core) e **Roadmap** (ex.: visuais customizados, temas por organização). Não afirmar integração com provedores de IA nem benchmarks.
+- O contexto global do Copilot chama-se **BIWEB Intelligence Core** (antes "Super Brain"; nome só de narrativa, em um único termo fácil de trocar).
+- Números do material (18 fontes, 104 ativos, 118 conectores: 38 disponíveis, 55 preparados, 25 planejados; 23 tipos de gráfico; 6 plataformas de BI) vêm do app: confira antes de editar.
+- O deploy publica `dist/` (inclui `public/`), então a apresentação sai junto com o app (~7 MB de imagens).

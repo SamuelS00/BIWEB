@@ -45,6 +45,9 @@ Formato: **Context · Decision · Alternatives · Advantages · Disadvantages ·
 | [0039](ADR-0039-ai-grounding.md) | Grounding: geração estruturada, metadados curados, evidências | 1–4 | Agora (campos de schema); curadoria depois |
 | [0040](ADR-0040-ai-conversations.md) | Conversas do usuário, ancoradas, contexto por turno, SSE | 3 | Depois |
 | [0041](ADR-0041-ai-quality-evals.md) | Qualidade da IA como código: prompts, evals, red-team | 3 | Depois (antes do AI v1) |
+| [0042](ADR-0042-composition-engine-and-canonical-contracts.md) | Composition Engine (BCE) e contratos canônicos de construção — **Aceito** (2026-10-10) | 5–6 | Depois |
+| [0043](ADR-0043-lde-and-bce-as-independent-services.md) | LDE e BCE como serviços independentes — **Aceito** (2026-10-10) | 3–6 | Depois |
+| [0044](ADR-0044-copilot-intelligence-core.md) | Copilot com contexto global (Intelligence Core) — **Aceito** (2026-10-10) | 5–6 | Depois |
 
 ## Emendas de 2026-10-06 (IA nativa)
 Os ADRs 0001, 0002, 0003, 0004, 0005, 0006, 0011, 0015, 0016, 0017, 0019, 0020, 0024, 0025, 0028, 0029, 0030 e 0032 receberam uma seção **"Emenda 2026-10-06 — IA nativa"** descrevendo extensões **aditivas** decorrentes da incorporação da IA ([31-ai-assistant](../31-ai-assistant.md)). Nenhuma decisão anterior foi revertida.

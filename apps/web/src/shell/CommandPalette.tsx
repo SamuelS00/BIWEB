@@ -29,6 +29,7 @@ export function CommandPalette() {
       { group: 'Ações', label: 'Importar dados (KMZ, SHP, CSV…)', hint: 'Dados', run: () => navigate({ to: '/connections' }) },
       { group: 'Ações', label: `Tema ${appTheme === 'dark' ? 'claro' : 'escuro'}`, hint: 'Exibição', run: () => set({ appTheme: appTheme === 'dark' ? 'light' : 'dark' }) },
       { group: 'Ações', label: 'Dados e conexões', hint: 'Dados', run: () => navigate({ to: '/connections' }) },
+      { group: 'Ações', label: 'Abrir apresentação do produto', hint: 'Nova aba', run: () => { window.open(`${import.meta.env.BASE_URL}apresentacao/`, '_blank', 'noopener'); } },
       { group: 'Ações', label: 'Migration Studio · projetos de migração', hint: 'Migração', run: () => navigate({ to: '/migration' }) },
       { group: 'Ações', label: 'Nova migração (Power BI, Tableau, Qlik…)', hint: 'Migração', run: () => navigate({ to: '/migration' }) },
     ].filter((a) => !n || norm(a.label).includes(n));

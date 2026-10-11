@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Captura telas reais do protótipo para docs/apresentacao (claro e escuro). Requer o dev server rodando.
+// Captura telas reais do protótipo para apps/web/public/apresentacao (claro e escuro). Requer o dev server rodando.
 //   BIWEB_URL=http://127.0.0.1:5173 node tools/capture-presentation.mjs [nome ...]
-// Usa o Google Chrome instalado (playwright-core). Saída: docs/apresentacao/img/<nome>-{l,d}.jpg
+// Usa o Google Chrome instalado (playwright-core). Saída: apps/web/public/apresentacao/img/<nome>-{l,d}.jpg
 import { createRequire } from 'node:module';
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -11,7 +11,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(join(root, 'testing/e2e/package.json'));
 const { chromium } = (() => { for (const m of ['@playwright/test', 'playwright-core']) { try { return require(m); } catch { /* tenta o próximo */ } } return createRequire(join(root, 'node_modules/.pnpm/playwright-core@1.63.0/node_modules/playwright-core/package.json'))('playwright-core'); })();
 const BASE = process.env.BIWEB_URL ?? 'http://127.0.0.1:5173';
-const OUT = join(root, 'docs/apresentacao/img');
+const OUT = join(root, 'apps/web/public/apresentacao/img');
 mkdirSync(OUT, { recursive: true });
 const only = process.argv.slice(2);
 const W = 1440, H = 880;
