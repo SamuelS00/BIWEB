@@ -8,7 +8,11 @@ on:
 concurrency: { group: deploy, cancel-in-progress: true }
 jobs:
   pages:
+    # Configure this Environment in GitHub with required reviewers and main-only deployment.
+    environment: production
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -18,8 +22,9 @@ jobs:
       - run: pnpm --filter @biweb/tokens build
       - run: pnpm --filter @biweb/web exec tsc -p tsconfig.json --noEmit
       - run: pnpm --filter @biweb/web exec vitest run
+      # Cloudflare Pages faz fallback de SPA para index.html quando não há 404.html.
+      # Assim o histórico normal mantém URLs limpas (/reports, /maps etc.).
       - run: pnpm --filter @biweb/web exec vite build
-        env: { VITE_HASH_HISTORY: '1' }
       - run: npx --yes wrangler@4 pages deploy apps/web/dist --project-name=biweb --branch=main
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
