@@ -38,7 +38,7 @@ const KINDS: { kind: string; skill: Skill; priority: 1 | 2 | 3 | 4; service: [nu
 const CALLSIGNS = ['Alfa', 'Bravo', 'Charlie', 'Delta', 'Eco', 'Foxtrot', 'Golf', 'Hotel', 'Índia'];
 const CREW = ['R. Lima · T. Prado', 'C. Nunes · A. Rocha', 'M. Ferraz · J. Dias', 'L. Costa · P. Souza', 'F. Alves · D. Melo', 'B. Matos · I. Reis', 'G. Pinto · V. Cruz', 'H. Teles · N. Viana', 'S. Moura · E. Lopes'];
 const BASES: [number, Skill][] = [[0, 'Fibra'], [1, 'Energia'], [2, 'Fibra'], [9, 'Atendimento'], [4, 'Infra'], [5, 'Fibra'], [8, 'Atendimento'], [6, 'Energia'], [7, 'Infra']];
-const BAIRRO = stations.map((s) => s[0] as string);
+const _BAIRRO = stations.map((s) => s[0] as string);
 
 export const TEAM_STATUS_TONE: Record<TeamStatus, 'success' | 'accent' | 'warning' | 'danger' | 'neutral'> = {
   'Disponível': 'success', 'A caminho': 'accent', 'No local': 'accent', 'Em atendimento': 'accent', 'Retornando': 'neutral', 'Em pausa': 'neutral', 'Atrasada': 'danger', 'Offline': 'warning',

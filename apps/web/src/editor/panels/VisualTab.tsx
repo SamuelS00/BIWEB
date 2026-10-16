@@ -9,7 +9,7 @@ import { fieldOpts, NoSelection, Row, Section, useProp } from './shared';
 import { ChartVisual } from './ChartPanels';
 import { KpiVisual } from './KpiPanels';
 
-const KINDS: { id: ChartKind; label: string }[] = [{ id: 'bar', label: 'Barras' }, { id: 'hbar', label: 'Barras horizontais' }, { id: 'line', label: 'Linha' }, { id: 'area', label: 'Área' }, { id: 'pie', label: 'Pizza' }, { id: 'scatter', label: 'Dispersão' }];
+const _KINDS: { id: ChartKind; label: string }[] = [{ id: 'bar', label: 'Barras' }, { id: 'hbar', label: 'Barras horizontais' }, { id: 'line', label: 'Linha' }, { id: 'area', label: 'Área' }, { id: 'pie', label: 'Pizza' }, { id: 'scatter', label: 'Dispersão' }];
 const IMAGES = [{ id: 'brand/logo-light.webp', label: 'Logo BIWEB (claro)' }, { id: 'brand/logo-dark.webp', label: 'Logo BIWEB (escuro)' }, { id: 'brand/mark.webp', label: 'Marca BIWEB' }, { id: 'brand/logo-stacked.webp', label: 'Logo empilhado' }];
 
 export function StyleProps({ c }: { c: Comp }) {

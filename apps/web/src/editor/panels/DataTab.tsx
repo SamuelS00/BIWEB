@@ -11,7 +11,7 @@ import { ChartWells } from './ChartPanels';
 import { KpiWells } from './KpiPanels';
 
 const AGGS: Agg[] = ['sum', 'avg', 'min', 'max', 'count', 'distinct'];
-const isMeasure = (f: { kind: string }) => f.kind === 'measure';
+const _isMeasure = (f: { kind: string }) => f.kind === 'measure';
 const isDim = (f: { kind: string }) => f.kind !== 'measure';
 
 /** Árvore do dataset: tabelas e campos arrastáveis para os slots do componente. */

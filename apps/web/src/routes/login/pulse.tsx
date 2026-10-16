@@ -146,7 +146,7 @@ export function ProductPulse({ mode }: { mode: PulseMode }) {
   const pull = (id: NodeId) => { const c = mid(id); return { x: Math.round((mc.x - c.x) * 0.6), y: Math.round((mc.y - c.y) * 0.6) }; };
   const on = step >= 3, ready = step >= 5;
   const line = sparkPath(spark, 216, 40);
-  const live = step >= 6;
+  const _live = step >= 6;
 
   return (
     <div className="lp-pulse" ref={host} aria-hidden="true">

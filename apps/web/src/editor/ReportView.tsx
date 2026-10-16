@@ -23,8 +23,8 @@ export function ReportView({ id }: { id: string }) {
   const lib = useLibrary((s) => s.docs.find((d) => d.id === id));
   const doc = useEditor((s) => (s.doc?.id === id ? s.doc : null));
   const pageId = useEditor((s) => s.pageId);
-  const cross = useEditor((s) => s.cross);
-  const fv = useEditor((s) => s.filterValues);
+  const _cross = useEditor((s) => s.cross);
+  const _fv = useEditor((s) => s.filterValues);
   const { aiEnabled, askCopilot } = useUi();
   useEffect(() => {
     if (!lib) return;
