@@ -20,7 +20,7 @@
     "@tanstack/react-router": "^1.125.0",
     "immer": "^10.2.0",
     "react": "^19.1.0",
-    "react-aria-components": "^1.10.0",
+    "react-aria-components": "^1.22.1",
     "react-dom": "^19.1.0",
     "react-intl": "^7.1.11",
     "three": "^0.180.0",
