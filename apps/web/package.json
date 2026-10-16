@@ -17,7 +17,7 @@
     "@biweb/assistant-ui": "workspace:*",
     "@biweb/tokens": "workspace:*",
     "@biweb/ui": "workspace:*",
-    "@tanstack/react-router": "^1.125.0",
+    "@tanstack/react-router": "^1.170.44",
     "immer": "^10.2.0",
     "react": "^19.1.0",
     "react-aria-components": "^1.10.0",
