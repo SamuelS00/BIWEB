@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "scripts": { "e2e": "playwright test" },
+  "scripts": {
+    "e2e": "playwright test",
+    "e2e:smoke": "playwright test tests/smoke.spec.ts"
+  },
   "devDependencies": { "@playwright/test": "^1.54.1", "@axe-core/playwright": "^4.10.2" }
 }

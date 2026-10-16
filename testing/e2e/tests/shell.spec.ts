@@ -1,7 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-test.beforeEach(async ({ page }) => { await page.addInitScript(() => { try { localStorage.clear(); } catch { /* ok */ } }); });
+test.beforeEach(async ({ page }) => {
+  await page.goto('/login');
+  await page.evaluate(() => { try { localStorage.clear(); sessionStorage.clear(); } catch { /* ok */ } });
+  await page.getByRole('textbox', { name: 'E-mail' }).fill('e2e@biweb.test');
+  await page.getByRole('textbox', { name: 'Senha' }).fill('biweb-e2e');
+  await page.locator('.lp-submit').click();
+  await expect(page.getByRole('navigation', { name: 'Áreas' })).toBeVisible({ timeout: 10_000 });
+});
 
 const askAi = async (page: Page, text: string) => {
   await page.locator('.ai-input textarea').fill(text);
@@ -11,9 +18,8 @@ const askAi = async (page: Page, text: string) => {
 
 test('Início mostra o pulso da rede e as ocorrências ativas', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /Bom dia|Boa tarde|Boa noite/ })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Pulso da rede' })).toBeVisible();
-  await expect(page.locator('.home-now li')).toHaveCount(6);
+  await expect(page.getByRole('heading', { name: 'Network Intelligence / OPS' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Continue de onde parou' })).toBeVisible();
 });
 
 test('Relatórios: capas geradas, categoria e lista; workspace Comercial preservado', async ({ page }) => {

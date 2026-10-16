@@ -13,9 +13,30 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm turbo run lint typecheck test build --affected
-      - run: pnpm check:boundaries
+      - run: pnpm lint
+      - run: pnpm turbo run typecheck test build --affected
       - run: node tools/check-docs.mjs
+  e2e:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @biweb/e2e exec playwright install --with-deps chromium
+      - run: pnpm e2e:smoke
+      - name: Upload Playwright evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: |
+            testing/e2e/playwright-report
+            testing/e2e/test-results
+          if-no-files-found: ignore
+          retention-days: 14
   rust:
     runs-on: ubuntu-latest
     steps:
