@@ -17,7 +17,7 @@ jobs:
     name: dependency-audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
@@ -28,7 +28,7 @@ jobs:
     name: sbom
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: anchore/sbom-action@v0
         with:
           format: spdx-json
