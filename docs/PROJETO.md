@@ -2,7 +2,7 @@
 
 > Documento vivo. É o ponto de entrada para quem vai evoluir o código. O **porquê** de longo prazo está no blueprint ([`architecture/`](architecture/), ADRs); aqui está o **como o projeto é hoje** e **como mexer nele**.
 > Histórico do que já foi resolvido: [PROBLEMAS-RESOLVIDOS.md](PROBLEMAS-RESOLVIDOS.md). Regras para humanos e agentes manterem esta doc em dia: [`AGENTS.md`](../AGENTS.md).
-> Última revisão: 2026-10-11 (BIWEB Discovery Engine / Discovery Studio, revisão de "AI slop" (tokens `--media-*`, fim das faixas laterais), internacionalização pt-BR/en/es, Data Workspace, CI/deploy automático, apresentação para clientes). Apresentação para clientes: `/apresentacao/` no app (seção 13).
+> Última revisão: 2026-10-15 (governança de CI: Biome, E2E, Dependabot, CodeQL, SBOM e releases; imagem OCI/Compose para avaliação self-hosted, BIWEB Discovery Engine / Discovery Studio, revisão de "AI slop" (tokens `--media-*`, fim das faixas laterais), internacionalização pt-BR/en/es, Data Workspace, CI/deploy automático, apresentação para clientes). Apresentação para clientes: `/apresentacao/` no app (seção 13).
 
 ## 1. O que é
 
@@ -39,7 +39,9 @@ Requisitos: Node ≥ 22.12, pnpm 10 (`mise install` instala o conjunto).
 pnpm install
 pnpm dev                 # http://localhost:5173
 pnpm typecheck && pnpm test && pnpm lint   # lint inclui fronteiras (dependency-cruiser)
+pnpm format:check          # confere formatação Biome sem alterar arquivos
 just check               # tudo, incluindo Rust
+docker compose -f infra/docker/compose.yml up --build  # avaliação self-hosted: http://localhost:8080
 ```
 
 Sem `pnpm` no PATH, a partir de `apps/web`:
@@ -71,7 +73,7 @@ Se 5173 estiver ocupada o Vite sobe em outra porta: leia o log. Após editar uma
 | `/copilot` | Copilot em tela cheia | `routes/copilot.tsx` |
 | `/apresentacao/` | Apresentação para clientes (estática, sem login, fora do roteador) | `public/apresentacao/` |
 
-Rotas legadas de mapas e `/dashboards/$id` redirecionam. Com `VITE_HASH_HISTORY=1` o roteamento usa hash (builds estático e artifact).
+Rotas legadas de mapas e `/dashboards/$id` redirecionam. O deploy no Cloudflare Pages e o container usam histórico normal, com URLs limpas; apenas os builds portáveis `static` e `artifact` usam `VITE_HASH_HISTORY=1`.
 
 ## 5. Arquitetura do `apps/web`
 
@@ -220,10 +222,13 @@ UI em `packages/assistant-ui`; motor simulado em `copilot/engine.ts`. Respeita `
 | Camada | Comando | Cobre |
 |---|---|---|
 | Unit (Vitest) | `pnpm test` | tokens (contraste), ui, motor de gráficos, `cf`, dados de vendas, Copilot do editor, mapas, workflows, relatórios demo, Migration Studio, idiomas (`i18n`), Discovery (`discovery/data`) |
-| E2E (Playwright + axe) | `pnpm e2e` | shell inicial (`testing/e2e/tests/shell.spec.ts`, 8 testes); roda fixado em `pt-BR` (`testing/e2e/playwright.config.ts`) |
+| E2E (Playwright + axe) | `pnpm e2e` | suíte completa (`testing/e2e/tests/`); roda fixado em `pt-BR` (`testing/e2e/playwright.config.ts`) |
+| E2E de PR | `pnpm e2e:smoke` | login de demonstração e navegação de Relatórios, Dados, Mapas e Fluxos; executa no CI |
 | Documentação | `node tools/check-docs.mjs` | toda rota de `router.tsx` aparece na tabela da seção 4 |
 | Fronteiras | `pnpm check:boundaries` | regras de dependência |
-| CI | `.github/workflows/ci.yml` | lint, typecheck, testes, build, fronteiras, docs (job `ts`) e clippy/testes Rust (job `rust`) |
+| Lint / formatação | `pnpm lint` / `pnpm format:check` | Biome (JS/TS/JSON/CSS) e fronteiras |
+| CI | `.github/workflows/ci.yml` | lint, typecheck, testes, build, fronteiras, docs (job `ts`), E2E/axe nas PRs (job `e2e`) e clippy/testes Rust (job `rust`) |
+| Segurança | `.github/workflows/codeql.yml`, `security.yml`, `secret-scan.yml`, `dependency-review.yml` | CodeQL, Gitleaks, revisão de dependências em PR, `pnpm audit` (produção) e SBOM SPDX como artefato |
 
 Hoje: 112 testes unitários em `apps/web` (13 arquivos; 21 deles de i18n, 10 do Discovery: consistência dos números demo e classificação de consultas), mais tokens e ui. Lacunas: testes de interface do Discovery e E2E do módulo; testes do Data Workspace (`sample.ts`, `store.ts`, `copilot.ts`), E2E do editor, mapas, workflows, migração e login; teste visual; carga e correção de queries (aguardam backend).
 
@@ -234,14 +239,21 @@ Hoje: 112 testes unitários em `apps/web` (13 arquivos; 21 deles de i18n, 10 do 
 | Produção padrão | `pnpm --filter @biweb/web build` | `apps/web/dist` |
 | Estático (rotas por hash) | `pnpm --filter @biweb/web build:static` | `dist-static` |
 | Página única (artifact) | `tools/deploy.sh` ou `build:artifact` | `dist-artifact/page.html` |
+| Imagem OCI (avaliação self-hosted) | `docker compose -f infra/docker/compose.yml up --build` | Nginx em `http://localhost:8080` |
 
 `tools/deploy.sh` roda tipos + testes antes do build; `--skip-checks` pula, `static` gera também o estático.
 
 **Produção:** Cloudflare Pages, projeto **`biweb`** (`biweb.pages.dev` e `app.biwebstudio.com.br`; domínio no Registro.br, e-mail no Fastmail).
 
-**Deploy automático:** `.github/workflows/deploy.yml` roda a cada push em `main` (ou manualmente em Actions → deploy → Run workflow): gera os tokens (`@biweb/tokens build`, porque `packages/tokens/dist` não vai para o git), roda `tsc` e `vitest`, faz `vite build` com `VITE_HASH_HISTORY=1` (rotas por hash) e publica `apps/web/dist` com `npx wrangler@4 pages deploy`. Exige os **Actions secrets** `CLOUDFLARE_API_TOKEN` (token de API com *Account → Cloudflare Pages → Edit*; o token do `wrangler login` é OAuth de ~1 h e **não** serve) e `CLOUDFLARE_ACCOUNT_ID`. A action oficial `wrangler-action` falha no workspace pnpm; por isso o workflow chama o `wrangler` direto.
+**Deploy automático:** `.github/workflows/deploy.yml` roda a cada push em `main` (ou manualmente em Actions → deploy → Run workflow): gera os tokens (`@biweb/tokens build`, porque `packages/tokens/dist` não vai para o git), roda `tsc` e `vitest`, faz `vite build` e publica `apps/web/dist` com `npx wrangler@4 pages deploy`. O Cloudflare Pages entrega `index.html` para rotas sem arquivo físico quando não há `404.html` na raiz; por isso o app usa URLs limpas, como `/reports`, sem `/#/`. Exige os **Actions secrets** `CLOUDFLARE_API_TOKEN` (token de API com *Account → Cloudflare Pages → Edit*; o token do `wrangler login` é OAuth de ~1 h e **não** serve) e `CLOUDFLARE_ACCOUNT_ID`. A action oficial `wrangler-action` falha no workspace pnpm; por isso o workflow chama o `wrangler` direto.
 
-**Deploy manual:** `wrangler login`, depois `npx wrangler pages deploy apps/web/dist-static --project-name biweb --branch main`. Passo a passo e verificação em [`runbooks/`](runbooks/README.md).
+**Deploy manual:** gere os tokens, execute `pnpm --filter @biweb/web build` e depois `npx wrangler pages deploy apps/web/dist --project-name biweb --branch main`. Passo a passo e verificação em [`runbooks/`](runbooks/README.md).
+
+**Avaliação self-hosted:** `infra/docker/Dockerfile` compila o front-end com Node 22/pnpm e o serve por Nginx sem privilégios; `infra/docker/compose.yml` publica a porta `8080` (ou `BIWEB_PORT`) e faz healthcheck em `GET /health`. Instruções completas em [`infra/docker/README.md`](../infra/docker/README.md). A imagem não substitui o deploy de produção no Cloudflare Pages.
+
+**Segurança de entrega:** o build leva [`apps/web/public/_headers`](../apps/web/public/_headers), com CSP e headers de proteção do Cloudflare Pages. O deploy requer o Environment GitHub `production`, com aprovação e secrets restritos; consulte o [runbook de configurações do repositório](runbooks/github-repository-settings.md). Falhas E2E preservam trace, vídeo e screenshots por 14 dias como artefatos do Actions.
+
+**Versões e GitHub Releases:** pacotes públicos usam Changesets (`pnpm changeset`) para criar a PR de versões/changelog. Depois de aprovada, uma tag `vX.Y.Z` dispara a GitHub Release com notas geradas. A publicação npm permanece desativada até que o registro e o segredo sejam definidos. Segurança, Dependabot e as proteções de `main` estão descritos em [`runbooks/github-repository-settings.md`](runbooks/github-repository-settings.md).
 
 ## 10. Glossário
 
